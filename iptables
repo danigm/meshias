@@ -1,0 +1,2 @@
+sudo iptables -t filter -A OUTPUT -p tcp --dport 2222 -j NFQUEUE --queue-num 0
+sudo iptables -t filter -D OUTPUT -p tcp --dport 2222 -j NFQUEUE --queue-num 0
