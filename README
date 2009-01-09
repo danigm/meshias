@@ -1,0 +1,11 @@
+Tareas:
+A mediano plazo queremos implementar AODV (y mejorarlo incluso :P)
+
+A corto plazo, para empezar en este proyecto hay que saber que usamos/usaremos para cada cosa y porqué:
+ * libnetfilter_queue para capturar y dejar pasar paquetes
+ * libnl, para comunicarnos con el kernel en vez de usar netlink que era demasiado a bajo nivel para lo que necesitamos nosotros
+ * las alarmas de conntrack para los timeouts del protocol AODV etc
+
+
+
+
