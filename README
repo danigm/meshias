@@ -1,29 +1,3 @@
-mail a la lista:
-
-Hola!
-
-Bueno he estado leyendo concienzudamente el RFC de AODV para aprenderme bien como funciona, y tb mirando el
-código que teníamos escrito, modificando algunas cosillas y añadiendo más documentación en el README.
-
-Quiero recalcar una cosa, recuerdo que nos preguntábamos qué pasaba si un nodo hacía de router a Internet
-u otra gran red, ¿cada nodo guardaría una entrada por cada ip destino de esa subred? Pues parece que en AODV
-han pensado en algo de esto, y contempla mantener un prefijo de red por cada entrada de la tabla de rutas,
-y el prefijo se averigua automáticamente debido a que la respuesta a un route request (RREQ) lo contiene.
-
-Pero el prefijo de un router que ofrezca acceso a internet sería 32, indicando que todos los bits
-de la dirección del router pueden variar y que el router ofrece acceso a todo el rango de ips. El problema
-surge cuando se intenta acceder a una ip cuya ruta no se conozca, al pasar el RREQ por el router
-éste constestaría diciendo "si, yo sé donde está"..
-
-Una solución que se me ocurre sin cambiar mucho AODV sería que cada nodo de la red mesh supiese en qué red se
-encuentra (cosa que no ocurre en AODV, cada nodo puede tener la ip que le de la gana sin ton ni son), y
-que el RREP del router en vez de devolver solo dest ip + prefijo, devuelva dest ip + dir de red + prefijo;
-y el prefijo se guarda en la tabla de enroutado asociado a una dirección de red que es accesible a través del
-nodo cuya ip es dest. ip.
-
-Saludetes
-   Edu
-
 1. Introduction
 ---------------
 
@@ -57,6 +31,7 @@ packets coming from other ips.
 
  * conntrack alarms,
  for managing timeouts of AODV protocol.
+
 3. Overview of AODV
 -------------------
 
