@@ -1,5 +1,5 @@
-#include "libnetfilter_queue/libnetfilter_queue.h"
-#include "libnetfilter_queue/libnetfilter_queue_headers.h"
+#include <libnetfilter_queue/libnetfilter_queue.h>
+#include <libnetfilter_queue/libnetfilter_queue_headers.h>
 
 #include "msh_data.h"
 
@@ -19,7 +19,7 @@ int msh_init_data()
     else if(nl_init());
 
     /* Initializing alarm */
-	init_alarm(data->alarms, NULL, do_overrun_alarm);
+    init_alarm(data->alarms, NULL, do_overrun_alarm);
 }
 
 void msh_shutdown_data(struct data_t* data)

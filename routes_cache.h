@@ -4,7 +4,7 @@
 struct rc_entry;
 
 /**
- * Gets routes from kernel and add to the list
+ * Gets routes from kernel and adds them to the list
  */
 void rc_init(struct rc_entry **first);
 

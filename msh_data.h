@@ -4,6 +4,12 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <linux/types.h>
+#include <libnetfilter_queue/libnetfilter_queue.h>
 
 #include "packet_queue.h"
 #include "routes_cache.h"

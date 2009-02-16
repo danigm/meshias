@@ -1,6 +1,14 @@
 #ifndef _NFQUEUE_H_
 #define _NFQUEUE_H_
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <linux/types.h>
+#include <libnetfilter_queue/libnetfilter_queue.h>
+
+
 void nfqueue_received();
 
 /* returns packet id */
