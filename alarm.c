@@ -19,6 +19,7 @@
 #include "alarm.h"
 #include <stdlib.h>
 #include <limits.h>
+#include <unistd.h>
 
 static struct rb_root alarm_root = RB_ROOT;
 

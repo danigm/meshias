@@ -189,6 +189,30 @@ alarm/alarm.c.s:
 	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/alarm/alarm.c.s
 .PHONY : alarm/alarm.c.s
 
+alarm/rbtree.o: alarm/rbtree.c.o
+.PHONY : alarm/rbtree.o
+
+# target to build an object file
+alarm/rbtree.c.o:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/alarm/rbtree.c.o
+.PHONY : alarm/rbtree.c.o
+
+alarm/rbtree.i: alarm/rbtree.c.i
+.PHONY : alarm/rbtree.i
+
+# target to preprocess a source file
+alarm/rbtree.c.i:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/alarm/rbtree.c.i
+.PHONY : alarm/rbtree.c.i
+
+alarm/rbtree.s: alarm/rbtree.c.s
+.PHONY : alarm/rbtree.s
+
+# target to generate assembly for a file
+alarm/rbtree.c.s:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/alarm/rbtree.c.s
+.PHONY : alarm/rbtree.c.s
+
 common.o: common.c.o
 .PHONY : common.o
 
@@ -302,6 +326,9 @@ help:
 	@echo "... alarm/alarm.o"
 	@echo "... alarm/alarm.i"
 	@echo "... alarm/alarm.s"
+	@echo "... alarm/rbtree.o"
+	@echo "... alarm/rbtree.i"
+	@echo "... alarm/rbtree.s"
 	@echo "... common.o"
 	@echo "... common.i"
 	@echo "... common.s"

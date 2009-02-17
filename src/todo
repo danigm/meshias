@@ -1,5 +1,27 @@
-* alarmas
 * enviar udp 654 por socket raw?
 * receive udp 654 como?
 * acceder a internet. como?
 * checksum?
+
+usar defines para declarar las estructuras de los pquetes de common.h (rreq, rrep, rerr..) según
+si la arq. es big endian/little endian
+
+conntrack run.c
+void __attribute__((noreturn))
+run(void)
+{
+    struct timeval next_alarm; 
+    struct timeval *next = NULL;
+
+    while(1) {
+        sigprocmask(SIG_BLOCK, &STATE(block), NULL);
+        if (next != NULL && !timerisset(next))
+            next = do_alarm_run(&next_alarm);
+        else
+            next = get_next_alarm_run(&next_alarm);
+        sigprocmask(SIG_UNBLOCK, &STATE(block), NULL);
+
+        __run(next);
+    }
+}
+
