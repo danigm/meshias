@@ -2,7 +2,7 @@
 #define COMMON_H
 
 #include <stdint.h>
-
+#include <asm/byteorder.h>
 
 /**
  * Errors and their corresponding error numbers
@@ -69,6 +69,7 @@ int RING_TRAVERSAL_TIME();
  */
 struct aodv_rreq
 {
+#if defined(__BIG_ENDIAN_BITFIELD)
     /**
      * Type will always be 1 in a RREQ
      */
@@ -90,6 +91,16 @@ struct aodv_rreq
      * handling the request.
      */
     hop_count:8;
+#elif defined(__LITTLE_ENDIAN_BITFIELD)
+    uint32_t type:8,
+        reserved2:3,
+        flags:5,
+        reserved:8,
+        hop_count:8;
+#else
+#error  "Adjust your <asm/byteorder.h> defines"
+#endif
+    
     
     /**
      * RREQ ID.
@@ -167,6 +178,7 @@ struct aodv_rreq
  */
 struct aodv_rrep
 {
+#if defined(__BIG_ENDIAN_BITFIELD)
     /**
      * Type will always be 2 in a RREP
      */
@@ -196,6 +208,16 @@ struct aodv_rrep
      * handling the request.
      */
     hop_count:8;
+#elif defined(__LITTLE_ENDIAN_BITFIELD)
+    uint32_t type:8,
+        reserved2:6,
+        flags:2,
+        prefiz_sz:5,
+        reserved:3,
+        hop_count:8;
+#else
+#error  "Adjust your <asm/byteorder.h> defines"
+#endif
     
     /**
      * Destination IP Address.
@@ -248,6 +270,7 @@ struct aodv_rrep
  */
 struct aodv_rerr
 {
+#if defined(__BIG_ENDIAN_BITFIELD)
     /**
      * Type will always be 3 in a RERR
      */
@@ -268,6 +291,16 @@ struct aodv_rerr
      * least be 1.
      */
     dest_count:8;
+#elif defined(__LITTLE_ENDIAN_BITFIELD)
+    uint32_t type:8,
+    reserved2:7,
+    flag:1,
+    reserved:8,
+    dest_count:8;
+        
+#else
+#error  "Adjust your <asm/byteorder.h> defines"
+#endif
     
     /**
      * Array containing as many unrecheable destinations as specified in
