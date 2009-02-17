@@ -36,13 +36,16 @@ struct msh_data_t
 
     // Sockets
     int nfqueue_fd;
+    // This is the socket 654 UDP. It's listening to new packet of the
+    // aodv protocol. It also used to send packet of aodv protocol.
+    int daemon_fd;
     fd_set all_fd;
     int max_fd;
 
     // Alarm block
     //BUG: This makes no sense. There should be an alarm block per timeout,
     // with diffenrent function+data to be called
-//     struct alarm_block alarm;
+    // struct alarm_block alarm;
 };
 
 extern struct msh_data_t data;

@@ -15,6 +15,10 @@ int msh_data_init(int argc, char **argv)
     {
         return ERR_INIT;
     }
+    else if(daemon_init())
+    {
+        return ERR_INIT;
+    }
     
     /* Initializing alarm */
     //TODO: find how the  heck this works

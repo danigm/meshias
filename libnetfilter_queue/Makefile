@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/edulix/proyectos/meshias/meshias
+CMAKE_SOURCE_DIR = /home/alex/projects/meshias/libnetfilter_queue
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/edulix/proyectos/meshias/meshias
+CMAKE_BINARY_DIR = /home/alex/projects/meshias/libnetfilter_queue
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -110,14 +110,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/edulix/proyectos/meshias/meshias && $(CMAKE_COMMAND) -E cmake_progress_start /home/edulix/proyectos/meshias/meshias/CMakeFiles /home/edulix/proyectos/meshias/meshias/libnetfilter_queue/CMakeFiles/progress.make
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f CMakeFiles/Makefile2 libnetfilter_queue/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/edulix/proyectos/meshias/meshias/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alex/projects/meshias/libnetfilter_queue/CMakeFiles /home/alex/projects/meshias/libnetfilter_queue/CMakeFiles/progress.make
+	$(MAKE) -f CMakeFiles/Makefile2 all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alex/projects/meshias/libnetfilter_queue/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f CMakeFiles/Makefile2 libnetfilter_queue/clean
+	$(MAKE) -f CMakeFiles/Makefile2 clean
 .PHONY : clean
 
 # The main clean target
@@ -126,31 +126,30 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f CMakeFiles/Makefile2 libnetfilter_queue/preinstall
+	$(MAKE) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f CMakeFiles/Makefile2 libnetfilter_queue/preinstall
+	$(MAKE) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/edulix/proyectos/meshias/meshias && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-# Convenience name for target.
-libnetfilter_queue/CMakeFiles/netfilter_queue.dir/rule:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f CMakeFiles/Makefile2 libnetfilter_queue/CMakeFiles/netfilter_queue.dir/rule
-.PHONY : libnetfilter_queue/CMakeFiles/netfilter_queue.dir/rule
+#=============================================================================
+# Target rules for targets named netfilter_queue
 
-# Convenience name for target.
-netfilter_queue: libnetfilter_queue/CMakeFiles/netfilter_queue.dir/rule
+# Build rule for target.
+netfilter_queue: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 netfilter_queue
 .PHONY : netfilter_queue
 
 # fast build rule for target.
 netfilter_queue/fast:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build.make libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build
+	$(MAKE) -f CMakeFiles/netfilter_queue.dir/build.make CMakeFiles/netfilter_queue.dir/build
 .PHONY : netfilter_queue/fast
 
 libnetfilter_queue.o: libnetfilter_queue.c.o
@@ -158,7 +157,7 @@ libnetfilter_queue.o: libnetfilter_queue.c.o
 
 # target to build an object file
 libnetfilter_queue.c.o:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build.make libnetfilter_queue/CMakeFiles/netfilter_queue.dir/libnetfilter_queue.c.o
+	$(MAKE) -f CMakeFiles/netfilter_queue.dir/build.make CMakeFiles/netfilter_queue.dir/libnetfilter_queue.c.o
 .PHONY : libnetfilter_queue.c.o
 
 libnetfilter_queue.i: libnetfilter_queue.c.i
@@ -166,7 +165,7 @@ libnetfilter_queue.i: libnetfilter_queue.c.i
 
 # target to preprocess a source file
 libnetfilter_queue.c.i:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build.make libnetfilter_queue/CMakeFiles/netfilter_queue.dir/libnetfilter_queue.c.i
+	$(MAKE) -f CMakeFiles/netfilter_queue.dir/build.make CMakeFiles/netfilter_queue.dir/libnetfilter_queue.c.i
 .PHONY : libnetfilter_queue.c.i
 
 libnetfilter_queue.s: libnetfilter_queue.c.s
@@ -174,7 +173,7 @@ libnetfilter_queue.s: libnetfilter_queue.c.s
 
 # target to generate assembly for a file
 libnetfilter_queue.c.s:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build.make libnetfilter_queue/CMakeFiles/netfilter_queue.dir/libnetfilter_queue.c.s
+	$(MAKE) -f CMakeFiles/netfilter_queue.dir/build.make CMakeFiles/netfilter_queue.dir/libnetfilter_queue.c.s
 .PHONY : libnetfilter_queue.c.s
 
 libnetfilter_queue_headers.o: libnetfilter_queue_headers.c.o
@@ -182,7 +181,7 @@ libnetfilter_queue_headers.o: libnetfilter_queue_headers.c.o
 
 # target to build an object file
 libnetfilter_queue_headers.c.o:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build.make libnetfilter_queue/CMakeFiles/netfilter_queue.dir/libnetfilter_queue_headers.c.o
+	$(MAKE) -f CMakeFiles/netfilter_queue.dir/build.make CMakeFiles/netfilter_queue.dir/libnetfilter_queue_headers.c.o
 .PHONY : libnetfilter_queue_headers.c.o
 
 libnetfilter_queue_headers.i: libnetfilter_queue_headers.c.i
@@ -190,7 +189,7 @@ libnetfilter_queue_headers.i: libnetfilter_queue_headers.c.i
 
 # target to preprocess a source file
 libnetfilter_queue_headers.c.i:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build.make libnetfilter_queue/CMakeFiles/netfilter_queue.dir/libnetfilter_queue_headers.c.i
+	$(MAKE) -f CMakeFiles/netfilter_queue.dir/build.make CMakeFiles/netfilter_queue.dir/libnetfilter_queue_headers.c.i
 .PHONY : libnetfilter_queue_headers.c.i
 
 libnetfilter_queue_headers.s: libnetfilter_queue_headers.c.s
@@ -198,7 +197,7 @@ libnetfilter_queue_headers.s: libnetfilter_queue_headers.c.s
 
 # target to generate assembly for a file
 libnetfilter_queue_headers.c.s:
-	cd /home/edulix/proyectos/meshias/meshias && $(MAKE) -f libnetfilter_queue/CMakeFiles/netfilter_queue.dir/build.make libnetfilter_queue/CMakeFiles/netfilter_queue.dir/libnetfilter_queue_headers.c.s
+	$(MAKE) -f CMakeFiles/netfilter_queue.dir/build.make CMakeFiles/netfilter_queue.dir/libnetfilter_queue_headers.c.s
 .PHONY : libnetfilter_queue_headers.c.s
 
 # Help Target
@@ -231,6 +230,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/edulix/proyectos/meshias/meshias && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
