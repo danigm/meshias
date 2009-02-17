@@ -29,4 +29,14 @@ get_next_alarm_run(struct timeval *next_alarm);
 struct timeval *
 do_alarm_run(struct timeval *next_alarm);
 
+/**
+ * Alarm blocks don't work using signals, so we need to actively poll
+ * them to check if any alarm has timed out. You can do that by callling
+ * this function.
+ * 
+ * @returns how much time is left for the next alarm in the form of a timeval
+ */
+struct timeval*
+process_alarms(struct timeval *next);
+
 #endif

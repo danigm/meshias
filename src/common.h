@@ -315,7 +315,7 @@ struct aodv_rrep_ack
     
     /**
      * Is always zero and ignored
-     */    
+     */
     uint8_t reserved;
 };
 

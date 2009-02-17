@@ -147,3 +147,10 @@ do_alarm_run(struct timeval *next_run)
 
 	return get_next_alarm_run(next_run);
 }
+
+struct timeval*
+process_alarms(struct timeval *next)
+{
+    if (next != NULL && !timerisset(next))
+        return do_alarm_run(next);
+}
