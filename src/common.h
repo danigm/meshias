@@ -4,11 +4,14 @@
 #include <stdint.h>
 #include <asm/byteorder.h>
 
+#define AODV_UDP_PORT 654
+
 /**
  * Errors and their corresponding error numbers
  * @ingroup Common
  */
 #define ERR_INIT -1
+#define ERR_SEND -1
 
 /**
  * @name Common vars

@@ -1,4 +1,4 @@
-# Install script for directory: /home/edulix/proyectos/meshias/meshias/src/libnetfilter_queue
+# Install script for directory: /home/alex/projects/meshias/src/libnetfilter_queue
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -33,13 +33,13 @@ IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
-  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/edulix/proyectos/meshias/meshias/src/libnetfilter_queue/libnetfilter_queue.a")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/alex/projects/meshias/src/libnetfilter_queue/libnetfilter_queue.a")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES
-    "/home/edulix/proyectos/meshias/meshias/src/libnetfilter_queue/libnetfilter_queue.h"
-    "/home/edulix/proyectos/meshias/meshias/src/libnetfilter_queue/libnetfilter_queue_headers.h"
+    "/home/alex/projects/meshias/src/libnetfilter_queue/libnetfilter_queue.h"
+    "/home/alex/projects/meshias/src/libnetfilter_queue/libnetfilter_queue_headers.h"
     )
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
 

@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/edulix/proyectos/meshias/meshias/src
+CMAKE_SOURCE_DIR = /home/alex/projects/meshias/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/edulix/proyectos/meshias/meshias/src
+CMAKE_BINARY_DIR = /home/alex/projects/meshias/src
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -110,9 +110,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/edulix/proyectos/meshias/meshias/src/CMakeFiles /home/edulix/proyectos/meshias/meshias/src/CMakeFiles/progress.make
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alex/projects/meshias/src/CMakeFiles /home/alex/projects/meshias/src/CMakeFiles/progress.make
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/edulix/proyectos/meshias/meshias/src/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alex/projects/meshias/src/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -237,6 +237,30 @@ common.c.s:
 	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/common.c.s
 .PHONY : common.c.s
 
+daemon.o: daemon.c.o
+.PHONY : daemon.o
+
+# target to build an object file
+daemon.c.o:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/daemon.c.o
+.PHONY : daemon.c.o
+
+daemon.i: daemon.c.i
+.PHONY : daemon.i
+
+# target to preprocess a source file
+daemon.c.i:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/daemon.c.i
+.PHONY : daemon.c.i
+
+daemon.s: daemon.c.s
+.PHONY : daemon.s
+
+# target to generate assembly for a file
+daemon.c.s:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/daemon.c.s
+.PHONY : daemon.c.s
+
 main.o: main.c.o
 .PHONY : main.o
 
@@ -322,6 +346,27 @@ help:
 	@echo "... list_install_components"
 	@echo "... meshias"
 	@echo "... rebuild_cache"
+	@echo "... alarm/alarm.o"
+	@echo "... alarm/alarm.i"
+	@echo "... alarm/alarm.s"
+	@echo "... alarm/rbtree.o"
+	@echo "... alarm/rbtree.i"
+	@echo "... alarm/rbtree.s"
+	@echo "... common.o"
+	@echo "... common.i"
+	@echo "... common.s"
+	@echo "... daemon.o"
+	@echo "... daemon.i"
+	@echo "... daemon.s"
+	@echo "... main.o"
+	@echo "... main.i"
+	@echo "... main.s"
+	@echo "... msh_data.o"
+	@echo "... msh_data.i"
+	@echo "... msh_data.s"
+	@echo "... nfqueue.o"
+	@echo "... nfqueue.i"
+	@echo "... nfqueue.s"
 	@echo "... netfilter_queue"
 	@echo "... alarm/alarm.o"
 	@echo "... alarm/alarm.i"
@@ -332,6 +377,9 @@ help:
 	@echo "... common.o"
 	@echo "... common.i"
 	@echo "... common.s"
+	@echo "... daemon.o"
+	@echo "... daemon.i"
+	@echo "... daemon.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
