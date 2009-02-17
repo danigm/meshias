@@ -44,7 +44,10 @@ int main(int argc, char **argv)
             {
                 nfqueue_receive_packets();
             }
-            
+            if( FD_ISSET(data.daemon_fd, &data.all_fd) )
+            {
+                daemon_receive_packets();
+            }
             // The code above has potentially added some new alarms which means
             // we need to recalculate which is the next alarm to be called
             next_run = get_next_alarm_run(next_run);

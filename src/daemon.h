@@ -7,6 +7,7 @@
 int daemon_init();
 void daemon_shutdown();
 
+void daemon_recieve_packets();
 int aodv_send_rreq(struct aodv_rreq* to_sent,char ttl);
 int aodv_send_rerr(struct aodv_rerr* to_sent);
 int aodv_send_rrep(struct aodv_rrep* to_sent);

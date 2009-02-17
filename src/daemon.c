@@ -4,6 +4,8 @@
 #include "msh_data.h"
 #include "common.h"
 
+#define BUF_SIZE 512
+
 int daemon_init()
 {
     int broadcast=1;
@@ -45,6 +47,28 @@ int daemon_init()
 void daemon_shutdown()
 {
     close(data.daemon_fd);
+}
+
+void daemon_receive_packets()
+{
+    int numbytes;
+    char buffer[BUF_SIZE];
+    struct sockaddr_in their_addr;
+    size_t addr_len=sizeof their_addr;
+    char saa[INET6_ADDRSTRLEN];
+    if((numbytes = recvfrom(data.daemon_fd, buffer, BUF_SIZE-1 , 0,
+        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+        perror("recvfrom");
+        exit(1);
+    }
+
+   // printf("listener: got packet from %s\n",
+    //    inet_ntop(their_addr.ss_family,
+     //       (((struct sockaddrin*)their_addr)->sin_addr),
+      //      saa, sizeof(saa)));
+    printf("listener: packet is %d bytes long\n", numbytes);
+    buffer[numbytes] = '\0';
+    printf("listener: packet contains \"%s\"\n", buffer);
 }
 
 int aodv_send_rreq(struct aodv_rreq* to_sent,char ttl)
