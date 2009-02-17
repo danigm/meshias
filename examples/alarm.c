@@ -35,7 +35,7 @@ void item_t_timeout(struct alarm_block *alarm, void *data);
  * them to check if any alarm has timed out. You can do that by callling
  * this function.
  */
-void process_alarms();
+void process_my_alarms();
 
 void item_t_add(int data, long sec, long usec)
 {
@@ -55,7 +55,7 @@ void item_t_timeout(struct alarm_block *alarm, void *data)
     free(item);
 }
 
-void process_alarms()
+void process_my_alarms()
 {
     static struct timeval next_alarm; 
     static struct timeval *next = NULL;
@@ -69,8 +69,7 @@ void process_alarms()
     if (next != NULL && !timerisset(next))
     {
         next = do_alarm_run(&next_alarm);
-    } else {
-        
+    } else {    
         next = get_next_alarm_run(&next_alarm);
     }
     
@@ -87,8 +86,9 @@ int main(int argc, char **argv)
     // Here we create a new item with data = 2 and which will timeout = 10 seconds
     item_t_add(2, 10, 0);
 
-    while(1) {
-        process_alarms();
+    while(1)
+    {
+        process_my_alarms();
         
         /* This a simple example, but in reality we will use select with a timeout
          * instead of calling to sleep.
