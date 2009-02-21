@@ -35,9 +35,6 @@ CMAKE_COMMAND = /usr/bin/cmake
 # The command to remove a file.
 RM = /usr/bin/cmake -E remove -f
 
-# The program to use to edit the cache.
-CMAKE_EDIT_COMMAND = /usr/bin/ccmake
-
 # The top-level source directory on which CMake was run.
 CMAKE_SOURCE_DIR = /home/alex/projects/meshias/src
 
@@ -49,8 +46,8 @@ CMAKE_BINARY_DIR = /home/alex/projects/meshias/src
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running interactive CMake command-line interface..."
+	/usr/bin/cmake -i .
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -261,6 +258,30 @@ daemon.c.s:
 	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/daemon.c.s
 .PHONY : daemon.c.s
 
+log.o: log.c.o
+.PHONY : log.o
+
+# target to build an object file
+log.c.o:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/log.c.o
+.PHONY : log.c.o
+
+log.i: log.c.i
+.PHONY : log.i
+
+# target to preprocess a source file
+log.c.i:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/log.c.i
+.PHONY : log.c.i
+
+log.s: log.c.s
+.PHONY : log.s
+
+# target to generate assembly for a file
+log.c.s:
+	$(MAKE) -f CMakeFiles/meshias.dir/build.make CMakeFiles/meshias.dir/log.c.s
+.PHONY : log.c.s
+
 main.o: main.c.o
 .PHONY : main.o
 
@@ -346,27 +367,6 @@ help:
 	@echo "... list_install_components"
 	@echo "... meshias"
 	@echo "... rebuild_cache"
-	@echo "... alarm/alarm.o"
-	@echo "... alarm/alarm.i"
-	@echo "... alarm/alarm.s"
-	@echo "... alarm/rbtree.o"
-	@echo "... alarm/rbtree.i"
-	@echo "... alarm/rbtree.s"
-	@echo "... common.o"
-	@echo "... common.i"
-	@echo "... common.s"
-	@echo "... daemon.o"
-	@echo "... daemon.i"
-	@echo "... daemon.s"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
-	@echo "... msh_data.o"
-	@echo "... msh_data.i"
-	@echo "... msh_data.s"
-	@echo "... nfqueue.o"
-	@echo "... nfqueue.i"
-	@echo "... nfqueue.s"
 	@echo "... netfilter_queue"
 	@echo "... alarm/alarm.o"
 	@echo "... alarm/alarm.i"
@@ -380,6 +380,9 @@ help:
 	@echo "... daemon.o"
 	@echo "... daemon.i"
 	@echo "... daemon.s"
+	@echo "... log.o"
+	@echo "... log.i"
+	@echo "... log.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

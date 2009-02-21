@@ -97,6 +97,26 @@ int aodv_send_rreq(struct aodv_rreq* to_sent,char ttl)
 
 int aodv_send_rerr(struct aodv_rerr* to_sent)
 {
+    struct sockaddr_in their_addr; // connector's address information
+    int numbytes;
+
+    // Changing ttl
+    //setsockopt(data.daemon_fd,IPPROTO_IP,IP_MULTICAST_TTL,(char *)&ttl,
+    //        sizeof(char));
+
+    // Set the destination to broadcast
+    their_addr.sin_family = AF_INET;     // host byte order
+    their_addr.sin_port = htons(AODV_UDP_PORT); // short, network byte order
+    inet_pton(AF_INET,"255.255.255.255",&their_addr.sin_addr.s_addr);
+    //their_addr.sin_addr = *((struct in_addr *)he->h_addr);
+    memset(their_addr.sin_zero, '\0', sizeof(their_addr.sin_zero));
+
+    if((numbytes=sendto(data.daemon_fd,(char*) to_sent,sizeof(to_sent),0,
+                    (struct sockaddr *)&their_addr,sizeof(their_addr)))==-1)
+    {
+        return ERR_SEND;
+    }
+    return numbytes;
 }
 
 int aodv_send_rrep(struct aodv_rrep* to_sent)
