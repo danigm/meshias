@@ -17,16 +17,7 @@ struct msh_data_t data;
 int main(int argc, char **argv)
 {
     int errno;
-    
-    // Initialize all needed data GET IP
-    if((errno = msh_data_init(argc, argv)) < 0)
-    {
-        return errno;
-    }
-    
-    // Main loop
-    // TODO: Here we should capture signals sent to the app
-    
+
     /**
      * next is a var which stores the time left for the next run. We'll use it
      * indirectly with next_run. If there's no next alarm, next_run = NULL.
@@ -34,6 +25,18 @@ int main(int argc, char **argv)
     struct timeval next;
     struct timeval* next_run = NULL;
     
+    debug(3,"Initializing everything");
+    // Initialize all needed data GET IP
+    if((errno = msh_data_init(argc, argv)) < 0)
+    {
+        return errno;
+    }
+    
+    debug(3,"Allright");
+    // Main loop
+    // TODO: Here we should capture signals sent to the app
+    
+    debug(3,"mainloop");
     while(1)
     {
         // We'll wait for new data in our sockets until a new alarm times out
@@ -54,6 +57,8 @@ int main(int argc, char **argv)
         }
         process_alarms(next_run);
     }
+
+    debug(3,"exiting from the mainloop");
     
     // close everything safely
     msh_data_shutdown();

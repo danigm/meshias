@@ -6,6 +6,8 @@
 
 #define AODV_UDP_PORT 654
 
+#include "log.h"
+
 /**
  * Errors and their corresponding error numbers
  * @ingroup Common

@@ -10,10 +10,12 @@ int daemon_init()
 {
     int broadcast=1;
     struct sockaddr_in address;
+
+    debug(3,"Daemon: opening socket");
     // Create the udp daemon socket
     if((data.daemon_fd=socket(AF_INET,SOCK_DGRAM,0))==-1)
     {
-        perror("Error initializing the UDP socket");
+        debug(1,"Error initializing the UDP socket");
         return ERR_INIT;
     }
 
@@ -24,23 +26,27 @@ int daemon_init()
     // Listen from any ip
     address.sin_addr.s_addr=INADDR_ANY;
 
+
+    debug(3,"binding socket");
     // Set the socket to listen
     if(bind(data.daemon_fd,(struct sockaddr *)&address,
                 sizeof(address)) == -1)
     {
         close(data.daemon_fd);
-        perror("Error binding the UDP socket");
+        debug(1,"Error binding the UDP socket");
         return ERR_INIT;
     }
 
+    debug(3,"changing socket options");
     // This call is what allows broadcast packets to be sent
     if(setsockopt(data.daemon_fd, SOL_SOCKET, SO_BROADCAST, &broadcast,
         sizeof broadcast) == -1)
     {
-        perror("setsockopt (SO_BROADCAST)");
+        debug(1,"setsockopt (SO_BROADCAST)");
         return ERR_INIT;
     }
 
+    debug(3,"Daemon initialized sucessfully");
     return 0;
 }
 

@@ -2,7 +2,7 @@
 #define LOG_H_
 
 
-#define DEBUG 2
+#define DEBUG 3
 
 #ifdef DEBUG
 

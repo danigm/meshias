@@ -1,44 +1,43 @@
 #include "msh_data.h"
 #include "nfqueue.h"
 
-//TODO: remplace printf with log function
 int nfqueue_init()
 {
     /* NF_QUEUE initializing */
-    printf("opening library handle\n");
+    debug(3,"Nf_queue: opening library handle");
     data.handle = nfq_open();
     if (!data.handle)
     {
-        fprintf(stderr, "error during nfq_open()\n");
+        debug(1,"FATAL ERROR: during nfq_open()");
         return ERR_INIT;
     }
 
-    printf("unbinding existing nf_queue handler for AF_INET (if any)\n");
+    debug(3,"unbinding existing nf_queue handler for AF_INET (if any)");
     if (nfq_unbind_pf(data.handle, AF_INET) < 0)
     {
-        fprintf(stderr, "error during nfq_unbind_pf()\n");
+        debug(1,"FATAL ERROR: during nfq_unbind_pf()");
         return ERR_INIT;
     }
 
-    printf("binding nfnetlink_queue as nf_queue handler for AF_INET\n");
+    debug(3,"binding nfnetlink_queue as nf_queue handler for AF_INET");
     if (nfq_bind_pf(data.handle, AF_INET) < 0)
     {
-        fprintf(stderr, "error during nfq_bind_pf()\n");
+        debug(1,"FATAL ERROR: during nfq_bind_pf()");
         return ERR_INIT;
     }
 
-    printf("binding this socket to queue '0'\n");
+    debug(3,"binding this socket to queue '0'");
     data.queue = nfq_create_queue(data.handle, 0, &manage_packet, NULL);
     if (!data.queue)
     {
-        fprintf(stderr, "error during nfq_create_queue()\n");
+        debug(1,"FATAL ERROR: during nfq_create_queue()");
         return ERR_INIT;
     }
 
-    printf("setting copy_packet mode\n");
+    debug(3,"setting copy_packet mode");
     if (nfq_set_mode(data.queue, NFQNL_COPY_PACKET, 0xffff) < 0)
     {
-        fprintf(stderr, "can't set packet_copy mode\n");
+        debug(1,"FATAL_ERROR: can't set packet_copy mode\n");
         return ERR_INIT;
     }
 
@@ -50,16 +49,18 @@ int nfqueue_init()
     //TODO: this probably doesn't work right now ¿?
     //FD_SET(data.nfqueue_fd,&all_fd);
     
+    debug(3,"Nf_queue initialized sucessfully");
     return 0;
 }
  
+//TODO: remplace printf with log function
 void nfqueue_receive_packets()
 {
     char buf[4096] __attribute__ ((aligned));
     int received;
     while ( (received = recv(data.nfqueue_fd, buf, sizeof(buf), 0)) >= 0 )
     {
-        printf("pkt received\n");
+        debug(3,"Netfilter_queue packet received");
         nfq_handle_packet(data.handle, buf, received);
     }
 }
