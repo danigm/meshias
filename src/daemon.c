@@ -22,7 +22,7 @@ int daemon_init()
     //IPv4
     address.sin_family=AF_INET;
     // Set port
-    address.sin_port=AODV_UDP_PORT;
+    address.sin_port=htons(AODV_UDP_PORT);
     // Listen from any ip
     address.sin_addr.s_addr=INADDR_ANY;
 
@@ -59,12 +59,13 @@ void daemon_receive_packets()
 {
     int numbytes;
     char buffer[BUF_SIZE];
+    char string[512];
     struct sockaddr_in their_addr;
     size_t addr_len=sizeof their_addr;
     char saa[INET6_ADDRSTRLEN];
     if((numbytes = recvfrom(data.daemon_fd, buffer, BUF_SIZE-1 , 0,
         (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-        perror("recvfrom");
+        debug(1,"FATAL ERROR: recvfrom");
         exit(1);
     }
 
@@ -72,9 +73,10 @@ void daemon_receive_packets()
     //    inet_ntop(their_addr.ss_family,
      //       (((struct sockaddrin*)their_addr)->sin_addr),
       //      saa, sizeof(saa)));
-    printf("listener: packet is %d bytes long\n", numbytes);
+    //debug(3,"Daemon: packet is %d bytes long\n", numbytes);
+    debug(3,"Daemon: AODV packet was received");
     buffer[numbytes] = '\0';
-    printf("listener: packet contains \"%s\"\n", buffer);
+    //debug(3,"Daemon: packet contains \"%s\"\n", buffer);
 }
 
 int aodv_send_rreq(struct aodv_rreq* to_sent,char ttl)
