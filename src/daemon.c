@@ -66,7 +66,6 @@ void daemon_receive_packets()
 {
     int numbytes;
     char buffer[BUF_SIZE];
-    char string[512];
     struct sockaddr_in their_addr;
     size_t addr_len=sizeof their_addr;
     char saa[INET6_ADDRSTRLEN];
@@ -81,8 +80,8 @@ void daemon_receive_packets()
      //       (((struct sockaddrin*)their_addr)->sin_addr),
       //      saa, sizeof(saa)));
     //debug(3,"Daemon: packet is %d bytes long\n", numbytes);
-    debug(3,"Daemon: AODV packet was received");
     buffer[numbytes] = '\0';
+    printf("The packet received was:\n%s\n",buffer);
     //debug(3,"Daemon: packet contains \"%s\"\n", buffer);
 }
 

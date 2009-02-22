@@ -45,14 +45,17 @@ int main(int argc, char **argv)
             /* Check for new packets */
             if( FD_ISSET(data.nfqueue_fd, &data.all_fd) )
             {
+                debug(3,"A packet was captured by nfqueue.");
                 nfqueue_receive_packets();
             }
             if( FD_ISSET(data.daemon_fd, &data.all_fd) )
             {
+                debug(3,"Daemon: AODV packet was received.");
                 daemon_receive_packets();
             }
-            // The code above has potentially added some new alarms which means
-            // we need to recalculate which is the next alarm to be called
+            /* The code above has potentially added some new alarms which means
+             * we need to recalculate which is the next alarm to be called
+             */
             next_run = get_next_alarm_run(next_run);
         }
         process_alarms(next_run);
