@@ -121,19 +121,76 @@ int aodv_check_packet(const char* b)
     switch(aodv_get_type(b))
     {
         case AODV_RREQ:
-            rreq=(struct aodv_rreq*)b;
+            if(sizeof(struct aodv_rreq)==sizeof(b))
+            {
+                rreq=(struct aodv_rreq*)b;
+            }
+            else
+            {
+                debug(1,"Error: AODV_RREQ packet with incorrect size");
+                return FALSE;
+            }
             break;
         case AODV_RREP:
-            rrep=(struct aodv_rrep*)b;
+            if(sizeof(struct aodv_rrep)==sizeof(b))
+            {
+                rrep=(struct aodv_rrep*)b;
+            }
+            else
+            {
+                debug(1,"Error: AODV_RREP packet with incorrect size");
+                return FALSE;
+            }
             break;
         case AODV_RERR:
-            rerr=(struct aodv_rerr*)b;
-            break;
+            /* The size is variable so we have to be more careful
+             * Buffer size must be at least header size +
+             * one unrecheable_dest
+             */
+            if(sizeof(buffer)>=sizeof(uint32_t)+
+                    sizeof(struct unrecheable_dest))
+            {
+                rerr=(struct aodv_rerr*)b;
+                if(rerr->dest_count<1)
+                {
+                    debug(1,"Error: AODV_RERR packet with DestCont < 1");
+                    return FALSE;
+                }
+                else
+                {
+                    // Buffer size = header size + number of desticount * desticount_size
+                    if(sizeof(buffer)==sizeof(uint32_t)+
+                            sizeof(unrecheable_dest)*rerr->DestCount)
+                    {
+                    }
+                    else
+                    {
+                        debug(1,"Error: AODV_RERR packet with incorrect size");
+                        return FALSE;
+                    }
+                }
+            }
+            else
+            {
+                debug(1,"Error: AODV_RERR packet with incorrect size");
+                return FALSE;
+            }
+                break;
         case AODV_RREP_ACK:
-            rrep_ack=(struct aodv_rrep_ack*)b;
+            if(sizeof(struct aodv_rrep_ack)==sizeof(b))
+            {
+                rrep_ack=(struct aodv_rrep_ack*)b;
+            }
+            else
+            {
+                debug(1,"Error: AODV_RERR_ACK packet with incorrect size");
+                return FALSE;
+            }
             break;
         default:
+            debug(1,"Error: Incorrect packet aodv type");
             return FALSE;
+            break;
     }
     return TRUE;
 }
@@ -178,6 +235,41 @@ int aodv_send_rreq(struct aodv_rreq* to_sent,char ttl)
     return numbytes;
 }
 
+int aodv_sent_new_rreq(uint8_t flags,uint8_t hop_count,uint32_t rreq_id,
+        uint32_t dest_ip_addr,uint32_t seq_number,uint32_t orig_ip_addr,
+        uint32_t orig_seq_number)
+{
+    struct aodv_rreq rreq;
+    rreq.type=AODV_RREQ;
+    rreq.hop_count=hop_count;
+    rreq.dest_ip_addr=dest_ip_addr;
+    rreq.dest_seq_number=dest_seq_number;
+    rreq.orig_ip_addr=orig_ip_addre;
+    rreq.orig_seq_number=orig_seq_number;
+
+    return aodv_send_rreq(&rreq,TTL_START());
+}
+
+int aodv_send_rrep(struct aodv_rrep* to_sent)
+{
+}
+
+int aodv_send_new_rrep(uint8_t flags,uint8_t prefix_sz,uint8_t hop_count,
+        uint32_t dest_ip_addr,uint32_t dest_seq_number,uint32_t orig_ip_addr,
+        uint32_t lifetime)
+{
+    struct aodv_rrep rrep;
+    rrep.type=AODV_RREP;
+    rrep.hop_count=hop_count;
+    rrep.prefix_sz=prefix_sz;
+    rrep.dest_ip_addr=dest_ip_addr;
+    rrep.dest_deq_number=dest_seq_number;
+    rrep.orig_ip_addr=orig_ip_addr;
+    rrep.lifetime=lifetime;
+
+    return aodv_send_rrep(&rrep);
+}
+
 int aodv_send_rerr(struct aodv_rerr* to_sent)
 {
     struct sockaddr_in their_addr; // connector's address information
@@ -202,7 +294,8 @@ int aodv_send_rerr(struct aodv_rerr* to_sent)
     return numbytes;
 }
 
-int aodv_send_rrep(struct aodv_rrep* to_sent)
+int aodv_send_new_rerr(uint8_t flag,uint8_t dest_count,
+        struct unrecheable_dest* dests)
 {
 }
 
