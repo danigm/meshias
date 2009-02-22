@@ -66,23 +66,26 @@ void daemon_receive_packets()
 {
     int numbytes;
     char buffer[BUF_SIZE];
-    struct sockaddr_in their_addr;
-    size_t addr_len=sizeof their_addr;
+    struct sockaddr_in source_addr;
+    size_t addr_len=sizeof source_addr;
     char saa[INET6_ADDRSTRLEN];
     if((numbytes = recvfrom(data.daemon_fd, buffer, BUF_SIZE-1 , 0,
-        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+        (struct sockaddr *)&source_addr, &addr_len)) == -1) {
         debug(1,"FATAL ERROR: recvfrom");
         exit(1);
     }
 
-   // printf("listener: got packet from %s\n",
-    //    inet_ntop(their_addr.ss_family,
-     //       (((struct sockaddrin*)their_addr)->sin_addr),
-      //      saa, sizeof(saa)));
-    //debug(3,"Daemon: packet is %d bytes long\n", numbytes);
+    /* Function inet_ntoa is obsolete, actually must use inet_ntop
+       * but I don't know how is used
+       */
+    printf("listener: got packet from %s:%d\n",
+        inet_ntoa(source_addr.sin_addr),
+    //     inet_ntop(source_addr.sin_family, source_addr.sin_addr,
+    //        saa, sizeof(saa)),
+        ntohs(source_addr.sin_port));
+
     buffer[numbytes] = '\0';
     printf("The packet received was:\n%s\n",buffer);
-    //debug(3,"Daemon: packet contains \"%s\"\n", buffer);
 }
 
 int aodv_send_rreq(struct aodv_rreq* to_sent,char ttl)
