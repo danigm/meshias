@@ -8,6 +8,7 @@ int msh_data_init(int argc, char **argv)
     data.netlink_handle = NULL;
     data.nl_handle = NULL; 
     
+    data.max_fd=0;
     /* Initializing the fd set */
     FD_ZERO(&data.all_fd);
 
@@ -20,6 +21,7 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     }
     
+    //Max fd
     /* Initializing alarm */
     //TODO: find how the  heck this works
 //     init_alarm(&data.alarms, NULL, do_overrun_alarm);

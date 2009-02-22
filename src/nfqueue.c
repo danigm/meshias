@@ -45,9 +45,12 @@ int nfqueue_init()
     data.nfqueue_fd = nfnl_fd(data.netlink_handle);
     /* End of NF_QUEUE initializing */
 
-    /* Adding all sockets to the set */
-    //TODO: this probably doesn't work right now ¿?
-    //FD_SET(data.nfqueue_fd,&all_fd);
+    /* Adding nfqueue socket to the set */
+    FD_SET(data.nfqueue_fd,&data.all_fd);
+
+    /* max_fd */
+    if(data.nfqueue_fd>=data.max_fd)
+      data.max_fd=data.nfqueue_fd+1;
     
     debug(3,"Nf_queue initialized sucessfully");
     return 0;
