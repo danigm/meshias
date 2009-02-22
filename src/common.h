@@ -47,6 +47,7 @@ int RREQ_RATELIMIT();
 
 int TIMEOUT_BUFFER();
 
+/* The value of TTL when you create a new RREQ packet */
 int TTL_START();
 
 int TTL_INCREMENT();
@@ -320,7 +321,7 @@ struct aodv_rerr
      * Array containing as many unrecheable destinations as specified in
      * dest_count.
      */
-    struct unrechable_dest
+    struct unrecheable_dest
     {
         /**
         * Destination IP Address.

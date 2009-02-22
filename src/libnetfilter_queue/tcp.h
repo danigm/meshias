@@ -1,3 +1,6 @@
+#ifndef TCP_H
+#define TCP_H
+
 struct tcphdr {
   __be16  source;
   __be16  dest;
@@ -33,3 +36,4 @@ struct tcphdr {
   __be16  urg_ptr;
 };
 
+#endif
