@@ -67,8 +67,10 @@ void daemon_receive_packets()
     int numbytes;
     char buffer[BUF_SIZE];
     struct sockaddr_in source_addr;
-    size_t addr_len=sizeof source_addr;
+    socklen_t addr_len=sizeof source_addr;
     char saa[INET6_ADDRSTRLEN];
+
+    //Receive the packet
     if((numbytes = recvfrom(data.daemon_fd, buffer, BUF_SIZE-1 , 0,
                     (struct sockaddr *)&source_addr, &addr_len)) == -1) {
         debug(1,"FATAL ERROR: recvfrom");
@@ -147,7 +149,7 @@ int aodv_check_packet(const char* b)
              * Buffer size must be at least header size +
              * one unrecheable_dest
              */
-            if(sizeof(buffer)>=sizeof(uint32_t)+
+            if(sizeof(b)>=sizeof(uint32_t)+
                     sizeof(struct unrecheable_dest))
             {
                 rerr=(struct aodv_rerr*)b;
@@ -159,8 +161,8 @@ int aodv_check_packet(const char* b)
                 else
                 {
                     // Buffer size = header size + number of desticount * desticount_size
-                    if(sizeof(buffer)==sizeof(uint32_t)+
-                            sizeof(unrecheable_dest)*rerr->DestCount)
+                    if(sizeof(b)==sizeof(uint32_t)+
+                            sizeof(struct unrecheable_dest)*rerr->dest_count)
                     {
                     }
                     else
@@ -236,16 +238,16 @@ int aodv_send_rreq(struct aodv_rreq* to_sent,char ttl)
 }
 
 int aodv_sent_new_rreq(uint8_t flags,uint8_t hop_count,uint32_t rreq_id,
-        uint32_t dest_ip_addr,uint32_t seq_number,uint32_t orig_ip_addr,
-        uint32_t orig_seq_number)
+        uint32_t dest_ip_addr,uint32_t dest_seq_num,uint32_t orig_ip_addr,
+        uint32_t orig_seq_num)
 {
     struct aodv_rreq rreq;
     rreq.type=AODV_RREQ;
     rreq.hop_count=hop_count;
     rreq.dest_ip_addr=dest_ip_addr;
-    rreq.dest_seq_number=dest_seq_number;
-    rreq.orig_ip_addr=orig_ip_addre;
-    rreq.orig_seq_number=orig_seq_number;
+    rreq.dest_seq_num=dest_seq_num;
+    rreq.orig_ip_addr=orig_ip_addr;
+    rreq.orig_seq_num=orig_seq_num;
 
     return aodv_send_rreq(&rreq,TTL_START());
 }
@@ -255,7 +257,7 @@ int aodv_send_rrep(struct aodv_rrep* to_sent)
 }
 
 int aodv_send_new_rrep(uint8_t flags,uint8_t prefix_sz,uint8_t hop_count,
-        uint32_t dest_ip_addr,uint32_t dest_seq_number,uint32_t orig_ip_addr,
+        uint32_t dest_ip_addr,uint32_t dest_seq_num,uint32_t orig_ip_addr,
         uint32_t lifetime)
 {
     struct aodv_rrep rrep;
@@ -263,7 +265,7 @@ int aodv_send_new_rrep(uint8_t flags,uint8_t prefix_sz,uint8_t hop_count,
     rrep.hop_count=hop_count;
     rrep.prefix_sz=prefix_sz;
     rrep.dest_ip_addr=dest_ip_addr;
-    rrep.dest_deq_number=dest_seq_number;
+    rrep.dest_seq_num=dest_seq_num;
     rrep.orig_ip_addr=orig_ip_addr;
     rrep.lifetime=lifetime;
 

@@ -215,7 +215,7 @@ struct aodv_rrep
      * may be used for any nodes with the same routing prefix (as defined by
      * the Prefix Size) as the requested destination.
      */
-    prefiz_sz:5,
+    prefix_sz:5,
 
     /**
      * Hop Count.
@@ -227,7 +227,7 @@ struct aodv_rrep
     uint32_t type:8,
         reserved2:6,
         flags:2,
-        prefiz_sz:5,
+        prefix_sz:5,
         reserved:3,
         hop_count:8;
 #else
