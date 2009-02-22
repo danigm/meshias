@@ -32,11 +32,11 @@ int main(int argc, char **argv)
         return errno;
     }
     
-    debug(3,"Allright");
+    debug(3,"Initilization done");
     // Main loop
     // TODO: Here we should capture signals sent to the app
     
-    debug(3,"mainloop");
+    debug(3,"Entering main loop");
     while(1)
     {
         // We'll wait for new data in our sockets until a new alarm times out
@@ -45,12 +45,12 @@ int main(int argc, char **argv)
             /* Check for new packets */
             if( FD_ISSET(data.nfqueue_fd, &data.all_fd) )
             {
-                debug(3,"A packet was captured by nfqueue.");
+                debug(3,"Main loop: A packet was captured by nfqueue.");
                 nfqueue_receive_packets();
             }
             if( FD_ISSET(data.daemon_fd, &data.all_fd) )
             {
-                debug(3,"Daemon: AODV packet was received.");
+                debug(3,"Main loop: An AODV packet was received by the daemon.");
                 daemon_receive_packets();
             }
             /* The code above has potentially added some new alarms which means
@@ -58,6 +58,7 @@ int main(int argc, char **argv)
              */
             next_run = get_next_alarm_run(next_run);
         }
+        debug(3,"Main loop: An alarm is about to ring");
         process_alarms(next_run);
     }
 

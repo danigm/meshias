@@ -21,10 +21,7 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     }
     
-    //Max fd
-    /* Initializing alarm */
-    //TODO: find how the  heck this works
-//     init_alarm(&data.alarms, NULL, do_overrun_alarm);
+    //TODO:Max fd
 }
 
 void msh_data_shutdown()
