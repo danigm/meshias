@@ -1,10 +1,8 @@
-* enviar udp 654 por socket raw?
-* receive udp 654 como?
+******TO ASK********
+* ttl?? setsockopt y getsockopt
+* varios programas mismo socket -> setsockopt y getsockopt
+*******************
 * acceder a internet. como?
-* checksum?
-
-usar defines para declarar las estructuras de los pquetes de common.h (rreq, rrep, rerr..) según
-si la arq. es big endian/little endian
 
 conntrack run.c
 void __attribute__((noreturn))
