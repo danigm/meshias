@@ -1,4 +1,5 @@
 #include <string.h>
+#include <netinet/in.h>
 
 #include "daemon.h"
 #include "msh_data.h"
@@ -9,11 +10,12 @@
 int daemon_init()
 {
     int broadcast = 1;
+    int option = 1;
     struct sockaddr_in address;
 
-    debug(3, "Daemon: opening socket");
+    debug(3, "Daemon: opening raw socket");
     // Create the udp daemon socket
-    if( (data.daemon_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1 )
+    if( (data.daemon_fd = socket(AF_INET,SOCK_RAW,IPPROTO_UDP)) == -1 )
     {
         debug(1, "Error initializing the UDP socket");
         return ERR_INIT;
@@ -39,10 +41,10 @@ int daemon_init()
 
     debug(3, "changing socket options");
     // This call is what allows broadcast packets to be sent
-    if(setsockopt(data.daemon_fd, SOL_SOCKET, SO_BROADCAST, &broadcast,
-                sizeof broadcast) == -1)
+    if(setsockopt(data.daemon_fd,IPPROTO_IP,IP_HDRINCL,&option,
+                sizeof option) == -1)
     {
-        debug(1, "setsockopt (SO_BROADCAST)");
+        debug(1, "setsockopt (IP_HDRINCL)");
         return ERR_INIT;
     }
 
@@ -81,7 +83,7 @@ void daemon_receive_packets()
      * but I don't know how
      */
     printf("Daemon: got packet from %s:%d\n",
-            (char *)inet_ntoa(source_addr.sin_addr),
+            inet_ntoa(source_addr.sin_addr),
             //     inet_ntop(source_addr.sin_family, source_addr.sin_addr,
             //        saa, sizeof(saa)),
             (int)ntohs(source_addr.sin_port));
