@@ -36,6 +36,7 @@ int main(int argc, char **argv)
     // Main loop
     // TODO: Here we should capture signals sent to the app
     
+    //FIXME copiar de contract __run
     debug(3,"Entering main loop");
     while(1)
     {
@@ -58,6 +59,7 @@ int main(int argc, char **argv)
              */
             next_run = get_next_alarm_run(next_run);
         }
+        //TODO Signals
         debug(3,"Main loop: An alarm is about to ring");
         process_alarms(next_run);
     }

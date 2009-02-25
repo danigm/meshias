@@ -330,24 +330,6 @@ struct aodv_rerr
 #error  "Adjust your <asm/byteorder.h> defines"
 #endif
     
-    /**
-     * Array containing as many unrecheable destinations as specified in
-     * dest_count.
-     */
-    struct unrecheable_dest
-    {
-        /**
-        * Destination IP Address.
-        * The IP address of the destination for which a route is supplied.
-        */
-        uint32_t ip_addr;
-        
-        /**
-         * Destination Sequence Number.
-         * The destination sequence number associated to the route.
-         */
-        uint32_t seq_num;
-    } *destinations;
 };
 
 /**
@@ -362,6 +344,25 @@ struct aodv_rerr
 #define RERR_NO_DELETE_FLAG            1
 
 /** @} */
+
+/**
+ * This structure is used with aodv_rerr to send a complete error 
+ * message
+ */
+struct unrecheable_dest
+{
+    /**
+    * Destination IP Address.
+    * The IP address of the destination for which a route is supplied.
+    */
+    uint32_t ip_addr;
+    
+    /**
+     * Destination Sequence Number.
+     * The destination sequence number associated to the route.
+     */
+    uint32_t seq_num;
+};
 
 /**
  * Route Reply Acknowledgment (RREP-ACK)

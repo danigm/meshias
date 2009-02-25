@@ -250,39 +250,8 @@ int aodv_send_rreq(struct aodv_rreq* to_sent, char ttl)
     return numbytes;
 }
 
-int aodv_sent_new_rreq(uint8_t flags, uint8_t hop_count, uint32_t rreq_id,
-    uint32_t dest_ip_addr, uint32_t dest_seq_num, uint32_t orig_ip_addr,
-    uint32_t orig_seq_num)
-{
-    struct aodv_rreq rreq;
-    rreq.type = AODV_RREQ;
-    rreq.hop_count = hop_count;
-    rreq.dest_ip_addr = dest_ip_addr;
-    rreq.dest_seq_num = dest_seq_num;
-    rreq.orig_ip_addr = orig_ip_addr;
-    rreq.orig_seq_num = orig_seq_num;
-
-    return aodv_send_rreq(&rreq, TTL_START());
-}
-
 int aodv_send_rrep(struct aodv_rrep* to_sent)
 {
-}
-
-int aodv_send_new_rrep(uint8_t flags, uint8_t prefix_sz, uint8_t hop_count,
-        uint32_t dest_ip_addr, uint32_t dest_seq_num, uint32_t orig_ip_addr,
-        uint32_t lifetime)
-{
-    struct aodv_rrep rrep;
-    rrep.type = AODV_RREP;
-    rrep.hop_count = hop_count;
-    rrep.prefix_sz = prefix_sz;
-    rrep.dest_ip_addr = dest_ip_addr;
-    rrep.dest_seq_num = dest_seq_num;
-    rrep.orig_ip_addr = orig_ip_addr;
-    rrep.lifetime = lifetime;
-
-    return aodv_send_rrep(&rrep);
 }
 
 int aodv_send_rerr(struct aodv_rerr* to_sent)
@@ -307,11 +276,6 @@ int aodv_send_rerr(struct aodv_rerr* to_sent)
         return ERR_SEND;
     }
     return numbytes;
-}
-
-int aodv_send_new_rerr(uint8_t flag, uint8_t dest_count,
-    struct unrecheable_dest* dests)
-{
 }
 
 int aodv_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
