@@ -3,7 +3,8 @@
 # to the root binary directory of the project as ${MESHIAS_BINARY_DIR}.
 cmake_minimum_required (VERSION 2.6)
 project (MESHIAS)
-set(MESHIAS_SRCS main.c msh_data.c alarm/alarm.c alarm/rbtree.c common.c nfqueue.c daemon.c log.c)
+set(MESHIAS_SRCS main.c msh_data.c alarm/alarm.c alarm/rbtree.c common.c
+    nfqueue.c daemon.c log.c routing_table.c route_obj.c)
 
 # Recurse into the "libnetfilter_queue" subdirectory. This does not actually 
 # cause another cmake executable to run. The same process will walk through 

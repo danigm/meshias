@@ -29,52 +29,65 @@
  * Common vars have been defined as simple functions (@see rfc3561.txt)
  * @{
  */
-int ACTIVE_ROUTE_TIMEOUT(); // Milliseconds
+uint32_t ACTIVE_ROUTE_TIMEOUT(); // Milliseconds
 
-int ALLOWED_HELLO_LOSS();
+uint32_t ALLOWED_HELLO_LOSS();
 
-int RREQ_RETRIES();
+uint32_t RREQ_RETRIES();
 
-int HELLO_INTERVAL(); // Milliseconds
+uint32_t HELLO_INTERVAL(); // Milliseconds
 
-int LOCAL_ADD_TTL();
+uint32_t LOCAL_ADD_TTL();
 
-int NET_DIAMETER();
+uint32_t NET_DIAMETER();
 
-int RERR_RATELIMIT();
+uint32_t RERR_RATELIMIT();
 
-int RREQ_RATELIMIT();
+uint32_t RREQ_RATELIMIT();
 
-int TIMEOUT_BUFFER();
+uint32_t TIMEOUT_BUFFER();
 
 /* The value of TTL when you create a new RREQ packet */
-int TTL_START();
+uint32_t TTL_START();
 
-int TTL_INCREMENT();
+uint32_t TTL_INCREMENT();
 
-int TTL_THRESHOLD();
+uint32_t TTL_THRESHOLD();
 
-int NODE_TRAVERSAL_TIME(); // Milliseconds
+uint32_t NODE_TRAVERSAL_TIME(); // Milliseconds
 
-int NEXT_HOP_WAIT();
+uint32_t NEXT_HOP_WAIT();
 
-int MAX_REPAIR_TTL();
+uint32_t MAX_REPAIR_TTL();
 
-int MY_ROUTE_TIMEOUT();
+uint32_t MY_ROUTE_TIMEOUT();
 
-int NET_TRAVERSAL_TIME();
+uint32_t NET_TRAVERSAL_TIME();
 
-int BLACKLIST_TIMEOUT();
+uint32_t BLACKLIST_TIMEOUT();
 
-int PATH_DISCOVERY_TIME();
+uint32_t PATH_DISCOVERY_TIME();
 
-int DELETE_PERIOD();
+uint32_t DELETE_PERIOD();
 
-int MIN_REPAIR_TTL();
+uint32_t MIN_REPAIR_TTL();
 
-int TTL_VALUE();
+uint32_t TTL_VALUE();
 
-int RING_TRAVERSAL_TIME();
+uint32_t RING_TRAVERSAL_TIME();
+
+/**
+ * Given an amount of time in miliseconds, it sets the equivalent time in 
+ * seconds and microseconds in @ref sc and @ref usc vars.
+ */
+void set_alarm_time(uint32_t miliseconds, unsigned long* sc,
+    unsigned long* usc);
+
+/**
+ * Given an amount of time in seconds and miliseconds, it returns the
+ * equivalent amount of time in miliseconds.
+ */
+uint32_t get_alarm_time(unsigned long sc, unsigned long usc);
 
 /** @} */
 

@@ -11,8 +11,6 @@
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 
-
-
 void print_link(struct nl_object* obj, void *arg)
 {
     int *item = (int *)arg;
@@ -42,8 +40,17 @@ void print_route(struct nl_object* obj, void *arg)
         printf("Route %d\n", *item);
     
     (*item)++;
-    struct nl_dump_params params;
-    params.dp_type = NL_DUMP_FULL;
+    
+    
+    struct nl_dump_params dp = {
+        .dp_type = NL_DUMP_FULL,
+        .dp_fd = stdout,
+        .dp_dump_msgtype = 1,
+    };
+
+    if(rtnl_route_get_table(route) == 254)
+    	nl_object_dump(obj, &dp);
+
 //     route_dump_full(route, &params);
 }
 
@@ -52,20 +59,21 @@ int main(int argc, char **argv)
     struct nl_handle *sock;
     // Allocate a new netlink socket
     sock = nl_handle_alloc();
-
     // Connect to link netlink socket on kernel side
     nl_connect(sock, NETLINK_ROUTE);
     
     // The first step is to retrieve a list of all available interfaces within
     // the kernel and put them into a cache.
     struct nl_cache *link_cache = rtnl_link_alloc_cache(sock);
-
+    nl_cache_mngt_provide(link_cache);
+    
     // In a second step, we iterate the link interfaces and print its names.
     printf("Link cache (%d ifaces):\n", nl_cache_nitems(link_cache));
     int item = 0;
     nl_cache_foreach(link_cache, print_link, (void *)&item);
     
     struct nl_cache *route_cache = rtnl_route_alloc_cache(sock);
+    
     printf("Route cache (%d ifaces):\n", nl_cache_nitems(route_cache));
     
     item = 0;
