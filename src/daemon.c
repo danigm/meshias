@@ -83,7 +83,7 @@ void daemon_receive_packets()
      * but I don't know how
      */
     printf("Daemon: got packet from %s:%d\n",
-            inet_ntoa(source_addr.sin_addr),
+            (char *)inet_ntoa(source_addr.sin_addr),
             //     inet_ntop(source_addr.sin_family, source_addr.sin_addr,
             //        saa, sizeof(saa)),
             (int)ntohs(source_addr.sin_port));
@@ -138,7 +138,7 @@ int aodv_check_packet(const char* b)
             else
             {
                 debug(1, "Error: AODV_RREQ packet with incorrect size");
-                return FALSE;
+                return 0;
             }
             break;
             
@@ -150,7 +150,7 @@ int aodv_check_packet(const char* b)
             else
             {
                 debug(1, "Error: AODV_RREP packet with incorrect size");
-                return FALSE;
+                return 0;
             }
             break;
             
@@ -166,7 +166,7 @@ int aodv_check_packet(const char* b)
                 if(rerr->dest_count == 0)
                 {
                     debug(1, "Error: AODV_RERR packet with DestCont = 0");
-                    return FALSE;
+                    return 0;
                 }
                 else
                 {
@@ -178,14 +178,14 @@ int aodv_check_packet(const char* b)
                     else
                     {
                         debug(1, "Error: AODV_RERR packet with incorrect size");
-                        return FALSE;
+                        return 0;
                     }
                 }
             }
             else
             {
                 debug(1, "Error: AODV_RERR packet with incorrect size");
-                return FALSE;
+                return 0;
             }
             break;
             
@@ -197,17 +197,17 @@ int aodv_check_packet(const char* b)
             else
             {
                 debug(1, "Error: AODV_RERR_ACK packet with incorrect size");
-                return FALSE;
+                return 0;
             }
             break;
             
         default:
             
             debug(1, "Error: Incorrect packet aodv type");
-            return FALSE;
+            return 0;
             break;
     }
-    return TRUE;
+    return 1;
 }
 
 void aodv_recv_rreq(const char *b, const struct sockaddr_in* source)

@@ -37,6 +37,9 @@ struct msh_route;
 #define RTACTION_UNSET_VALID_ENTRY          0x0008
 #define RTACTION_DESTROY                    0x0010
 
+/**
+ * Creates and initilizes to default values a msh_route, and returns it.
+ */
 struct msh_route* msh_route_alloc();
 void msh_route_destroy(struct msh_route* route);
 

@@ -14,9 +14,6 @@
 #define AODV_RERR 3
 #define AODV_RREP_ACK 4
 
-#define TRUE 1
-#define FALSE 0
-
 /**
  * Errors and their corresponding error numbers
  * @ingroup Common
