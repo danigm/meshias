@@ -116,7 +116,7 @@ void daemon_receive_packets()
     */
     memset(&msgh,0,sizeof(msgh));
     msgh.msg_control=(struct iovec*)malloc(10000*sizeof(struct iovec));
-    msgh.msg_controllen=10000;
+    msgh.msg_controllen= 10000;
     //Receive the packet
     if((numbytes = recvmsg(data.daemon_fd,&msgh,0)) == -1)
     {
