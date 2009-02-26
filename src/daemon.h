@@ -4,6 +4,8 @@
 #include "msh_data.h"
 #include "common.h"
 
+#include <sys/socket.h>
+
 /* Initialize the aodv's stuff like socket */
 int daemon_init();
 /* Free reserved memory */
@@ -14,6 +16,10 @@ void daemon_receive_packets();
 
 /* Get type of a aodv packet */
 int aodv_get_type(const char* b);
+
+/* Get ttl from a new pkt */
+int aodv_get_ttl(struct msghdr* msgh);
+
 /* Verify the aodv packet is correctly built */
 int aodv_check_packet(const char* b);
 

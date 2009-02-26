@@ -8,51 +8,13 @@
  * Memory is reserved twice for each packet
  */
 
-ssize_t aodv_send_packet(uint32_t dest_addr,
-        uint8_t ttl,const char* payload,int payload_len)
+ssize_t aodv_send_packet(uint32_t dest_addr,uint8_t ttl,
+        const char* payload,size_t payload_len)
 {
-    char* packet;
-    char* msg;
-    struct aodv_iphdr ip;
-    struct aodv_udphdr udp;
-    struct sockaddr_in dest;
-    ssize_t packet_size;
-    ssize_t bytes;
-
-    packet_size=sizeof(struct iphdr)+sizeof(struct updhdr)+payload_len;
-    
-    /* Reserve memory for the complete packet */
-    packet=(char*)malloc(packet_size);
-    memset(packet,0,packet_size);
-
-    /* Fill ip header */
-    iphdr=(struct iphdr)packet;
-    ip->version = 4;
-    ip->ihl = 5;
-    /* FIXME */
-    ip->id = 0;
-    ip->saddr = inet_addr("127.0.0.1");
-    ip->daddr = inet_addr("127.0.0.1");
-    ip->ttl = ttl;
-    ip->protocol = IPPROTO_UDP;
-    ip->tot_len = packet_size;
-    ip->check = checksum((uint16_t*)ip,ip->ip_ihl << 1);
-
-    /* Fill udp header */
-    udp=(struct udphdr)(packet + sizeof(struct iphdr));
-    udp->source=htons(AODV_PORT);
-    udp->dest=htons(AODV_PORT);
-    udp->len=sizeof(struct udphdr)+payload_len;
-    udp->check=checksum((uint16_t*)udp,udp->len >> 1);
-
-    /* Copy the message to the buffer to send it */
-    msg=packet+sizeof(struct iphdr)+sizeof(struct udphdr);
-    memcpy(msg,payload,payload_len);
-
     /* Fill the destination struct */
     dest.sin_family=AF_INET;
-    dest.sin_port=udp->dest;
-    dest.sin_addr.s_addr=ip->daddr;
+    dest.sin_port=htons(AODV_PORT);
+    dest.sin_addr.s_addr=htonl(dest_addr);
 
     /* Send the packet */
     if ((bytes=sendto(data.aodv_fd,packet,packet_size,0,
@@ -62,7 +24,6 @@ ssize_t aodv_send_packet(uint32_t dest_addr,
         debug(1,"Error: It couldn't send an aodv packet");
     }
 
-    free(packet);
 
     return bytes;
 }
@@ -153,15 +114,30 @@ char* aodv_create_rrep_ack()
     return rrep_ack;
 }
 
-uint16_t checksum(uint16_t *buf,int nwords)
+int aodv_get_type(const char* b)
 {
-    //this function returns the checksum of a buffer
-    uint32_t sum;
-    for (sum = 0; nwords > 0; nwords--)
-        sum += *buf++;
+    const int *type = (const int*)b;
+    return *type;
+}
 
-    sum = (sum >> 16) + (sum & 0xffff);
-    sum += (sum >> 16);
-
-    return (uint16_t) (~sum);
+size_t aodv_get_size_pkt(const char* b)
+{
+    const struct aodv_rerr* rerr;
+    switch(aodv_get_type_pkt(b))
+    {
+        case AODV_RREP:
+            sizeof(struct aodv_rrep);
+            break;
+        case AODV_RREQ:
+            return sizeof(struct aodv_rreq);
+        case AODV_RERR:
+            rerr=(struct aodv_rerr*)b;
+            return sizeof(struct aodv_rerr) +
+                rerr->dest_count * sizeof(struct unrecheable_dest);
+        case AODV_RREP_ACK:
+            return sizeof(struct aodv_rrep_ack);
+        default:
+            //FIXME statistic
+            return 0;
+    }
 }

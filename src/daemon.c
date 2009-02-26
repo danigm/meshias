@@ -2,20 +2,17 @@
 #include <netinet/in.h>
 
 #include "daemon.h"
-#include "msh_data.h"
-#include "common.h"
 
-#define BUF_SIZE 512
+#define BUF_SIZE 2024
 
 int daemon_init()
 {
     int broadcast = 1;
-    int option = 1;
     struct sockaddr_in address;
 
-    debug(3, "Daemon: opening raw socket");
+    debug(3, "Daemon: opening aodv socket");
     // Create the udp daemon socket
-    if( (data.daemon_fd = socket(AF_INET,SOCK_RAW,IPPROTO_UDP)) == -1 )
+    if( (data.daemon_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1 )
     {
         debug(1, "Error initializing the UDP socket");
         return ERR_INIT;
@@ -41,10 +38,10 @@ int daemon_init()
 
     debug(3, "changing socket options");
     // This call is what allows broadcast packets to be sent
-    if(setsockopt(data.daemon_fd,IPPROTO_IP,IP_HDRINCL,&option,
-                sizeof option) == -1)
+    if(setsockopt(data.daemon_fd,SOL_SOCKET,SO_BROADCAST,&broadcast,
+                sizeof broadcast) == -1)
     {
-        debug(1, "setsockopt (IP_HDRINCL)");
+        debug(1, "setsockopt (SO_BROADCAST)");
         return ERR_INIT;
     }
 
@@ -71,17 +68,21 @@ void daemon_receive_packets()
     struct sockaddr_in source_addr;
     socklen_t addr_len = sizeof source_addr;
     char saa[INET6_ADDRSTRLEN];
+    struct msghdr msgh;
 
-    //Receive the packet
-    if((numbytes = recvfrom(data.daemon_fd, buffer, BUF_SIZE-1 , 0,
-                    (struct sockaddr *)&source_addr, &addr_len)) == -1) {
-        debug(1, "FATAL ERROR: recvfrom");
+    /*
+    if((numbytes = recvfrom(data.daemon_fd,buffer,BUF_SIZE,0,
+                    (struct sockaddr*)&source_addr,
+                    &addr_len)) == -1)
+    {
+        debug(1, "FATAL ERROR: recvmsg");
         exit(1);
     }
-
+    */
     /* Function inet_ntoa is obsolete, actually inet_ntop must be used 
      * but I don't know how
      */
+    /*
     printf("Daemon: got packet from %s:%d\n",
             (char *)inet_ntoa(source_addr.sin_addr),
             //     inet_ntop(source_addr.sin_family, source_addr.sin_addr,
@@ -90,9 +91,8 @@ void daemon_receive_packets()
 
     buffer[numbytes] = '\0';
     
-    /* Check if the packet is correctly built */
-    if(!aodv_check_packet(buffer))
-        return;
+    // Check if the packet is correctly built
+    if(!aodv_check_packet(buffer));
     
     switch(aodv_get_type(buffer))
     {
@@ -113,6 +113,60 @@ void daemon_receive_packets()
             printf("Unknown packet type received. Payload:\n%s\n", buffer);
             break;
     }
+    */
+    memset(&msgh,0,sizeof(msgh));
+    msgh.msg_control=(struct iovec*)malloc(10000*sizeof(struct iovec));
+    msgh.msg_controllen=10000;
+    //Receive the packet
+    if((numbytes = recvmsg(data.daemon_fd,&msgh,0)) == -1)
+    {
+        debug(1, "FATAL ERROR: recvmsg");
+        exit(1);
+    }
+
+    printf("%d %d %d %d\n",msgh.msg_namelen,msgh.msg_iovlen,msgh.msg_controllen,msgh.msg_flags);
+    printf("Daemon: Packet has been received with ttl %d\n",
+            aodv_get_ttl(&msgh));
+    switch(msgh.msg_flags)
+    {
+        case MSG_EOR:
+            puts("MSG_EOR");
+            break;
+        case MSG_TRUNC:
+            puts("MSG_TRUNC");
+            break;
+        case MSG_CTRUNC:
+            puts("MSG_CTRUNC");
+            break;
+        case MSG_OOB:
+            puts("MSG_OOB");
+            break;
+        case MSG_ERRQUEUE:
+            puts("MSG_ERRQUEUE");
+            break;
+        case MSG_DONTWAIT:
+            puts("MSG_DONTWAIT");
+            break;
+    }
+}
+
+int aodv_get_ttl(struct msghdr* msgh)
+{
+    struct cmsghdr *cmsg;
+
+    /* Recibir los datos auxiliares en msgh */
+    for (cmsg = CMSG_FIRSTHDR(msgh); cmsg != NULL;
+            cmsg = CMSG_NXTHDR(msgh,cmsg))
+    {
+        puts("hi");
+        if (cmsg->cmsg_level == SOL_IP
+                && cmsg->cmsg_type == IP_TTL)
+            return (int)CMSG_DATA(cmsg);
+    }
+    /* 
+     * FIXME TTL no encontrado
+     */
+    return -1;
 }
 
 int aodv_get_type(const char* b)
@@ -210,6 +264,7 @@ int aodv_check_packet(const char* b)
     return 1;
 }
 
+/*
 void aodv_recv_rreq(const char *b, const struct sockaddr_in* source)
 {
 }
@@ -281,3 +336,4 @@ int aodv_send_rerr(struct aodv_rerr* to_sent)
 int aodv_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
 {
 }
+*/
