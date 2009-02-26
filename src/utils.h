@@ -1,0 +1,23 @@
+#ifndef _ALARM_H_
+#define _ALARM_H_
+
+#include <netinet/in.h>
+#include <netlink/addr.h>
+#include "common.h"
+
+/**
+ * Given an amount of time in miliseconds, it sets the equivalent time in 
+ * seconds and microseconds in @ref sc and @ref usc vars.
+ */
+void set_alarm_time(uint32_t miliseconds, unsigned long* sc,
+    unsigned long* usc);
+
+/**
+ * Given an amount of time in seconds and miliseconds, it returns the
+ * equivalent amount of time in miliseconds.
+ */
+uint32_t get_alarm_time(unsigned long sc, unsigned long usc);
+
+struct nl_addr* in_addr2nl_addr(struct in_addr *addr, uint8_t prefix_sz);
+
+#endif

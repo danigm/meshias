@@ -1,30 +1,8 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include "alarm/linux_list.h"
-#include "alarm/alarm.h"
 #include "route_obj.h"
 #include "common.h"
-
-struct msh_route
-{
-    struct in_addr dst_ip;
-    uint8_t prefix_sz;
-    uint32_t dest_seq_num;
-    uint16_t flags;
-    uint8_t hop_count;
-    struct in_addr next_hop;
-    uint32_t net_iface;
-// TODO
-//    uint32_t* precursors_list;
-    
-    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *);
-    void *cb_data;
-    
-    struct alarm_block alarm;
-    uint32_t alarm_action;
-    
-    struct list_head list;
-};
 
 void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
 {
@@ -55,13 +33,22 @@ struct msh_route* msh_route_alloc()
         calloc(1, sizeof(struct msh_route*));
     
     init_alarm(&route->alarm, route, __msh_route_alarm_cb);
+    INIT_LIST_HEAD(&(route->precursors_list.list));
     
     return route;
 }
 
 void msh_route_destroy(struct msh_route* route)
 {
+    struct precursor_t  *entry, *tmp;
+    
     __msh_route_updated(route, RTACTION_DESTROY);
+    
+    list_for_each_entry_safe(entry, tmp, &route->precursors_list.list, list)
+    {
+        list_del(&entry->list);
+        free(entry);
+    }
     
     free(route);
 }
@@ -74,6 +61,17 @@ void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip)
 struct in_addr msh_route_get_dst_ip(struct msh_route *route)
 {
     return route->dst_ip;
+}
+
+void msh_route_set_gateway_ip(struct msh_route *route, struct in_addr gateway_ip)
+{
+    route->gateway_ip = gateway_ip;
+    __msh_route_updated(route, RTACTION_CHANGE_GATEWAY_IP);
+}
+
+struct in_addr msh_route_get_gateway_ip(struct msh_route *route)
+{
+    return route->gateway_ip;
 }
 
 void msh_route_set_prefix_sz(struct msh_route *route, uint8_t prefix_sz)
@@ -160,6 +158,16 @@ uint32_t msh_route_get_lifetime(struct msh_route *route)
     timersub(&now, &route->alarm.tv, &now);
     
     return get_alarm_time(now.tv_sec, now.tv_usec);
+}
+
+void msh_route_set_rtnl_route(struct msh_route *route, struct rtnl_route *nlroute)
+{
+    route->nlroute = nlroute;
+}
+
+struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route)
+{
+    return route->nlroute;
 }
 
 int msh_route_compare(struct msh_route *first, struct msh_route *second,

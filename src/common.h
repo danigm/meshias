@@ -73,19 +73,6 @@ uint32_t TTL_VALUE();
 
 uint32_t RING_TRAVERSAL_TIME();
 
-/**
- * Given an amount of time in miliseconds, it sets the equivalent time in 
- * seconds and microseconds in @ref sc and @ref usc vars.
- */
-void set_alarm_time(uint32_t miliseconds, unsigned long* sc,
-    unsigned long* usc);
-
-/**
- * Given an amount of time in seconds and miliseconds, it returns the
- * equivalent amount of time in miliseconds.
- */
-uint32_t get_alarm_time(unsigned long sc, unsigned long usc);
-
 /** @} */
 
 /**

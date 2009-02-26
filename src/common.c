@@ -95,15 +95,3 @@ uint32_t RING_TRAVERSAL_TIME() {
     return 2 * NODE_TRAVERSAL_TIME() * (TTL_VALUE() + TIMEOUT_BUFFER());
 }
 
-
-void set_alarm_time(uint32_t miliseconds, unsigned long* sc, unsigned long* usc)
-{
-    *sc = (unsigned long)(miliseconds / 1000);
-    *usc = (miliseconds % 1000) * 1000;
-}
-
-
-uint32_t get_alarm_time(unsigned long sc, unsigned long usc)
-{
-    return (uint32_t)usc/1000 + sc*1000;
-}

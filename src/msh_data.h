@@ -13,6 +13,7 @@
 #include "alarm/alarm.h"
 
 #include "common.h"
+#include "utils.h"
 
 struct msh_data_t
 {
@@ -42,10 +43,7 @@ struct msh_data_t
     fd_set all_fd;
     int max_fd;
 
-    // Alarm block
-    //BUG: This makes no sense. There should be an alarm block per timeout,
-    // with diffenrent function+data to be called
-    // struct alarm_block alarm;
+    int net_iface;
 };
 
 extern struct msh_data_t data;
