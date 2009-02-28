@@ -39,21 +39,19 @@ void routing_table_flush(uint32_t iface)
     
 }
 
-void routing_table_add(struct routing_table *table, struct msh_route *route)
+int routing_table_add(struct routing_table *table, struct msh_route *route)
 {
     struct msh_route *found;
     struct rtnl_route *nlroute;
     
-    // If route exists, don't add it in some cases, just modify it.
-    // TODO: compare entry better
-    if((found = routing_table_find(table, route, ~0)) != 0)
-    {
-        // TODO:
-        // update logic: if current entry is invalid or num hops is less than
-        // current, etc, we should change current entry.
-        return;
-    }
-    
+    // If route exists then we have nothing to do here: this function only
+    // adds new routes, it doesn't update existing entries.
+    if((found = routing_table_find(table, route,
+        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)) != 0)
+        return -1;
+
+    nlroute = rtnl_route_alloc();
+ 
     struct nl_addr *dst = in_addr2nl_addr(&route->dst_ip,
         msh_route_get_prefix_sz(route));
     
@@ -69,15 +67,40 @@ void routing_table_add(struct routing_table *table, struct msh_route *route)
     
     if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0) {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
+        nl_addr_destroy(dst);
+        nl_addr_destroy(gateway);
+        return -1;
     }
+    // If we are successful, add the netlink route to the msh_route and
+    // add the route to the list of the routing table
+    msh_route_set_rtnl_route(route, nlroute);
+    list_add(&route->list, &table->route_list.list);
+    
     nl_addr_destroy(dst);
     nl_addr_destroy(gateway);
-    
+
+    return 0;
 }
 
-void routing_table_del(struct routing_table *table, struct msh_route *route)
+int routing_table_del(struct routing_table *table, struct msh_route *route)
 {
+    struct msh_route *found;
+    struct rtnl_route *nlroute;
     
+    // If route is not in our list we have nothing to do here
+    if((found = routing_table_find(table, route, 0)) != 0)
+        return -1;
+
+    nlroute = msh_route_get_rtnl_route(route);
+    if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0) {
+        fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
+        return -1;
+    }
+    msh_route_set_rtnl_route(route, 0);
+    rtnl_route_put(nlroute);
+    list_del(&route->list);
+    
+    return 0;
 }
 
 struct msh_route *routing_table_find(struct routing_table *table,
@@ -94,14 +117,14 @@ struct msh_route *routing_table_find(struct routing_table *table,
     return 0;
 }
 
-void routing_table_foreach(struct routing_table *table,
-    int (*callback_func)(struct msh_route *, void *), void *data)
-{
-    
-}
-    
-void routing_table_foreach_filter(struct routing_table *table,
-    int (*callback_func)(struct msh_route *, void *), void *data)
-{
-    
-}
+// void routing_table_foreach(struct routing_table *table,
+//     int (*callback_func)(struct msh_route *, void *), void *data)
+// {
+//     
+// }
+//     
+// void routing_table_foreach_filter(struct routing_table *table,
+//     int (*callback_func)(struct msh_route *, void *), void *data)
+// {
+//     
+// }

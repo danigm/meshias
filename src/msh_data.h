@@ -44,6 +44,7 @@ struct msh_data_t
     int max_fd;
 
     int net_iface;
+    int num_rreq_sent;
 };
 
 extern struct msh_data_t data;

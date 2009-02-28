@@ -10,6 +10,7 @@ int msh_data_init(int argc, char **argv)
     data.netlink_handle = NULL;
     data.nl_handle = NULL; 
     data.max_fd = 0;
+    data.num_rreq_sent = 0;
     
     // Parse args
     if(argc < 2)

@@ -170,11 +170,66 @@ struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route)
     return route->nlroute;
 }
 
+void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip)
+{
+    // Check it's not already there
+    struct precursor_t *entry;
+    
+    list_for_each_entry(entry, &route->precursors_list.list, list)
+    {
+        if(entry->dst_ip.s_addr == dst_ip.s_addr)
+            return;
+    }
+    
+    // Entry not found; adding it
+    entry = (struct precursor_t *)malloc(sizeof(struct precursor_t *));
+    entry->dst_ip.s_addr = dst_ip.s_addr;
+    list_add(&entry->list, &route->precursors_list.list);
+}
+
+void msh_route_del_precursor(struct msh_route *route, struct in_addr dst_ip)
+{
+    // Find the entry
+    struct precursor_t *entry;
+    
+    list_for_each_entry(entry, &route->precursors_list.list, list)
+    {
+        if(entry->dst_ip.s_addr == dst_ip.s_addr)
+        {
+            list_del(&entry->list);
+            free(entry);
+            return;
+        }
+    }
+}
+
+void msh_route_foreach_precursor(struct msh_route *route,
+    int (*callback_func)(struct msh_route *, struct in_addr *, void *), void *data)
+{
+    // Find the entry
+    struct precursor_t *entry;
+    
+    list_for_each_entry(entry, &route->precursors_list.list, list)
+    {
+        (*callback_func)(route, &entry->dst_ip, data);
+    }
+}
+
 int msh_route_compare(struct msh_route *first, struct msh_route *second,
     int attr_flags)
 {
     uint32_t diff = 0;
     
+    // See if dest ip of first route is contained by the destination group
+    // of the second route.
+    if(attr_flags & RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)
+    {
+        uint32_t mask = 32 - second->prefix_sz;
+        uint32_t ip1mask = first->dst_ip.s_addr & mask;
+        uint32_t ip2mask = second->dst_ip.s_addr & mask;
+        diff |= (ip1mask == ip2mask);
+    }
+
     if(attr_flags & RTATTR_DST_IP)
         diff |= (first->dst_ip.s_addr != second->dst_ip.s_addr);
     

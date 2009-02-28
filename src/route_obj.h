@@ -14,31 +14,32 @@ struct msh_route;
  * @see msh_route_unset_flag
  * @see msh_route_get_flags
  */
-#define RTFLAG_VALID_DEST_SEQ_NUM           0x0001
-#define RTFLAG_VALID_ENTRY                  0x0002
-// #define RTFLAG_REPAIRABLE                   0x0004
-// #define RTFLAG_BEING_REPAIRED               0x0008
+#define RTFLAG_VALID_DEST_SEQ_NUM               0x0001   
+#define RTFLAG_VALID_ENTRY                      0x0002
+// #define RTFLAG_REPAIRABLE                       0x0004
+// #define RTFLAG_BEING_REPAIRED                   0x0008
 
 /**
  * These can be used as the flags in a comparation
  * @see msh_route_compare
  */
-#define RTATTR_DST_IP                       0x0001
-#define RTATTR_GATEWAY_IP                   0x0002
-#define RTATTR_PREFIX_SZ                    0x0004
-#define RTATTR_DEST_SEQ_NUM                 0x0008
-#define RTATTR_FLAGS                        0x0010
-#define RTATTR_HOP_COUNT                    0x0020
-#define RTATTR_NEXT_HOP                     0x0040
-#define RTATTR_NET_IFACE                    0x0080
-#define RTATTR_LIFETIME                     0x0100
-#define RTATTR_UPDATED_CB                   0x0200
-#define RTATTR_CB_DATA                      0x0400
-#define RTATTR_NLROUTE                      0x0800
+#define RTATTR_DST_IP                           0x0001
+#define RTATTR_GATEWAY_IP                       0x0002
+#define RTATTR_PREFIX_SZ                        0x0004
+#define RTATTR_DEST_SEQ_NUM                     0x0008
+#define RTATTR_FLAGS                            0x0010
+#define RTATTR_HOP_COUNT                        0x0020
+#define RTATTR_NEXT_HOP                         0x0040
+#define RTATTR_NET_IFACE                        0x0080
+#define RTATTR_LIFETIME                         0x0100
+#define RTATTR_UPDATED_CB                       0x0200
+#define RTATTR_CB_DATA                          0x0400
+#define RTATTR_NLROUTE                          0x0800
+#define RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING  0x1000
 
-#define RTACTION_UNSET_VALID_ENTRY          0x0008
-#define RTACTION_DESTROY                    0x0010
-#define RTACTION_CHANGE_GATEWAY_IP          0x0020
+#define RTACTION_UNSET_VALID_ENTRY              0x0008
+#define RTACTION_DESTROY                        0x0010
+#define RTACTION_CHANGE_GATEWAY_IP              0x0020
 
 struct precursor_t
 {
@@ -102,6 +103,11 @@ uint32_t msh_route_get_lifetime(struct msh_route *route);
 
 void msh_route_set_rtnl_route(struct msh_route *route, struct rtnl_route *nlroute);
 struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route);
+
+void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip);
+void msh_route_del_precursor(struct msh_route *route, struct in_addr dst_ip);
+void msh_route_foreach_precursor(struct msh_route *route,
+    int (*callback_func)(struct msh_route *, struct in_addr *, void *), void *data);
 
 /**
  * Compare two msh_route's only by the attributes indicated by attr_flags. Returns
