@@ -10,6 +10,8 @@ struct aodv_pkt *aodv_create_pkt();
 
 struct aodv_pkt *aodv_get_pkt(struct msghdr* msgh);
 
+ssize_t aodv_send_pkt(struct aodv_pkt* pkt);
+
 void aodv_destroy_pkt(struct aodv_pkt* pkt);
 
 uint8_t aodv_get_ttl(struct aodv_pkt* pkt);

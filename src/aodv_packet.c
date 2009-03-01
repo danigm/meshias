@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "aodv_packet.h"
+#include "msh_data.h"
 
 #define DEFAULT_TTL 64
 
@@ -54,6 +55,15 @@ struct aodv_pkt *aodv_get_pkt(struct msghdr* msg)
 
     //FIXME dont check errors
     return pkt;
+}
+
+ssize_t aodv_send_pkt(struct aodv_pkt* pkt)
+{
+    int numbytes=sendto(data.daemon_fd,pkt->payload,pkt->payload_len,0,
+            (struct sockaddr*)&(pkt->address),sizeof(pkt->address));
+
+    //FIXME resolve errors
+    return numbytes;
 }
 
 void aodv_destroy_pkt(struct aodv_pkt* pkt)
