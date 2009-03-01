@@ -42,18 +42,11 @@ struct aodv_pkt *aodv_get_pkt(struct msghdr* msg)
     // If data has been received
     if(msg->msg_iovlen>0)
     {
+        //FIXME payload_len is set to 1024 always
+        // we won't always send 1K
         pkt->payload_len=msg->msg_iov->iov_len;
-        printf("%d\n",pkt->payload_len);
         pkt->payload=(char*)calloc(1,pkt->payload_len);
         memcpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
-        /*
-        int i=0;
-        for(i=0;i<pkt->payload_len;i++)
-            printf("%c",pkt->payload[i]);
-        puts("");
-        for(i=0;i<pkt->payload_len;i++)
-            printf("%c",((char*)msg->msg_iov->iov_base)[i]);
-            */
     }
     // If control data has been received
     if(msg->msg_controllen>0)

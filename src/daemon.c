@@ -91,12 +91,12 @@ void daemon_receive_packets()
     msg.msg_namelen=BUF_SIZE;
 
     io.iov_base=iov_buf;
-    io.iov_len=sizeof(iov_buf);
+    io.iov_len=BUF_SIZE;
 
     msg.msg_iov=&io;
     msg.msg_iovlen=1;
 
-    msg.msg_control=&iov_buf;
+    msg.msg_control=control_buf;
     msg.msg_controllen=BUF_SIZE;
 
     //Receive the packet

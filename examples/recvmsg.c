@@ -147,9 +147,9 @@ int main(int argc,char *argv[])
         printf("recibido: %d\n",numbytes);
         if(msgh.msg_name==NULL)
             puts("puta");
-        printf("name:%d, iov:%d, control:%d, flags:%d\n",
+        printf("name:%d, iov:%d, control:%d, flags:%d another:%d\n",
                 msgh.msg_namelen,msgh.msg_iovlen,
-                msgh.msg_controllen,msgh.msg_flags);
+                msgh.msg_controllen,msgh.msg_flags,msgh.msg_iov->iov_len);
         printf("Buffer: %s\n",buffer);
         printf("Daemon: Packet has been received with ttl %d\n",
                 aodv_get_ttl(&msgh));
