@@ -264,24 +264,23 @@ int aodv_check_packet(const char* b)
     return 1;
 }
 
+void aodv_recv_rreq(struct aodv_rreq* rreq, const struct sockaddr_in* source)
+{
+}
+
+void aodv_recv_rrep(struct aodv_rrep* rrep, const struct sockaddr_in* source)
+{
+}
+
+void aodv_recv_rerr(struct aodv_rerr* rerr, const struct sockaddr_in* source)
+{
+}
+
+void aodv_recv_rrep_ack(struct aodv_rrep_ack* rrep_ack, const struct sockaddr_in* source)
+{
+}
+
 /*
-void aodv_recv_rreq(const char *b, const struct sockaddr_in* source)
-{
-}
-
-void aodv_recv_rrep(const char *b, const struct sockaddr_in* source)
-{
-}
-
-void aodv_recv_rerr(const char *b, const struct sockaddr_in* source)
-{
-}
-
-void aodv_recv_rrep_ack(const char *b, const struct sockaddr_in* source)
-{
-}
-
-
 int aodv_send_rreq(struct aodv_rreq* to_sent, char ttl)
 {
     struct sockaddr_in their_addr; // connector's address information
