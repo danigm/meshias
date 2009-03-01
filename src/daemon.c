@@ -3,11 +3,11 @@
 
 #include "daemon.h"
 
-#define BUF_SIZE 2024
+#define BUF_SIZE 1024
 
 int daemon_init()
 {
-    int broadcast = 1;
+    int option = 1;
     struct sockaddr_in address;
 
     debug(3, "Daemon: opening aodv socket");
@@ -38,8 +38,16 @@ int daemon_init()
 
     debug(3, "changing socket options");
     // This call is what allows broadcast packets to be sent
-    if(setsockopt(data.daemon_fd,SOL_SOCKET,SO_BROADCAST,&broadcast,
-                sizeof broadcast) == -1)
+    if(setsockopt(data.daemon_fd,SOL_SOCKET,SO_BROADCAST,&option,
+                sizeof option) == -1)
+    {
+        debug(1, "setsockopt (SO_BROADCAST)");
+        return ERR_INIT;
+    }
+
+    // This call is what allows ttl to be received
+    if(setsockopt(data.daemon_fd,SOL_IP,IP_RECVTTL,&option,
+                sizeof option) == -1)
     {
         debug(1, "setsockopt (SO_BROADCAST)");
         return ERR_INIT;
@@ -64,17 +72,41 @@ void daemon_shutdown()
 void daemon_receive_packets()
 {
     int numbytes;
-    char buffer[BUF_SIZE];
-    struct sockaddr_in source_addr;
-    socklen_t addr_len = sizeof source_addr;
-    char saa[INET6_ADDRSTRLEN];
-    struct msghdr msgh;
+    char name_buf[BUF_SIZE];
+    char iov_buf[BUF_SIZE];
+    char control_buf[BUF_SIZE];
+    struct msghdr msg;
+    struct iovec io;
+    struct aodv_pkt* pkt;
+
+    // Set all memory to 0
+    memset(&msg,0,sizeof(msg));
+    memset(name_buf,0,BUF_SIZE);
+    memset(iov_buf,0,BUF_SIZE);
+    memset(control_buf,0,BUF_SIZE);
+
+    // Fill the msg
+    msg.msg_name=&name_buf;
+    msg.msg_namelen=BUF_SIZE;
+
+    io.iov_base=iov_buf;
+    io.iov_len=BUF_SIZE;
+
+    msg.msg_iov=&io;
+    msg.msg_iovlen=1;
+
+    msg.msg_control=&iov_buf;
+    msg.msg_controllen=BUF_SIZE;
 
     //Receive the packet
-    if((numbytes = recvmsg(data.daemon_fd,&msgh,0)) == -1)
+    if((numbytes = recvmsg(data.daemon_fd,&msg,0)) == -1)
     {
-        debug(1, "FATAL ERROR: recvmsg");
-        exit(1);
+        perror("FATAL ERROR: recvmsg");
+        return;
     }
 
+    pkt=aodv_get_pkt(&msg);
+
+    //HERE STARTS THE AODV LOGIC
+    //where pkt is the aodv_pkt
 }
