@@ -10,20 +10,13 @@ struct routing_table;
 
 /**
  * Creates a routing table.
- * TODO: create it for a specific interface and flush all the routes for that interface
  */
 struct routing_table *routing_table_alloc();
 
 /**
- * Destroys a routing table.
- * TODO: flush all the routes for the interface related to this table
+ * Destroys a routing table and deletes all its entries.
  */
-void routing_table_destroy(struct routing_table *table);
-
-/**
- * Flushes all the routes for the given interface.
- */
-void routing_table_flush(uint32_t iface);
+void routing_table_delete(struct routing_table *table);
 
 /**
  * Adds a route to the routing table structure and to the kernel's routing
@@ -56,6 +49,12 @@ int routing_table_del(struct routing_table *table, struct msh_route *route);
 struct msh_route *routing_table_find(struct routing_table *table,
     struct msh_route *route, int attr_flags);
 
+/**
+ * Returns a non-zero number if there is a route for the given dest in the
+ * routing table, searching by longest prefix matching.
+ */
+uint8_t routing_table_has_route(struct routing_table *table,
+    struct in_addr dst_ip);
 
 // void routing_table_foreach(struct routing_table *table,
 //     int (*callback_func)(struct msh_route *, void *), void *data);

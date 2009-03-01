@@ -14,6 +14,9 @@
 
 #include "common.h"
 #include "utils.h"
+#include "routing_table.h"
+#include "rreq_fifo.h"
+#include "packets_fifo.h"
 
 struct msh_data_t
 {
@@ -27,13 +30,13 @@ struct msh_data_t
     struct nl_handle *nl_handle;
     
     // Here we buffer the packets we don't have a route for
-    //struct packets_queue* wait_queue;
+    struct packets_fifo* packets_queue;
     
     // Here we buffer the RREQ in order to avoid loops
-    // struct rreq_fifo* rreq_buffer;
+    struct rreq_fifo* rreq_queue;
     
     // Route table. Plays a major role in AODV
-    // struct route_cache* route_table;
+    struct routing_table* routing_table;
 
     // Sockets
     int nfqueue_fd;
@@ -44,6 +47,7 @@ struct msh_data_t
     int max_fd;
 
     int net_iface;
+    // There's a maximum number of RREQs that can be sent per second
     int num_rreq_sent;
 };
 

@@ -172,7 +172,7 @@ struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route)
 
 void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip)
 {
-    // Check it's not already there
+    // Check the precursor is not already added
     struct precursor_t *entry;
     
     list_for_each_entry(entry, &route->precursors_list.list, list)
@@ -196,6 +196,7 @@ void msh_route_del_precursor(struct msh_route *route, struct in_addr dst_ip)
     {
         if(entry->dst_ip.s_addr == dst_ip.s_addr)
         {
+            // Found!
             list_del(&entry->list);
             free(entry);
             return;

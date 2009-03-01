@@ -41,12 +41,20 @@ int msh_data_init(int argc, char **argv)
     struct nl_cache *link_cache = rtnl_link_alloc_cache(data.nl_handle);
     data.net_iface = rtnl_link_name2i(link_cache, argv[1]);
     nl_cache_free(link_cache);
-    
+
+    data.routing_table = routing_table_alloc();
+    data.rreq_queue = rreq_fifo_alloc();
+    data.packets_queue = packets_fifo_alloc();
+
     //TODO:Max fd
 }
 
 void msh_data_shutdown()
 {
+    routing_table_delete(data.routing_table);
+    rreq_fifo_delete(data.rreq_queue);
+    packets_fifo_delete(data.packets_queue);
+
     if(data.queue != NULL)
     {
         printf("unbinding from queue 0\n");

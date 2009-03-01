@@ -22,7 +22,7 @@ struct routing_table *routing_table_alloc()
     return table;
 }
 
-void routing_table_destroy(struct routing_table *table)
+void routing_table_delete(struct routing_table *table)
 {
     struct msh_route *entry, *tmp;
     
@@ -31,12 +31,6 @@ void routing_table_destroy(struct routing_table *table)
         routing_table_del(table, entry);
         free(entry);
     }
-    routing_table_flush(0);
-}
-
-void routing_table_flush(uint32_t iface)
-{
-    
 }
 
 int routing_table_add(struct routing_table *table, struct msh_route *route)
@@ -115,6 +109,17 @@ struct msh_route *routing_table_find(struct routing_table *table,
     }
     
     return 0;
+}
+
+
+uint8_t routing_table_has_route(struct routing_table *table,
+    struct in_addr dst_ip)
+{
+    struct msh_route *route = msh_route_alloc();
+    msh_route_set_dst_ip(route, dst_ip);
+    
+    return routing_table_find(table, route,
+        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING) != 0;
 }
 
 // void routing_table_foreach(struct routing_table *table,

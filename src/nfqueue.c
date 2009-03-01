@@ -165,38 +165,34 @@ uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
     return id;
 }
 
-// TODO: Return a more menaningful type
-uint32_t nfqueue_packet_get_dest(struct nfq_data *packet)
+struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
 {
-    uint32_t dest = 0;
+    struct in_addr dest;
     struct nfq_iphdr* ip_header;
     
     if( (ip_header = nfq_get_iphdr(packet)) != NULL )
     {
-        dest=nfq_get_ip_daddr(ip_header);
+        dest.s_addr = nfq_get_ip_daddr(ip_header);
     }
     return dest;
 }
 
-// TODO: function is not yet written. See header for details
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
-        struct nfq_data *nfa, void *data)
+        struct nfq_data *nfa, void *data2)
 {
-    uint32_t dest = nfqueue_packet_get_dest(nfa);
+    struct in_addr dest = { .s_addr = nfqueue_packet_get_dest(nfa).s_addr, };
     uint32_t id = nfqueue_packet_get_id(nfa);
     
-    /* checking if the route exists */
-    //if(route_exists(route))
+    // If there's a route for the packet, let it go
+    if(routing_table_has_route(data.routing_table, dest))
     {
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
-//     else
-//     {
-//         /* if not we put the packet in the waiting queue
-//          *  and generate an aodv packet to find the new route
-//          */
-//         //pq_add(route,nfqueue_get_id(nfa));
-//         //aodv_create_route(dest);
-//         return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
-//     }
+    else
+    {
+        // Route not found. Queue the packet and find a route
+        packets_fifo_push(data.packets_queue, id, dest);
+        //aodv_find_route(dest);
+        return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
+    }
 }

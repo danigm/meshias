@@ -5,6 +5,7 @@
 #include <netlink/addr.h>
 #include "common.h"
 #include "alarm/alarm.h"
+#include "alarm/linux_list.h"
 
 struct msh_route;
 

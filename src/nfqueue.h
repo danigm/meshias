@@ -40,7 +40,7 @@ uint32_t nfqueue_packet_get_id(struct nfq_data *packet);
 /**
  * @returns the dest ip of a packet.
  */
-uint32_t nfqueue_packet_get_dest(struct nfq_data *packet);
+struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
 
 /**
  * Called by @see nfq_handle_packet() which in turns gets called by
