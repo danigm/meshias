@@ -14,7 +14,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define SERVERPORT 654    // the port users will be connecting to
+#define SERVERPORT 1654    // the port users will be connecting to
 
 int main(int argc, char *argv[])
 {
@@ -47,10 +47,21 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    broadcast=32;
+    if (setsockopt(sockfd, SOL_IP, IP_TTL, &broadcast,
+        sizeof broadcast) == -1) {
+        perror("setsockopt (SO_BROADCAST)");
+        exit(1);
+    }
+
     their_addr.sin_family = AF_INET;     // host byte order
+    their_addr.sin_port = htons(19999); // short, network byte order
+    their_addr.sin_addr.s_addr = INADDR_ANY;
+    memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
+    bind(sockfd,(struct sockaddr*)&their_addr,sizeof(struct sockaddr_in));
+
     their_addr.sin_port = htons(SERVERPORT); // short, network byte order
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
-    memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
 
     if ((numbytes=sendto(sockfd, argv[2], strlen(argv[2]), 0,
              (struct sockaddr *)&their_addr, sizeof their_addr)) == -1) {

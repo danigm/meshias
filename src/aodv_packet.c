@@ -1,24 +1,220 @@
-#include "aodv_packet.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/udp.h>
 #include <netinet/ip.h>
+#include <stdlib.h>
 
-/* TODO
- * Memory is reserved twice for each packet
- */
+#include "aodv_packet.h"
 
-ssize_t aodv_send_packet(uint32_t dest_addr,uint8_t ttl,
-        const char* payload,size_t payload_len)
+#define DEFAULT_TTL 64
+
+struct aodv_pkt
 {
-    /* Fill the destination struct */
-    dest.sin_family=AF_INET;
-    dest.sin_port=htons(AODV_PORT);
-    dest.sin_addr.s_addr=htonl(dest_addr);
+    char* payload;
+    size_t payload_len;
+    struct sockaddr_in address; // If the packet has been received is the
+                                // source else if it has been sent is the dest
+    uint8_t ttl;
+};
 
-    /* Send the packet */
-    if ((bytes=sendto(data.aodv_fd,packet,packet_size,0,
-                    (struct sockaddr*)&addr,
+struct aodv_pkt *aodv_create_pkt()
+{
+    struct aodv_pkt* pkt=(struct aodv_pkt*)calloc(1,sizeof(struct aodv_pkt));
+
+    // Set some values by default like broadcast sent
+    pkt->ttl=DEFAULT_TTL;
+    pkt->address.sin_family=AF_INET;
+    pkt->address.sin_port=htons(AODV_UDP_PORT);
+    pkt->address.sin_addr.s_addr=INADDR_BROADCAST;
+}
+
+struct aodv_pkt *aodv_get_pkt(struct msghdr* msgh)
+{
+    /*
+    struct cmsghdr *cmsg;
+
+    // Recibir los datos auxiliares en msgh 
+    for (cmsg = CMSG_FIRSTHDR(msgh); cmsg != NULL;
+            cmsg = CMSG_NXTHDR(msgh,cmsg))
+    {
+        puts("hi");
+        if (cmsg->cmsg_level == SOL_IP
+                && cmsg->cmsg_type == IP_TTL)
+            return (int)CMSG_DATA(cmsg);
+    }
+     // FIXME TTL no encontrado
+    return -1;
+    switch(msgh.msg_flags)
+    {
+        case MSG_EOR:
+            puts("MSG_EOR");
+            break;
+        case MSG_TRUNC:
+            puts("MSG_TRUNC");
+            break;
+        case MSG_CTRUNC:
+            puts("MSG_CTRUNC");
+            break;
+        case MSG_OOB:
+            puts("MSG_OOB");
+            break;
+        case MSG_ERRQUEUE:
+            puts("MSG_ERRQUEUE");
+            break;
+        case MSG_DONTWAIT:
+            puts("MSG_DONTWAIT");
+            break;
+    }
+    */
+    return NULL;
+}
+
+uint8_t aodv_get_ttl(struct aodv_pkt* pkt)
+{
+    return pkt->ttl;
+}
+
+void aodv_set_ttl(struct aodv_pkt* pkt,uint8_t ttl)
+{
+    pkt->ttl=ttl;
+}
+
+void aodv_decrease_ttl(struct aodv_pkt *pkt)
+{
+    (pkt->ttl)--;
+}
+
+// NOTE in this function the port is not returned
+uint32_t aodv_get_address(struct aodv_pkt* pkt)
+{
+    return ntohl(pkt->address.sin_addr.s_addr);
+}
+
+void aodv_set_address(struct aodv_pkt* pkt,uint32_t addr)
+{
+    pkt->address.sin_addr.s_addr=htonl(addr);
+}
+
+char* aodv_get_payload(struct aodv_pkt *pkt)
+{
+    return pkt->payload;
+}
+
+int aodv_get_payload_len(struct aodv_pkt *pkt)
+{
+    return pkt->payload_len;
+}
+
+int aodv_get_type(struct aodv_pkt *pkt)
+{
+    const int *type = (int*)aodv_get_payload(pkt);
+    return *type;
+}
+
+int aodv_check_packet(struct aodv_pkt* pkt)
+{
+    struct aodv_rreq* rreq;
+    struct aodv_rrep* rrep;
+    struct aodv_rerr* rerr;
+    struct aodv_rrep_ack* rrep_ack;
+
+    switch(aodv_get_type(pkt))
+    {
+        case AODV_RREQ:
+            if( sizeof(struct aodv_rreq) == aodv_get_payload_len(pkt) )
+            {
+                rreq = (struct aodv_rreq*)aodv_get_payload(pkt);
+            }
+            else
+            {
+                debug(1, "Error: AODV_RREQ packet with incorrect size");
+                return 0;
+            }
+            break;
+            
+        case AODV_RREP:
+            if( sizeof(struct aodv_rrep) == aodv_get_payload_len(pkt) )
+            {
+                rrep = (struct aodv_rrep*)aodv_get_payload(pkt);
+            }
+            else
+            {
+                debug(1, "Error: AODV_RREP packet with incorrect size");
+                return 0;
+            }
+            break;
+            
+        case AODV_RERR:
+            /* The size is variable so we have to be more careful
+             * Buffer size must be at least header size +
+             * one unrecheable_dest
+             */
+            if( aodv_get_payload_len(pkt) >=
+                sizeof(uint32_t) + sizeof(struct unrecheable_dest))
+            {
+                rerr = (struct aodv_rerr*)aodv_get_payload(pkt);
+                if(rerr->dest_count == 0)
+                {
+                    debug(1, "Error: AODV_RERR packet with DestCont = 0");
+                    return 0;
+                }
+                else
+                {
+                    // Buffer size = header size + number of desticount * desticount_size
+                    if( aodv_get_payload_len(pkt) == sizeof(uint32_t)+
+                            sizeof(struct unrecheable_dest) * rerr->dest_count )
+                    {
+                    }
+                    else
+                    {
+                        debug(1, "Error: AODV_RERR packet with incorrect size");
+                        return 0;
+                    }
+                }
+            }
+            else
+            {
+                debug(1, "Error: AODV_RERR packet with incorrect size");
+                return 0;
+            }
+            break;
+            
+        case AODV_RREP_ACK:
+            if( sizeof(struct aodv_rrep_ack) == aodv_get_payload_len(pkt) )
+            {
+                rrep_ack = (struct aodv_rrep_ack*)aodv_get_payload(pkt);
+            }
+            else
+            {
+                debug(1, "Error: AODV_RERR_ACK packet with incorrect size");
+                return 0;
+            }
+            break;
+            
+        default:
+            
+            debug(1, "Error: Incorrect packet aodv type");
+            return 0;
+            break;
+    }
+    return 1;
+}
+
+
+size_t aodv_get_size(struct aodv_pkt* pkt)
+{
+    return pkt->payload_len;
+}
+int aodv_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
+{
+}
+
+ssize_t aodv_send_packet(struct aodv_pkt* pkt)
+{
+    /*
+    if ((bytes=sendto(data.aodv_fd,aodv_get_payload(pkt),
+                    aodv_get_payload_len(pkt),0,
+                    (struct sockaddr*)aodv_get_address(pkt),
                     sizeof(struct sockaddr_in))) == -1) 
     {
         debug(1,"Error: It couldn't send an aodv packet");
@@ -26,17 +222,19 @@ ssize_t aodv_send_packet(uint32_t dest_addr,uint8_t ttl,
 
 
     return bytes;
+    */
+    return 0;
 }
 
-char* aodv_create_rrep(uint8_t flags, uint8_t prefix_sz, uint8_t hop_count,
-        uint32_t dest_ip_addr, uint32_t dest_seq_num, uint32_t orig_ip_addr,
-        uint32_t lifetime)
+void aodv_build_rrep(struct aodv_pkt* pkt,uint8_t flags, uint8_t prefix_sz,
+        uint8_t hop_count,uint32_t dest_ip_addr,uint32_t dest_seq_num,
+        uint32_t orig_ip_addr,uint32_t lifetime)
 {
     struct aodv_rrep* rrep;
 
     /* Reserve memory for the structure */
-    rrep=(struct aodv_rrep*)malloc(sizeof(struct aodv_rrep));
-    memset(rrep,0,sizeof(struct aodv_rrep));
+    rrep=(struct aodv_rrep*)calloc(1,sizeof(struct aodv_rrep));
+    pkt->payload_len=sizeof(struct aodv_rrep);
 
     rrep->type = AODV_RREP;
     rrep->flags = flags;
@@ -47,18 +245,18 @@ char* aodv_create_rrep(uint8_t flags, uint8_t prefix_sz, uint8_t hop_count,
     rrep->orig_ip_addr = orig_ip_addr;
     rrep->lifetime = lifetime;
 
-    return (char*)rrep;
+    pkt->payload=(char*)rrep;
 }
 
-char* aodv_create_rreq(uint8_t flags, uint8_t hop_count, uint32_t rreq_id,
-    uint32_t dest_ip_addr, uint32_t dest_seq_num, uint32_t orig_ip_addr,
-    uint32_t orig_seq_num)
+void aodv_build_rreq(struct aodv_pkt* pkt,uint8_t flags, uint8_t hop_count,
+        uint32_t rreq_id,uint32_t dest_ip_addr,uint32_t dest_seq_num,
+        uint32_t orig_ip_addr,uint32_t orig_seq_num)
 {
     struct aodv_rreq* rreq;
     
     /* Reserve memory for the structure */
-    rreq=(struct aodv_rreq*)malloc(sizeof(struct aodv_rreq));
-    memset(rreq,0,sizeof(struct aodv_rreq));
+    rreq=(struct aodv_rreq*)calloc(1,sizeof(struct aodv_rreq));
+    pkt->payload_len=sizeof(struct aodv_rreq);
 
 
     rreq->type = AODV_RREQ;
@@ -70,74 +268,46 @@ char* aodv_create_rreq(uint8_t flags, uint8_t hop_count, uint32_t rreq_id,
     rreq->orig_ip_addr = orig_ip_addr;
     rreq->orig_seq_num = orig_seq_num;
 
-    return (char*)rreq;
+    pkt->payload=(char*)rreq;
 }
 
-char* aodv_create_rerr(uint8_t flag, uint8_t dest_count,
+void aodv_build_rerr(struct aodv_pkt* pkt,uint8_t flag, uint8_t dest_count,
     struct unrecheable_dest** dests)
 {
     struct aodv_rerr* rerr;
     struct unrecheable_dest* aux;
-    unsigned size=sizeof(struct aodv_rerr) +
-        (dests_num * sizeof(struct unrecheable_dest));
-    int i;
+    int i=0;
+    pkt->payload_len=sizeof(struct aodv_rerr) +
+        (dest_count * sizeof(struct unrecheable_dest));
 
     /* Reserve memory for the structure */
-    rerr=(struct aodv_rerr*)malloc(size);
-    memset(rerr,0,size);
+    rerr=(struct aodv_rerr*)calloc(1,pkt->payload_len);
 
     rerr->type = AODV_RERR;
     rerr->flag = flag;
     rerr->dest_count = dest_count;
 
-    aux=rerr+sizeof(struct aodv_rerr);
-    for(i=0;i<dests_count;i++)
+    aux=(struct unrecheable_dest*)rerr+sizeof(struct aodv_rerr);
+    for(i=0;i<dest_count;i++)
     {
         aux->ip_addr = dests[i]->ip_addr;
         aux->seq_num = dests[i]->seq_num;
         aux++;
     }
 
-    return (char*)rerr;
+    pkt->payload=(char*)rerr;
 }
 
-char* aodv_create_rrep_ack()
+void aodv_build_rrep_ack(struct aodv_pkt* pkt)
 {
     struct aodv_rrep_ack* rrep_ack;
 
+    pkt->payload_len=sizeof(struct aodv_rrep_ack);
+
     /* Reserve memory for the structure */
-    rrep_ack=(struct aodv_rrep_ack*)malloc(sizeof(struct aodv_rrep_ack));
-    memset(rrep_ack,0,sizeof(struct rrep_ack));
+    rrep_ack=(struct aodv_rrep_ack*)calloc(1,sizeof(struct aodv_rrep_ack));
     
     rrep_ack->type = AODV_RREP_ACK;
 
-    return rrep_ack;
-}
-
-int aodv_get_type(const char* b)
-{
-    const int *type = (const int*)b;
-    return *type;
-}
-
-size_t aodv_get_size_pkt(const char* b)
-{
-    const struct aodv_rerr* rerr;
-    switch(aodv_get_type_pkt(b))
-    {
-        case AODV_RREP:
-            sizeof(struct aodv_rrep);
-            break;
-        case AODV_RREQ:
-            return sizeof(struct aodv_rreq);
-        case AODV_RERR:
-            rerr=(struct aodv_rerr*)b;
-            return sizeof(struct aodv_rerr) +
-                rerr->dest_count * sizeof(struct unrecheable_dest);
-        case AODV_RREP_ACK:
-            return sizeof(struct aodv_rrep_ack);
-        default:
-            //FIXME statistic
-            return 0;
-    }
+    pkt->payload=(char*)rrep_ack;
 }
