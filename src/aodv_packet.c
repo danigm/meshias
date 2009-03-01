@@ -4,6 +4,7 @@
 #include <netinet/ip.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "aodv_packet.h"
 
@@ -42,13 +43,30 @@ struct aodv_pkt *aodv_get_pkt(struct msghdr* msg)
     if(msg->msg_iovlen>0)
     {
         pkt->payload_len=msg->msg_iov->iov_len;
-        strncpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
+        printf("%d\n",pkt->payload_len);
+        pkt->payload=(char*)calloc(1,pkt->payload_len);
+        memcpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
+        /*
+        int i=0;
+        for(i=0;i<pkt->payload_len;i++)
+            printf("%c",pkt->payload[i]);
+        puts("");
+        for(i=0;i<pkt->payload_len;i++)
+            printf("%c",((char*)msg->msg_iov->iov_base)[i]);
+            */
     }
     // If control data has been received
     if(msg->msg_controllen>0)
         pkt->ttl=aodv_receive_ttl(msg);
 
+    //FIXME dont check errors
     return pkt;
+}
+
+void aodv_destroy_pkt(struct aodv_pkt* pkt)
+{
+    free(pkt->payload);
+    free(pkt);
 }
 
 uint8_t aodv_get_ttl(struct aodv_pkt* pkt)
