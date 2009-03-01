@@ -3,6 +3,7 @@
 #include <netinet/udp.h>
 #include <netinet/ip.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "aodv_packet.h"
 
@@ -28,45 +29,26 @@ struct aodv_pkt *aodv_create_pkt()
     pkt->address.sin_addr.s_addr=INADDR_BROADCAST;
 }
 
-struct aodv_pkt *aodv_get_pkt(struct msghdr* msgh)
+struct aodv_pkt *aodv_get_pkt(struct msghdr* msg)
 {
-    /*
-    struct cmsghdr *cmsg;
+    struct aodv_pkt* pkt=(struct aodv_pkt*)calloc(1,sizeof(struct aodv_pkt));
+    
+    // If address has been received
+    if(msg->msg_namelen>0)
+    {
+        pkt->address=*(struct sockaddr_in*)msg->msg_name;
+    }
+    // If data has been received
+    if(msg->msg_iovlen>0)
+    {
+        pkt->payload_len=msg->msg_iov->iov_len;
+        strncpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
+    }
+    // If control data has been received
+    if(msg->msg_controllen>0)
+        pkt->ttl=aodv_receive_ttl(msg);
 
-    // Recibir los datos auxiliares en msgh 
-    for (cmsg = CMSG_FIRSTHDR(msgh); cmsg != NULL;
-            cmsg = CMSG_NXTHDR(msgh,cmsg))
-    {
-        puts("hi");
-        if (cmsg->cmsg_level == SOL_IP
-                && cmsg->cmsg_type == IP_TTL)
-            return (int)CMSG_DATA(cmsg);
-    }
-     // FIXME TTL no encontrado
-    return -1;
-    switch(msgh.msg_flags)
-    {
-        case MSG_EOR:
-            puts("MSG_EOR");
-            break;
-        case MSG_TRUNC:
-            puts("MSG_TRUNC");
-            break;
-        case MSG_CTRUNC:
-            puts("MSG_CTRUNC");
-            break;
-        case MSG_OOB:
-            puts("MSG_OOB");
-            break;
-        case MSG_ERRQUEUE:
-            puts("MSG_ERRQUEUE");
-            break;
-        case MSG_DONTWAIT:
-            puts("MSG_DONTWAIT");
-            break;
-    }
-    */
-    return NULL;
+    return pkt;
 }
 
 uint8_t aodv_get_ttl(struct aodv_pkt* pkt)
@@ -311,3 +293,18 @@ void aodv_build_rrep_ack(struct aodv_pkt* pkt)
 
     pkt->payload=(char*)rrep_ack;
 }
+
+static uint8_t aodv_receive_ttl(struct msghdr* msg)
+{
+    struct cmsghdr *cmsg;
+    for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL;
+            cmsg = CMSG_NXTHDR(msg,cmsg))
+    {
+        if (cmsg->cmsg_level == SOL_IP
+                && cmsg->cmsg_type == IP_TTL)
+            return *(uint8_t*)CMSG_DATA(cmsg);
+    }
+     // FIXME TTL no encontrado
+    return -1;
+}
+

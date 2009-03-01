@@ -50,4 +50,6 @@ void aodv_build_rerr(struct aodv_pkt* pkt,uint8_t flag, uint8_t dest_count,
 
 void aodv_build_rrep_ack(struct aodv_pkt* pkt);
 
+static uint8_t aodv_receive_ttl(struct msghdr* msg);
+
 #endif
