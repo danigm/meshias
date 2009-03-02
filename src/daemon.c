@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 
 #include "daemon.h"
+#include "aodv_packet.h"
 
 #define BUF_SIZE 1024
 
@@ -25,17 +26,6 @@ int daemon_init()
     // Listen from any ip
     address.sin_addr.s_addr = INADDR_ANY;
 
-
-    debug(3, "binding socket");
-    // Set the socket to listen
-    if( bind(data.daemon_fd, (struct sockaddr *)&address,
-        sizeof(address)) == -1 )
-    {
-        close(data.daemon_fd);
-        debug(1, "Error binding the UDP socket");
-        return ERR_INIT;
-    }
-
     debug(3, "changing socket options");
     // This call is what allows broadcast packets to be sent
     if(setsockopt(data.daemon_fd,SOL_SOCKET,SO_BROADCAST,&option,
@@ -50,6 +40,17 @@ int daemon_init()
                 sizeof option) == -1)
     {
         debug(1, "setsockopt (SO_BROADCAST)");
+        return ERR_INIT;
+    }
+
+
+    debug(3, "binding socket");
+    // Set the socket to listen
+    if( bind(data.daemon_fd, (struct sockaddr *)&address,
+        sizeof(address)) == -1 )
+    {
+        close(data.daemon_fd);
+        debug(1, "Error binding the UDP socket");
         return ERR_INIT;
     }
 
@@ -86,17 +87,17 @@ void daemon_receive_packets()
     memset(control_buf, 0, BUF_SIZE);
 
     // Fill the msg
-    msg.msg_name = &name_buf;
-    msg.msg_namelen = BUF_SIZE;
+    msg.msg_name=&name_buf;
+    msg.msg_namelen=BUF_SIZE;
 
-    io.iov_base = iov_buf;
-    io.iov_len = BUF_SIZE;
+    io.iov_base=iov_buf;
+    io.iov_len=BUF_SIZE;
 
-    msg.msg_iov = &io;
-    msg.msg_iovlen = 1;
+    msg.msg_iov=&io;
+    msg.msg_iovlen=1;
 
-    msg.msg_control = &iov_buf;
-    msg.msg_controllen = BUF_SIZE;
+    msg.msg_control=control_buf;
+    msg.msg_controllen=BUF_SIZE;
 
     //Receive the packet
     if( (numbytes = recvmsg(data.daemon_fd, &msg, 0)) == -1 )

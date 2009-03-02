@@ -4,8 +4,10 @@
 #include <netinet/ip.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "aodv_packet.h"
+#include "msh_data.h"
 
 #define DEFAULT_TTL 64
 
@@ -41,14 +43,33 @@ struct aodv_pkt *aodv_get_pkt(struct msghdr* msg)
     // If data has been received
     if(msg->msg_iovlen>0)
     {
+        //FIXME payload_len is set to 1024 always
+        // we won't always send 1K
         pkt->payload_len=msg->msg_iov->iov_len;
+        pkt->payload=(char*)calloc(1,pkt->payload_len);
         memcpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
     }
     // If control data has been received
     if(msg->msg_controllen>0)
         pkt->ttl=aodv_receive_ttl(msg);
 
+    //FIXME dont check errors
     return pkt;
+}
+
+ssize_t aodv_send_pkt(struct aodv_pkt* pkt)
+{
+    int numbytes=sendto(data.daemon_fd,pkt->payload,pkt->payload_len,0,
+            (struct sockaddr*)&(pkt->address),sizeof(pkt->address));
+
+    //FIXME resolve errors
+    return numbytes;
+}
+
+void aodv_destroy_pkt(struct aodv_pkt* pkt)
+{
+    free(pkt->payload);
+    free(pkt);
 }
 
 uint8_t aodv_get_ttl(struct aodv_pkt* pkt)
