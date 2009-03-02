@@ -132,13 +132,13 @@ void daemon_receive_packets()
     }
 }
 
-
 void daemon_process_rreq(struct aodv_pkt* pkt)
 {
     // (See page 16 of RFC 3561)
     // First create/update a route to the previous hop without a valid sequence
     // number
-    struct in_addr prev_hop = { .s_addr = aodv_pkt_get_address(pkt) };
+    struct in_addr prev_hop;
+    prev_hop.s_addr = aodv_pkt_get_address(pkt);
     
     struct msh_route *find_route = msh_route_alloc();
     msh_route_set_dst_ip(find_route, prev_hop);
@@ -185,4 +185,3 @@ void daemon_process_rrep_ack(struct aodv_pkt* pkt)
 {
     
 }
-

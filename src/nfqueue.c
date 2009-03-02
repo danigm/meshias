@@ -4,7 +4,7 @@
 
 int nfqueue_init()
 {
-    /* NF_QUEUE initializing */
+    // NF_QUEUE initializing
     debug(3,"Nf_queue: opening library handle");
     data.handle = nfq_open();
     if (!data.handle)
@@ -44,12 +44,12 @@ int nfqueue_init()
 
     data.netlink_handle = nfq_nfnlh(data.handle);
     data.nfqueue_fd = nfnl_fd(data.netlink_handle);
-    /* End of NF_QUEUE initializing */
+    // End of NF_QUEUE initializing
 
-    /* Adding nfqueue socket to the set */
+    // Adding nfqueue socket to the set
     FD_SET(data.nfqueue_fd,&data.all_fd);
 
-    /* max_fd */
+    // max_fd
     if(data.nfqueue_fd>=data.max_fd)
       data.max_fd=data.nfqueue_fd+1;
     
@@ -57,7 +57,6 @@ int nfqueue_init()
     return 0;
 }
  
-//TODO: remplace printf with log function
 void nfqueue_receive_packets()
 {
     char buf[4096] __attribute__ ((aligned));
@@ -181,7 +180,8 @@ struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data2)
 {
-    struct in_addr dest = { .s_addr = nfqueue_packet_get_dest(nfa).s_addr, };
+    struct in_addr dest;
+    dest.s_addr=nfqueue_packet_get_dest(nfa).s_addr;
     uint32_t id = nfqueue_packet_get_id(nfa);
     // routing_table_use_route() will set invalid_route if it finds a route but
     // it's marked as invalid.

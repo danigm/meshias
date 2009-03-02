@@ -42,7 +42,7 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     // adds new routes, it doesn't update existing entries.
     if((found = routing_table_find(table, route,
         RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)) != 0)
-        return -1;
+        return 1;
 
     nlroute = rtnl_route_alloc();
  
@@ -60,7 +60,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     if(route->flags & RTFLAG_HAS_GATEWAY)
         rtnl_route_set_gateway(nlroute, gateway);
     
-    if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0) {
+    if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0)
+    {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
         nl_addr_destroy(dst);
         nl_addr_destroy(gateway);
@@ -86,10 +87,11 @@ int routing_table_del(struct routing_table *table, struct msh_route *route)
     
     // If route is not in our list we have nothing to do here
     if((found = routing_table_find(table, route, 0)) != 0)
-        return -1;
+        return 1;
 
     nlroute = msh_route_get_rtnl_route(route);
-    if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0) {
+    if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0)
+    {
         fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
         return -1;
     }
@@ -111,7 +113,7 @@ struct msh_route *routing_table_find(struct routing_table *table,
             return entry;
     }
     
-    return 0;
+    return NULL;
 }
 
 

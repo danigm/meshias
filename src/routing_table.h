@@ -23,7 +23,7 @@ void routing_table_delete(struct routing_table *table);
  * table. If there's already a route for that destination (found by destination
  * ip longest-prefix matching)  this function doesn't do anything and returns -1.
  * If any error occurs when adding the route to the kernel's routing table, it
- * is not added to our own routing table and it returns -1. On success this
+ * is not added to our own routing table and it returns 1. On success this
  * function returns 0.
  */
 int routing_table_add(struct routing_table *table, struct msh_route *route);

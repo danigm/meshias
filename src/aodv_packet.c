@@ -59,6 +59,10 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msg)
 
 ssize_t aodv_pkt_send(struct aodv_pkt* pkt)
 {
+    // Set output ttl in socket option
+    setsockopt(data.daemon_fd,SOL_IP,IP_TTL,&(pkt->ttl),sizeof(pkt->ttl));
+
+    // Sending the information
     int numbytes=sendto(data.daemon_fd,pkt->payload,pkt->payload_len,0,
             (struct sockaddr*)&(pkt->address),sizeof(pkt->address));
 

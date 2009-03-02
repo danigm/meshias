@@ -7,8 +7,6 @@
 #include "alarm/alarm.h"
 #include "alarm/linux_list.h"
 
-struct msh_route;
-
 /**
  * These are the possible ways a route can be flagged
  * @see msh_route_set_flag
@@ -97,10 +95,10 @@ uint8_t msh_route_get_hop_count(struct msh_route *route);
 void msh_route_set_next_hop(struct msh_route *route, struct in_addr next_hop);
 struct in_addr msh_route_get_next_hop(struct msh_route *route);
 
-void msh_route__set_net_iface(struct msh_route *route, uint32_t net_iface);
+void msh_route_set_net_iface(struct msh_route *route, uint32_t net_iface);
 uint32_t msh_route_get_net_iface(struct msh_route *route);
 
-void msh_route__set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num);
+void msh_route_set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num);
 uint32_t msh_route_get_dest_seq_num(struct msh_route *route);
 
 void msh_route_set_lifetime(struct msh_route *route, uint32_t lifetime);
