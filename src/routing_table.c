@@ -65,9 +65,11 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
         nl_addr_destroy(gateway);
         return -1;
     }
-    // If we are successful, add the netlink route to the msh_route and
-    // add the route to the list of the routing table
+    // If we are successful, add the netlink route to the msh_route, set
+    // the lifetime of the route and add the route to the list of the routing table
     msh_route_set_rtnl_route(route, nlroute);
+    msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
+    
     list_add(&route->list, &table->route_list.list);
     
     nl_addr_destroy(dst);
@@ -112,24 +114,31 @@ struct msh_route *routing_table_find(struct routing_table *table,
 }
 
 
-uint8_t routing_table_has_route(struct routing_table *table,
-    struct in_addr dst_ip)
+uint8_t routing_table_use_route(struct routing_table *table,
+    struct in_addr dst_ip, struct msh_route **invalid_route)
 {
     struct msh_route *route = msh_route_alloc();
     msh_route_set_dst_ip(route, dst_ip);
     
-    return routing_table_find(table, route,
-        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING) != 0;
+    route = routing_table_find(table, route,
+        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+    
+    // If route not found or not active/invalid, return 0
+    if(!route || !(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY))
+    {
+        invalid_route = &route;
+        return 0;
+    }
+    
+    // Active route found, reset the lifetime
+    msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
+    
+    /* TODO (RFC Page 12)
+     * Since the route between each
+     * originator and destination pair is expected to be symmetric, the
+     * Active Route Lifetime for the previous hop, along the reverse path
+     * back to the IP source, is also updated to be no less than the current
+     * time plus ACTIVE_ROUTE_TIMEOUT.
+     */
+    return 1;
 }
-
-// void routing_table_foreach(struct routing_table *table,
-//     int (*callback_func)(struct msh_route *, void *), void *data)
-// {
-//     
-// }
-//     
-// void routing_table_foreach_filter(struct routing_table *table,
-//     int (*callback_func)(struct msh_route *, void *), void *data)
-// {
-//     
-// }

@@ -3,6 +3,27 @@
 #include "msh_data.h"
 #include "nfqueue.h"
 
+void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
+{
+    // Reset the number of rreq sent to zero
+    data.num_rreq_sent = 0;
+    
+    // Set the alarm to call this function again within 1 second
+    add_alarm(alarm, 1, 0);
+    
+    //TODO: Process data.rreq_wait_queue
+//     loop
+//         // Route not found. Queue the packet and find a route
+//         packets_fifo_push(data.packets_queue, id, dest);
+//         
+//         // Will only try to find a route if we are not already trying to find
+//         // one (i.e. when are not waiting response from a RREQ for that route
+//         // sent by us)
+//         if(!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
+//             aodv_find_route(dest, last_kown_dest_seq_num);
+}
+
+
 int msh_data_init(int argc, char **argv)
 {
     data.handle = NULL; 
@@ -11,6 +32,8 @@ int msh_data_init(int argc, char **argv)
     data.nl_handle = NULL; 
     data.max_fd = 0;
     data.num_rreq_sent = 0;
+    data.seq_num = 0;
+    data.rreq_id = 0;
     
     // Parse args
     if(argc < 2)
@@ -39,18 +62,32 @@ int msh_data_init(int argc, char **argv)
     
     // Get the interface name
     struct nl_cache *link_cache = rtnl_link_alloc_cache(data.nl_handle);
-    data.net_iface = rtnl_link_name2i(link_cache, argv[1]);
+    struct rtnl_link *link = rtnl_link_get_by_name(link_cache, argv[1]);
+    struct nl_addr *nladdr = rtnl_link_get_addr(link);
+
+    if(nl_addr_get_family(nladdr) != AF_INET)
+    {
+        fprintf(stderr, "Error: We only support interfaces using IPv4\n");
+        return ERR_INIT;
+    }
+    data.ip_addr.s_addr = nl_addr_get_binary_addr(nladdr);
+    data.net_iface = rtnl_link_get_name(link);
+    
+    rtnl_link_put(link);
     nl_cache_free(link_cache);
 
     data.routing_table = routing_table_alloc();
     data.rreq_queue = rreq_fifo_alloc();
     data.packets_queue = packets_fifo_alloc();
 
+    init_alarm(&data.rreq_flush_alarm, 0, __msh_data_process_wait_queue_cb);
+    add_alarm(alarm, 1, 0);
     //TODO:Max fd
 }
 
 void msh_data_shutdown()
 {
+    del_alarm(&data.rreq_flush_alarm);
     routing_table_delete(data.routing_table);
     rreq_fifo_delete(data.rreq_queue);
     packets_fifo_delete(data.packets_queue);

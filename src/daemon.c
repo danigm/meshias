@@ -80,26 +80,26 @@ void daemon_receive_packets()
     struct aodv_pkt* pkt;
 
     // Set all memory to 0
-    memset(&msg,0,sizeof(msg));
-    memset(name_buf,0,BUF_SIZE);
-    memset(iov_buf,0,BUF_SIZE);
-    memset(control_buf,0,BUF_SIZE);
+    memset(&msg, 0, sizeof(msg));
+    memset(name_buf, 0, BUF_SIZE);
+    memset(iov_buf, 0, BUF_SIZE);
+    memset(control_buf, 0, BUF_SIZE);
 
     // Fill the msg
-    msg.msg_name=&name_buf;
-    msg.msg_namelen=BUF_SIZE;
+    msg.msg_name = &name_buf;
+    msg.msg_namelen = BUF_SIZE;
 
-    io.iov_base=iov_buf;
-    io.iov_len=BUF_SIZE;
+    io.iov_base = iov_buf;
+    io.iov_len = BUF_SIZE;
 
-    msg.msg_iov=&io;
-    msg.msg_iovlen=1;
+    msg.msg_iov = &io;
+    msg.msg_iovlen = 1;
 
-    msg.msg_control=&iov_buf;
-    msg.msg_controllen=BUF_SIZE;
+    msg.msg_control = &iov_buf;
+    msg.msg_controllen = BUF_SIZE;
 
     //Receive the packet
-    if((numbytes = recvmsg(data.daemon_fd,&msg,0)) == -1)
+    if( (numbytes = recvmsg(data.daemon_fd, &msg, 0)) == -1 )
     {
         perror("FATAL ERROR: recvmsg");
         return;
@@ -108,5 +108,47 @@ void daemon_receive_packets()
     pkt=aodv_get_pkt(&msg);
 
     //HERE STARTS THE AODV LOGIC
-    //where pkt is the aodv_pkt
+    switch(aodv_get_type(pkt))
+    {
+        case AODV_RREQ:
+            daemon_process_rreq(pkt);
+            break;
+            
+        case AODV_RREP:
+            daemon_process_rrep(pkt);
+            break;
+            
+        case AODV_RERR:
+            daemon_process_rerr(pkt);
+            break;
+            
+        case AODV_RREP_ACK:
+            daemon_process_rrep_ack(pkt);
+            break;
+            
+        default:
+            break;
+    }
 }
+
+
+void daemon_process_rreq(struct aodv_pkt* pkt)
+{
+    
+}
+
+void daemon_process_rrep(struct aodv_pkt* pkt)
+{
+    
+}
+
+void daemon_process_rerr(struct aodv_pkt* pkt)
+{
+    
+}
+
+void daemon_process_rrep_ack(struct aodv_pkt* pkt)
+{
+    
+}
+

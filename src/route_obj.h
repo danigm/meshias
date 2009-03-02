@@ -99,6 +99,9 @@ struct in_addr msh_route_get_next_hop(struct msh_route *route);
 void msh_route__set_net_iface(struct msh_route *route, uint32_t net_iface);
 uint32_t msh_route_get_net_iface(struct msh_route *route);
 
+void msh_route__set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num);
+uint32_t msh_route_get_dest_seq_num(struct msh_route *route);
+
 void msh_route_set_lifetime(struct msh_route *route, uint32_t lifetime);
 uint32_t msh_route_get_lifetime(struct msh_route *route);
 

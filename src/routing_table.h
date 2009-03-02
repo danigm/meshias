@@ -50,11 +50,15 @@ struct msh_route *routing_table_find(struct routing_table *table,
     struct msh_route *route, int attr_flags);
 
 /**
- * Returns a non-zero number if there is a route for the given dest in the
- * routing table, searching by longest prefix matching.
+ * Returns a non-zero number if there is an active route for the given dest in
+ * the routing table, searching by longest prefix matching. If found, it will
+ * assume that the route will be used and it will do necessary actions for
+ * updating the route (see code for details).
+ * @var last_kown_dest_seq_num  is set to the last kown destination sequence
+ *                              number, only if the entry is marked as invalid.
  */
-uint8_t routing_table_has_route(struct routing_table *table,
-    struct in_addr dst_ip);
+uint8_t routing_table_use_route(struct routing_table *table,
+    struct in_addr dst_ip, struct msh_route **invalid_route);
 
 // void routing_table_foreach(struct routing_table *table,
 //     int (*callback_func)(struct msh_route *, void *), void *data);

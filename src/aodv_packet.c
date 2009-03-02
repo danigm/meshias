@@ -42,7 +42,7 @@ struct aodv_pkt *aodv_get_pkt(struct msghdr* msg)
     if(msg->msg_iovlen>0)
     {
         pkt->payload_len=msg->msg_iov->iov_len;
-        strncpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
+        memcpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
     }
     // If control data has been received
     if(msg->msg_controllen>0)

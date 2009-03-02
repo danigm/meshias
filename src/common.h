@@ -73,6 +73,10 @@ uint32_t TTL_VALUE();
 
 uint32_t RING_TRAVERSAL_TIME();
 
+uint32_t binary_exponential_backoff_time(int8_t prev_tries);
+
+uint32_t expanding_ring_search_ttl(uint8_t hop_count, int8_t prev_tries);
+
 /** @} */
 
 /**

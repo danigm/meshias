@@ -47,8 +47,22 @@ struct msh_data_t
     int max_fd;
 
     int net_iface;
+    struct in_addr ip_addr;
+
+    // Our own sequence number;
+    uint32_t seq_num;
+
+    // The ID of the last RREQ we have sent
+    uint32_t rreq_id;
+
     // There's a maximum number of RREQs that can be sent per second
     int num_rreq_sent;
+
+    // This alarm will be used to reset the field num_rreq_sent to zero every
+    // second, and to send the RREQs waiting for being sent.
+    struct alarm_block rreq_flush_alarm;
+    //TODO
+    //struct rreq_wait_fifo *rreq_wait_queue;
 };
 
 extern struct msh_data_t data;

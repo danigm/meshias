@@ -10,9 +10,9 @@ void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
         (*route->updated_cb)(route, change_flag, route->cb_data);
 }
 
-void __msh_route_alarm_cb(struct alarm_block* alarm, void *data)
+void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
 {
-    struct msh_route* route = (struct msh_route*)data;
+    struct msh_route* route = (struct msh_route*)qdata;
     unsigned long sc, usc;
     
     if(route->alarm_action == RTACTION_UNSET_VALID_ENTRY)
@@ -43,6 +43,7 @@ void msh_route_destroy(struct msh_route* route)
     struct precursor_t  *entry, *tmp;
     
     __msh_route_updated(route, RTACTION_DESTROY);
+    del_alarm(&route->alarm);
     
     list_for_each_entry_safe(entry, tmp, &route->precursors_list.list, list)
     {
@@ -136,13 +137,24 @@ uint32_t msh_route_get_net_iface(struct msh_route *route)
     return route->net_iface;
 }
 
+void msh_route__set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num)
+{
+    route->dest_seq_num = dest_seq_num;
+}
+
+uint32_t msh_route_get_dest_seq_num(struct msh_route *route)
+{
+    return route->dest_seq_num;
+}
+
 void msh_route_set_lifetime(struct msh_route *route, uint32_t lifetime)
 {
-    unsigned long  sc, usc;
+    unsigned long sc, usc;
     
     msh_route_set_flag(route, RTFLAG_VALID_ENTRY);
     route->alarm_action = RTACTION_UNSET_VALID_ENTRY;
-    set_alarm_time(lifetime, &sc, &usc);    
+    
+    set_alarm_time(lifetime, &sc, &usc);
     add_alarm(&route->alarm, sc, usc);
 }
 

@@ -1,4 +1,5 @@
 #include "msh_data.h"
+#include "aodv_logic.h"
 #include "nfqueue.h"
 
 int nfqueue_init()
@@ -182,9 +183,12 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 {
     struct in_addr dest = { .s_addr = nfqueue_packet_get_dest(nfa).s_addr, };
     uint32_t id = nfqueue_packet_get_id(nfa);
+    // routing_table_use_route() will set invalid_route if it finds a route but
+    // it's marked as invalid.
+    struct msh_route *invalid_route = 0;
     
     // If there's a route for the packet, let it go
-    if(routing_table_has_route(data.routing_table, dest))
+    if(routing_table_use_route(data.routing_table, dest, &invalid_route))
     {
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
@@ -192,7 +196,12 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     {
         // Route not found. Queue the packet and find a route
         packets_fifo_push(data.packets_queue, id, dest);
-        //aodv_find_route(dest);
+        
+        // Will only try to find a route if we are not already trying to find
+        // one (i.e. when are not waiting response from a RREQ for that route
+        // sent by us)
+        if(!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
+            aodv_find_route(dest, invalid_route, 0);
         return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
     }
 }

@@ -95,3 +95,17 @@ uint32_t RING_TRAVERSAL_TIME() {
     return 2 * NODE_TRAVERSAL_TIME() * (TTL_VALUE() + TIMEOUT_BUFFER());
 }
 
+uint32_t binary_exponential_backoff_time(int8_t prev_tries)
+{
+    return (1 << prev_tries) * NET_TRAVERSAL_TIME();
+}
+
+uint32_t expanding_ring_search_ttl(uint8_t hop_count, int8_t prev_tries)
+{
+    if(prev_tries == 0)
+        return hop_count + TTL_START();
+    
+    uint32_t ret = hop_count + TTL_START() + prev_tries * TTL_INCREMENT();
+    
+    return (ret > TTL_THRESHOLD()) ? NET_DIAMETER() : ret;
+}

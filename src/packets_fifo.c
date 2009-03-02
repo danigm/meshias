@@ -23,14 +23,20 @@ void packets_fifo_delete(struct packets_fifo* queue)
     
     list_for_each_entry_safe(entry, tmp, &queue->list, list)
     {
-        packet_obj_free(entry);
+        packet_obj_drop(entry);
     }
     free(queue);
 }
 
-void packet_obj_free(struct packets_fifo* packet_obj)
+void packet_obj_accept(struct packets_fifo* packet_obj)
 {
     nfq_set_verdict(data.queue, packet_obj->id, NF_ACCEPT, 0, NULL);
+    free(packet_obj);
+}
+
+void packet_obj_drop(struct packets_fifo* packet_obj)
+{
+    nfq_set_verdict(data.queue, packet_obj->id, NF_DROP, 0, NULL);
     free(packet_obj);
 }
 
@@ -46,6 +52,16 @@ void packets_fifo_push(struct packets_fifo* queue, uint32_t id,
     list_add(&packet_obj->list, &queue->list);
 }
 
+void packets_fifo_drop_packets(struct packets_fifo* queue, struct in_addr dest)
+{
+    struct packets_fifo *entry, *tmp;
+    
+    list_for_each_entry_safe(entry, tmp, &queue->list, list)
+    {
+        if(entry->dest.s_addr == dest.s_addr)
+            packet_obj_drop(entry);
+    }
+}
 
 uint32_t packets_fifo_process_route(struct packets_fifo* queue,
     struct msh_route* route)
@@ -60,9 +76,10 @@ uint32_t packets_fifo_process_route(struct packets_fifo* queue,
         // Free the packets matched by this new route
         if(msh_route_compare(route, second,
             RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING))
-            packet_obj_free(entry);
+            packet_obj_accept(entry);
     }
     free(route);
+    msh_route_destroy(second);
 }
 
 uint8_t packets_fifo_is_empty(struct packets_fifo* queue)
