@@ -134,7 +134,40 @@ void daemon_receive_packets()
 
 void daemon_process_rreq(struct aodv_pkt* pkt)
 {
+    // (See page 16 of RFC 3561)
+    // First create/update a route to the previous hop without a valid sequence
+    // number
+    struct in_addr prev_hop = { .s_addr = aodv_get_address(pkt) };
     
+    struct msh_route *find_route = msh_route_alloc();
+    msh_route_set_dst_ip(find_route, prev_hop);
+    struct msh_route *route = routing_table_find(data.routing_table,
+        find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+    msh_route_destroy(find_route);
+    
+    // If found a route for the prev_hop, update it
+    if(route)
+    {
+        // reset the lifetime and mark as valid
+        msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
+    } else {
+        // If route for prev_hop not found, create it
+        route = msh_route_alloc();
+        msh_route_set_dst_ip(route, prev_hop);
+        routing_table_add(data.routing_table, route);
+    }
+    
+    // Second, check if the rreq_queue has this rreq buffered. If so, we must
+    // discard it.
+    struct aodv_rreq* rreq = (struct aodv_rreq*)aodv_get_payload(pkt);
+    struct in_addr dest_addr = { .s_addr = ntohl(rreq->rreq_id) };
+    if(rreq_fifo_contains(data.rreq_queue, ntohl(rreq->rreq_id),
+        dest_addr))
+        return;
+
+    uint8_t hop_count = ntohs(rreq->hop_count) + 1;
+    rreq->hop_count = htons(hop_count);
+    //TODO: continue here
 }
 
 void daemon_process_rrep(struct aodv_pkt* pkt)

@@ -57,7 +57,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     rtnl_route_set_family(nlroute, AF_INET);
     rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
     rtnl_route_set_dst(nlroute, dst);
-    rtnl_route_set_gateway(nlroute, gateway);
+    if(route->flags & RTFLAG_HAS_GATEWAY)
+        rtnl_route_set_gateway(nlroute, gateway);
     
     if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0) {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
@@ -117,11 +118,12 @@ struct msh_route *routing_table_find(struct routing_table *table,
 uint8_t routing_table_use_route(struct routing_table *table,
     struct in_addr dst_ip, struct msh_route **invalid_route)
 {
-    struct msh_route *route = msh_route_alloc();
+    struct msh_route *find_route = msh_route_alloc(), *route;
     msh_route_set_dst_ip(route, dst_ip);
     
-    route = routing_table_find(table, route,
+    route = routing_table_find(table, find_route,
         RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+    msh_route_destroy(find_route); // Not needed anymore
     
     // If route not found or not active/invalid, return 0
     if(!route || !(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY))

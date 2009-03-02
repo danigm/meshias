@@ -17,8 +17,9 @@ struct msh_route;
  */
 #define RTFLAG_VALID_DEST_SEQ_NUM               0x0001   
 #define RTFLAG_VALID_ENTRY                      0x0002
-// #define RTFLAG_REPAIRABLE                       0x0004
-// #define RTFLAG_BEING_REPAIRED                   0x0008
+#define RTFLAG_HAS_GATEWAY                      0x0004
+// #define RTFLAG_REPAIRABLE                       0x0008
+// #define RTFLAG_BEING_REPAIRED                   0x0010
 
 /**
  * These can be used as the flags in a comparation

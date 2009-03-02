@@ -51,4 +51,6 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     
     // Finally we send the packet
     aodv_send_packet(pkt);
+    
+    //TODO aodv_packet_destroy(pkt); doesn't exist yet..
 }

@@ -20,7 +20,6 @@
 
 struct msh_data_t
 {
-
     // needed for libnetfilter_queue
     struct nfq_handle *handle;
     struct nfq_q_handle *queue;
