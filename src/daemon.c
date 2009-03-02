@@ -106,10 +106,10 @@ void daemon_receive_packets()
         return;
     }
 
-    pkt=aodv_get_pkt(&msg);
+    pkt=aodv_pkt_get(&msg);
 
     //HERE STARTS THE AODV LOGIC
-    switch(aodv_get_type(pkt))
+    switch(aodv_pkt_get_type(pkt))
     {
         case AODV_RREQ:
             daemon_process_rreq(pkt);
@@ -138,7 +138,7 @@ void daemon_process_rreq(struct aodv_pkt* pkt)
     // (See page 16 of RFC 3561)
     // First create/update a route to the previous hop without a valid sequence
     // number
-    struct in_addr prev_hop = { .s_addr = aodv_get_address(pkt) };
+    struct in_addr prev_hop = { .s_addr = aodv_pkt_get_address(pkt) };
     
     struct msh_route *find_route = msh_route_alloc();
     msh_route_set_dst_ip(find_route, prev_hop);
@@ -160,7 +160,7 @@ void daemon_process_rreq(struct aodv_pkt* pkt)
     
     // Second, check if the rreq_queue has this rreq buffered. If so, we must
     // discard it.
-    struct aodv_rreq* rreq = (struct aodv_rreq*)aodv_get_payload(pkt);
+    struct aodv_rreq* rreq = (struct aodv_rreq*)aodv_pkt_get_payload(pkt);
     struct in_addr dest_addr = { .s_addr = ntohl(rreq->rreq_id) };
     if(rreq_fifo_contains(data.rreq_queue, ntohl(rreq->rreq_id),
         dest_addr))

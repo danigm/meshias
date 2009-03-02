@@ -25,7 +25,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     data.seq_num++;
     rreq_fifo_push(data.rreq_queue, data.seq_num, data.ip_addr);
     
-    struct aodv_pkt* pkt = aodv_create_pkt();
+    struct aodv_pkt* pkt = aodv_pkt_alloc();
     uint8_t hop_count = (invalid_route) ?
         msh_route_get_hop_count(invalid_route) : 0;
     uint32_t dest_seq_num = (invalid_route) ?
@@ -35,22 +35,18 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     uint8_t flags = RREQ_GRATUITOUS_RREP_FLAG;
     flags |= (!invalid_route) ? RREQ_UNKNOWN_SEQ_NUM_FLAG : 0;
     
-    aodv_set_ttl(pkt, expanding_ring_search_ttl(hop_count, prev_tries));
+    aodv_pkt_set_ttl(pkt, expanding_ring_search_ttl(hop_count, prev_tries));
 
     // We are going to send a new RREQ, so we increment the global rreq id
     // counter
     data.rreq_id++;
     
     // After gathering all the needed information, we can build our rreq
-    aodv_build_rreq(pkt, flags, hop_count, data.rreq_id, dest.s_addr, dest_seq_num,
+    aodv_pkt_build_rreq(pkt, flags, hop_count, data.rreq_id, dest.s_addr, dest_seq_num,
         data.ip_addr.s_addr, data.seq_num);
     
-    //TODO: this function call shouldn't be needed!!
-    uint32_t broadcast = 0xFFFFFFFF;
-    aodv_set_address(pkt, broadcast);
-    
     // Finally we send the packet
-    aodv_send_packet(pkt);
+    aodv_pkt_send(pkt);
     
-    //TODO aodv_packet_destroy(pkt); doesn't exist yet..
+    aodv_pkt_destroy(pkt);
 }
