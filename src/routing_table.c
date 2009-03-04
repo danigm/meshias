@@ -121,7 +121,8 @@ struct msh_route *routing_table_find(struct routing_table *table,
 uint8_t routing_table_use_route(struct routing_table *table,
     struct in_addr dst_ip, struct msh_route **invalid_route)
 {
-    struct msh_route *find_route = msh_route_alloc(), *route;
+    struct msh_route *route;
+    struct msh_route *find_route = msh_route_alloc();
     msh_route_set_dst_ip(route, dst_ip);
     
     route = routing_table_find(table, find_route,

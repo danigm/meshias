@@ -55,10 +55,10 @@ int daemon_init()
         return ERR_INIT;
     }
 
-    /* Adding daemon_fd to the set */
+    // Adding daemon_fd to the set
     FD_SET(data.daemon_fd, &data.all_fd);
 
-    /* max_fd */
+    // max_fd
     if(data.daemon_fd >= data.max_fd)
         data.max_fd = data.daemon_fd + 1;
 

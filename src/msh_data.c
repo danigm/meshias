@@ -1,4 +1,4 @@
-
+#include <netinet/in.h>
 #include <netlink/route/link.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -75,11 +75,13 @@ int msh_data_init(int argc, char **argv)
     struct rtnl_link *link = rtnl_link_get_by_name(link_cache, argv[1]);
     struct nl_addr *nladdr = rtnl_link_get_addr(link);
 
+    /*
     if(nl_addr_get_family(nladdr) != AF_INET)
     {
         fprintf(stderr, "Error: We only support interfaces using IPv4\n");
         return ERR_INIT;
     }
+    */
     data.ip_addr.s_addr = nl_addr_get_binary_addr(nladdr);
     data.net_iface = rtnl_link_get_name(link);
     
@@ -91,8 +93,8 @@ int msh_data_init(int argc, char **argv)
     data.packets_queue = packets_fifo_alloc();
 
     init_alarm(&data.rreq_flush_alarm, 0, __msh_data_process_wait_queue_cb);
-    add_alarm(alarm, 1, 0);
-    //TODO:Max fd
+    //add_alarm(alarm, 1, 0);
+    return 1;
 }
 
 void msh_data_shutdown()
