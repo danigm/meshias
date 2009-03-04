@@ -1,5 +1,6 @@
+#include <sys/time.h>
+#include <time.h>
 #include "common.h"
-
 
 uint32_t ACTIVE_ROUTE_TIMEOUT() {
     return 3000;
@@ -108,4 +109,15 @@ uint32_t expanding_ring_search_ttl(uint8_t hop_count, int8_t prev_tries)
     uint32_t ret = hop_count + TTL_START() + prev_tries * TTL_INCREMENT();
     
     return (ret > TTL_THRESHOLD()) ? NET_DIAMETER() : ret;
+}
+
+uint32_t minimal_lifetime(uint8_t hop_count)
+{
+    struct timeval now;
+    
+    gettimeofday(&now, NULL);
+    uint32_t current_time = get_alarm_time(now.tv_sec, now.tv_usec);
+    
+    return (current_time + 2 * NET_TRAVERSAL_TIME() -
+        2 * hop_count * NODE_TRAVERSAL_TIME());
 }

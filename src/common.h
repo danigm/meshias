@@ -77,6 +77,9 @@ uint32_t binary_exponential_backoff_time(int8_t prev_tries);
 
 uint32_t expanding_ring_search_ttl(uint8_t hop_count, int8_t prev_tries);
 
+// See RFC 3561 page 17
+uint32_t minimal_lifetime(uint8_t hop_count);
+
 /** @} */
 
 /**

@@ -49,33 +49,34 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     struct nl_addr *dst = in_addr2nl_addr(&route->dst_ip,
         msh_route_get_prefix_sz(route));
     
-    struct nl_addr *gateway = in_addr2nl_addr(&route->gateway_ip, 0);
+    struct nl_addr *nexthop = in_addr2nl_addr(&route->nexthop_ip, 0);
     
     uint8_t dst_len = 32 - msh_route_get_prefix_sz(route);
-        
+    
     rtnl_route_set_oif(nlroute, msh_route_get_net_iface(route));
     rtnl_route_set_family(nlroute, AF_INET);
     rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
     rtnl_route_set_dst(nlroute, dst);
-    if(route->flags & RTFLAG_HAS_GATEWAY)
-        rtnl_route_set_gateway(nlroute, gateway);
-    
+//TODO
+//     if(route->flags & RTFLAG_HAS_NEXTHOP)
+//         rtnl_route_add_nexthop(nlroute, nexthop);
     if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0)
     {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
         nl_addr_destroy(dst);
-        nl_addr_destroy(gateway);
+        nl_addr_destroy(nexthop);
         return -1;
     }
     // If we are successful, add the netlink route to the msh_route, set
     // the lifetime of the route and add the route to the list of the routing table
     msh_route_set_rtnl_route(route, nlroute);
     msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
+    //TODO: add a callback to the route for getting updates
     
     list_add(&route->list, &table->route_list.list);
     
     nl_addr_destroy(dst);
-    nl_addr_destroy(gateway);
+    nl_addr_destroy(nexthop);
 
     return 0;
 }

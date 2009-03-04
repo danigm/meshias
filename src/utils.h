@@ -13,7 +13,7 @@ void set_alarm_time(uint32_t miliseconds, unsigned long* sc,
     unsigned long* usc);
 
 /**
- * Given an amount of time in seconds and miliseconds, it returns the
+ * Given an amount of time in seconds and microseconds, it returns the
  * equivalent amount of time in miliseconds.
  */
 uint32_t get_alarm_time(unsigned long sc, unsigned long usc);

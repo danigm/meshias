@@ -25,7 +25,7 @@ void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
 
     } else if(route->alarm_action == RTACTION_DESTROY)
         msh_route_destroy(route);
-    }
+}
 
 struct msh_route* msh_route_alloc()
 {
@@ -64,15 +64,15 @@ struct in_addr msh_route_get_dst_ip(struct msh_route *route)
     return route->dst_ip;
 }
 
-void msh_route_set_gateway_ip(struct msh_route *route, struct in_addr gateway_ip)
+void msh_route_set_nexthop_ip(struct msh_route *route, struct in_addr nexthop_ip)
 {
-    route->gateway_ip = gateway_ip;
-    __msh_route_updated(route, RTACTION_CHANGE_GATEWAY_IP);
+    route->nexthop_ip = nexthop_ip;
+    __msh_route_updated(route, RTACTION_CHANGE_NEXTHOP_IP);
 }
 
-struct in_addr msh_route_get_gateway_ip(struct msh_route *route)
+struct in_addr msh_route_get_nexthop_ip(struct msh_route *route)
 {
-    return route->gateway_ip;
+    return route->nexthop_ip;
 }
 
 void msh_route_set_prefix_sz(struct msh_route *route, uint8_t prefix_sz)
@@ -137,7 +137,7 @@ uint32_t msh_route_get_net_iface(struct msh_route *route)
     return route->net_iface;
 }
 
-void msh_route_set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num)
+void msh_route__set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num)
 {
     route->dest_seq_num = dest_seq_num;
 }

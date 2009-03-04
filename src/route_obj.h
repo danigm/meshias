@@ -15,7 +15,7 @@
  */
 #define RTFLAG_VALID_DEST_SEQ_NUM               0x0001   
 #define RTFLAG_VALID_ENTRY                      0x0002
-#define RTFLAG_HAS_GATEWAY                      0x0004
+#define RTFLAG_HAS_NEXTHOP                      0x0004
 // #define RTFLAG_REPAIRABLE                       0x0008
 // #define RTFLAG_BEING_REPAIRED                   0x0010
 
@@ -24,7 +24,7 @@
  * @see msh_route_compare
  */
 #define RTATTR_DST_IP                           0x0001
-#define RTATTR_GATEWAY_IP                       0x0002
+#define RTATTR_NEXTHOP_IP                       0x0002
 #define RTATTR_PREFIX_SZ                        0x0004
 #define RTATTR_DEST_SEQ_NUM                     0x0008
 #define RTATTR_FLAGS                            0x0010
@@ -39,7 +39,7 @@
 
 #define RTACTION_UNSET_VALID_ENTRY              0x0008
 #define RTACTION_DESTROY                        0x0010
-#define RTACTION_CHANGE_GATEWAY_IP              0x0020
+#define RTACTION_CHANGE_NEXTHOP_IP              0x0020
 
 struct precursor_t
 {
@@ -50,7 +50,7 @@ struct precursor_t
 struct msh_route
 {
     struct in_addr dst_ip;
-    struct in_addr gateway_ip;
+    struct in_addr nexthop_ip;
     uint8_t prefix_sz;
     uint32_t dest_seq_num;
     uint16_t flags;
@@ -79,8 +79,8 @@ void msh_route_destroy(struct msh_route* route);
 void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip);
 struct in_addr msh_route_get_dst_ip(struct msh_route *route);
 
-void msh_route_set_gateway_ip(struct msh_route *route, struct in_addr gateway_ip);
-struct in_addr msh_route_get_gateway_ip(struct msh_route *route);
+void msh_route_set_nexthop_ip(struct msh_route *route, struct in_addr nexthop_ip);
+struct in_addr msh_route_get_nexthop_ip(struct msh_route *route);
 
 void msh_route_set_prefix_sz(struct msh_route *route, uint8_t prefix_sz);
 uint8_t msh_route_get_prefix_sz(struct msh_route *route);
