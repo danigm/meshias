@@ -11,7 +11,7 @@
 struct packets_fifo* packets_fifo_alloc()
 {
     struct packets_fifo* queue = (struct packets_fifo*)
-        malloc(sizeof(struct packets_fifo*));
+        calloc(1, sizeof(struct packets_fifo));
     INIT_LIST_HEAD(&(queue->list));
     
     return queue;
@@ -44,7 +44,7 @@ void packets_fifo_push(struct packets_fifo* queue, uint32_t id,
     struct in_addr dest)
 {
     struct packets_fifo* packet_obj = (struct packets_fifo*)
-        malloc(sizeof(struct packets_fifo*));
+        calloc(1, sizeof(struct packets_fifo*));
     
     packet_obj->id = id;
     packet_obj->dest.s_addr = dest.s_addr;

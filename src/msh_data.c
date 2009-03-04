@@ -73,7 +73,15 @@ int msh_data_init(int argc, char **argv)
     // Get the interface name
     struct nl_cache *link_cache = rtnl_link_alloc_cache(data.nl_handle);
     struct rtnl_link *link = rtnl_link_get_by_name(link_cache, argv[1]);
+    
+    if(!link)
+    {
+        fprintf(stderr, "Error: Couldn't access the interface named %s\n", argv[1]);
+        return ERR_INIT;
+    }
+    
     struct nl_addr *nladdr = rtnl_link_get_addr(link);
+    int family = nl_addr_get_family(nladdr);
 
     /*
     if(nl_addr_get_family(nladdr) != AF_INET)
@@ -82,6 +90,7 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     }
     */
+
     data.ip_addr.s_addr = nl_addr_get_binary_addr(nladdr);
     data.net_iface = rtnl_link_get_name(link);
     

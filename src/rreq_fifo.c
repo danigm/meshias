@@ -42,7 +42,7 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
 struct rreq_fifo* rreq_fifo_alloc()
 {
     struct rreq_fifo* queue = (struct rreq_fifo*)
-        malloc(sizeof(struct rreq_fifo*));
+        calloc(1, sizeof(struct rreq_fifo));
         
     init_alarm(&queue->alarm, queue, __rreq_fifo_alarm_cb);
     INIT_LIST_HEAD(&(queue->list));
@@ -65,7 +65,7 @@ void rreq_fifo_push(struct rreq_fifo* queue, uint32_t rreq_id,
     struct in_addr dst)
 {
     struct rreq_fifo* entry = (struct rreq_fifo*)
-        malloc(sizeof(struct rreq_fifo*));
+        calloc(1, sizeof(struct rreq_fifo));
     unsigned long  sc, usc;
     
     entry->rreq_id = rreq_id;
@@ -82,7 +82,7 @@ void rreq_fifo_push_owned(struct rreq_fifo* queue, uint32_t rreq_id,
     struct in_addr dst, int8_t prev_tries)
 {
     struct rreq_fifo* entry = (struct rreq_fifo*)
-        malloc(sizeof(struct rreq_fifo*));
+        calloc(1, sizeof(struct rreq_fifo));
     unsigned long  sc, usc;
     
     entry->rreq_id = rreq_id;

@@ -194,7 +194,7 @@ void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip)
     }
     
     // Entry not found; adding it
-    entry = (struct precursor_t *)malloc(sizeof(struct precursor_t *));
+    entry = (struct precursor_t *)calloc(1, sizeof(struct precursor_t));
     entry->dst_ip.s_addr = dst_ip.s_addr;
     list_add(&entry->list, &route->precursors_list.list);
 }

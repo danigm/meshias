@@ -16,7 +16,7 @@ struct routing_table
 struct routing_table *routing_table_alloc()
 {
     struct routing_table *table =
-        (struct routing_table *)malloc(sizeof(struct routing_table *));
+        (struct routing_table *)calloc(1, sizeof(struct routing_table));
     INIT_LIST_HEAD(&(table->route_list.list));
     
     return table;
