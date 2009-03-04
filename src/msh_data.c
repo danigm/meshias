@@ -1,5 +1,8 @@
 
 #include <netlink/route/link.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 #include "msh_data.h"
 #include "nfqueue.h"
 
@@ -43,6 +46,13 @@ int msh_data_init(int argc, char **argv)
         exit(1);
     }
     
+    // You must be root
+    if(getuid() != 0)
+    {
+        perror("You must be root.\n");
+        return ERR_INIT;
+    }
+
     /* Initializing the fd set */
     FD_ZERO(&data.all_fd);
 

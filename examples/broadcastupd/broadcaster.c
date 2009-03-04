@@ -14,7 +14,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define SERVERPORT 1654    // the port users will be connecting to
+#define SERVERPORT 654    // the port users will be connecting to
 
 int main(int argc, char *argv[])
 {
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    broadcast=32;
+    broadcast=64;
     if (setsockopt(sockfd, SOL_IP, IP_TTL, &broadcast,
         sizeof broadcast) == -1) {
         perror("setsockopt (SO_BROADCAST)");
