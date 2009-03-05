@@ -138,7 +138,8 @@ void daemon_process_rreq(struct aodv_pkt* pkt)
     // (See page 16 of RFC 3561)
     // First create/update a route to the previous hop without a valid sequence
     // number
-    struct in_addr addr = { .s_addr = aodv_pkt_get_address(pkt) };
+    struct in_addr addr;
+    addr.s_addr = aodv_pkt_get_address(pkt);
     
     struct msh_route *find_route = msh_route_alloc();
     msh_route_set_dst_ip(find_route, addr);
@@ -150,7 +151,9 @@ void daemon_process_rreq(struct aodv_pkt* pkt)
     {
         // reset the lifetime and mark as valid
         msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
-    } else {
+    }
+    else
+    {
         // If route for prev_hop not found, create it
         route = msh_route_alloc();
         msh_route_set_dst_ip(route, addr);
@@ -160,24 +163,26 @@ void daemon_process_rreq(struct aodv_pkt* pkt)
     // Second, check if the rreq_queue has this rreq buffered. If so, we must
     // discard it.
     struct aodv_rreq* rreq = (struct aodv_rreq*)aodv_pkt_get_payload(pkt);
-    struct in_addr dest_addr = { .s_addr = ntohl(rreq->rreq_id) };
-    if(rreq_fifo_contains(data.rreq_queue, ntohl(rreq->rreq_id),
+    struct in_addr dest_addr;
+    dest_addr.s_addr = rreq->dest_ip_addr;
+    if(rreq_fifo_contains(data.rreq_queue, rreq->rreq_id,
         dest_addr))
         return;
 
-    uint8_t hop_count = ntohs(rreq->hop_count);
-    rreq->hop_count = htons(hop_count) + 1;
+    uint8_t hop_count = rreq->hop_count;
+    rreq->hop_count = hop_count + 1;
     
     // searches for a reverse route to the Originator IP Address (see
     // section 6.2), using longest-prefix matching.  If need be, the route
     // is created, or updated using the Originator Sequence Number from the
     // RREQ in its routing table.
-    struct in_addr addr_orig = { .s_addr = ntohl(rreq->orig_ip_addr) };
+    struct in_addr addr_orig;
+    addr_orig.s_addr = rreq->orig_ip_addr;
     msh_route_set_dst_ip(find_route, addr_orig);
     route = routing_table_find(data.routing_table,
         find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
     
-    uint32_t seq_num_new = ntohl(rreq->orig_seq_num);
+    uint32_t seq_num_new = rreq->orig_seq_num;
     uint32_t min_lifetime = minimal_lifetime(hop_count);
     // If found a route for the orig ip, update it
     if(route)
@@ -192,15 +197,17 @@ void daemon_process_rreq(struct aodv_pkt* pkt)
         
         //TODO: check if this seq_num check is being done right
         if(seq_num_old < seq_num_new)
-            msh_route__set_dest_seq_num(route, seq_num_new);
+            msh_route_set_dest_seq_num(route, seq_num_new);
         if(min_lifetime > lifetime_old)
             msh_route_set_lifetime(route, min_lifetime);
         
-    } else {
+    }
+    else
+    {
         // If route for orig ip not found, create it
         route = msh_route_alloc();
         msh_route_set_dst_ip(route, addr_orig);
-        msh_route__set_dest_seq_num(route, seq_num_new);
+        msh_route_set_dest_seq_num(route, seq_num_new);
         msh_route_set_next_hop(route, addr);
         msh_route_set_hop_count(route, hop_count);
         msh_route_set_lifetime(route, min_lifetime);
@@ -229,26 +236,25 @@ void daemon_process_rreq(struct aodv_pkt* pkt)
         aodv_pkt_decrease_ttl(pkt);
         rreq->hop_count++;
         
-        // If we didn't send a rrep is because we either don't have a route
-        // for the destination or it's marked as invalid. If it's marked as
-        // invalid, we might need to update the rreq's dest seq num before
-        // broadcasting it.
         msh_route_set_dst_ip(find_route, dest_addr);
         
         route = routing_table_find(data.routing_table,
             find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
         
-        if(!route || (!(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY) &&
-            (msh_route_get_flags(route) & RTFLAG_VALID_DEST_SEQ_NUM)) )
+        // If we didn't send a rrep is because we either don't have a route
+        // for the destination or it's marked as invalid. If it's marked as
+        // invalid, we might need to update the rreq's dest seq num before
+        // broadcasting it.
+        if(route && !(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY) &&
+                (msh_route_get_flags(route) & RTFLAG_VALID_DEST_SEQ_NUM)) 
         {
             uint32_t dest_seq_num_old = msh_route_get_dest_seq_num(route);
             uint32_t dest_seq_num_new = ntohl(rreq->orig_seq_num);
             if(dest_seq_num_old < dest_seq_num_new)
-                msh_route__set_dest_seq_num(route, dest_seq_num_new);
+                msh_route_set_dest_seq_num(route, dest_seq_num_new);
                 
         }
         aodv_pkt_send(pkt);
-        
     }
     
     // Free the mallocs! we don't need this temporal route anymore
