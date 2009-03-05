@@ -20,9 +20,12 @@ void __fill_routing_table(struct nl_object* obj, void *arg)
     
     char buf[128];
     
+    printf("primero %p %p\n",table,arg);
     struct nl_addr *addr = rtnl_route_get_dst(route);
     
-    if(addr != NULL && rtnl_route_get_table(route) == 254)
+    // If it's of the main routing table and ipv4
+    if(addr != NULL && rtnl_route_get_table(route) == 254
+            && rtnl_route_get_family(route) == AF_INET)
     {
         struct msh_route* mshRoute = msh_route_alloc();
         struct in_addr *addr_dst = nl_addr_get_binary_addr(addr);
@@ -38,7 +41,7 @@ void __fill_routing_table(struct nl_object* obj, void *arg)
         // As it's not a meshias route but an external one, it won't have a
         // lifetime set, but it will be a valid entry. Forever.
         msh_route_set_flag(mshRoute, RTFLAG_VALID_ENTRY);
-        routing_table_add(data.routing_table, mshRoute);
+        routing_table_add(table, mshRoute);
     } else
         printf("Route (unkown addr)\n");
     
@@ -62,7 +65,7 @@ struct routing_table *routing_table_alloc()
     // Fill the cache
     struct nl_cache *route_cache = rtnl_route_alloc_cache(data.nl_handle);
     printf("Route cache (%d ifaces):\n", nl_cache_nitems(route_cache));
-    nl_cache_foreach(route_cache, __fill_routing_table, (void *)table);
+    nl_cache_foreach(route_cache, __fill_routing_table,table);
     nl_cache_free(route_cache);
     
     return table;
@@ -95,6 +98,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     struct nl_addr *dst = in_addr2nl_addr(&route->dst_ip,
         msh_route_get_prefix_sz(route));
     
+    char buffer[512];
+    printf("lo que se envia %s\n",nl_addr2str(dst,buffer,512));
     struct nl_addr *nexthop = in_addr2nl_addr(&route->nexthop_ip, 0);
     
     uint8_t dst_len = 32 - msh_route_get_prefix_sz(route);
@@ -109,8 +114,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0)
     {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
-        nl_addr_destroy(dst);
-        nl_addr_destroy(nexthop);
+        //???
+        //nl_addr_destroy(nexthop);
         return -1;
     }
     // If we are successful, add the netlink route to the msh_route, set
