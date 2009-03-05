@@ -38,14 +38,14 @@ struct msh_data_t
     struct routing_table* routing_table;
 
     // Sockets
-    int nfqueue_fd;
+    uint32_t nfqueue_fd;
     // This is the socket 654 UDP. It's listening to new packet of the
     // aodv protocol. It also used to send packet of aodv protocol.
-    int daemon_fd;
+    uint32_t daemon_fd;
     fd_set all_fd;
-    int max_fd;
+    uint32_t max_fd;
 
-    int net_iface;
+    uint32_t net_iface;
     struct in_addr ip_addr;
 
     // Our own sequence number;
@@ -55,7 +55,7 @@ struct msh_data_t
     uint32_t rreq_id;
 
     // There's a maximum number of RREQs that can be sent per second
-    int num_rreq_sent;
+    uint32_t num_rreq_sent;
 
     // This alarm will be used to reset the field num_rreq_sent to zero every
     // second, and to send the RREQs waiting for being sent.

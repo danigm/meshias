@@ -91,8 +91,8 @@ int msh_data_init(int argc, char **argv)
     }
     */
 
-    data.ip_addr.s_addr = nl_addr_get_binary_addr(nladdr);
-    data.net_iface = rtnl_link_get_name(link);
+    memcpy(&data.ip_addr,nl_addr_get_binary_addr(nladdr),sizeof(uint32_t));
+    data.net_iface = rtnl_link_name2i(link_cache,rtnl_link_get_name(link));
     
     rtnl_link_put(link);
     nl_cache_free(link_cache);
