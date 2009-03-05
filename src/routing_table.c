@@ -123,7 +123,8 @@ uint8_t routing_table_use_route(struct routing_table *table,
 {
     struct msh_route *route;
     struct msh_route *find_route = msh_route_alloc();
-    msh_route_set_dst_ip(route, dst_ip);
+    printf("%p\n",find_route);
+    msh_route_set_dst_ip(find_route, dst_ip);
     
     route = routing_table_find(table, find_route,
         RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);

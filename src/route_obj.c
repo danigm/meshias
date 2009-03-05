@@ -30,7 +30,7 @@ void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
 struct msh_route* msh_route_alloc()
 {
     struct msh_route* route = (struct msh_route*)
-        calloc(1, sizeof(struct msh_route*));
+        calloc(1, sizeof(struct msh_route));
     
     init_alarm(&route->alarm, route, __msh_route_alarm_cb);
     INIT_LIST_HEAD(&(route->precursors_list.list));
@@ -56,7 +56,11 @@ void msh_route_destroy(struct msh_route* route)
 
 void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip)
 {
-    route->dst_ip = dst_ip;
+    printf("%p\n",route);
+    route->dst_ip.s_addr = 0;
+    puts("prueba");
+    dst_ip.s_addr;
+    puts("hola");
 }
 
 struct in_addr msh_route_get_dst_ip(struct msh_route *route)
