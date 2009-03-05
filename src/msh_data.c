@@ -83,7 +83,7 @@ int msh_data_init(int argc, char **argv)
     struct nl_addr *nladdr = rtnl_link_get_addr(link);
     int family = nl_addr_get_family(nladdr);
 
-    /*
+    /*TODO
     if(nl_addr_get_family(nladdr) != AF_INET)
     {
         fprintf(stderr, "Error: We only support interfaces using IPv4\n");

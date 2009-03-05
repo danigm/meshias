@@ -1,4 +1,4 @@
-all: libnl alarm recvmsg sendmsg
+all: libnl alarm recvmsg sendmsg linuxlists
 
 libnl: libnl-routes.c
 	gcc -o libnl-routes -lnl libnl-routes.c
@@ -8,3 +8,5 @@ recvmsg: recvmsg.c
 	gcc -o recvmsg recvmsg.c
 sendmsg: sendmsg.c
 	gcc -o sendmsg sendmsg.c
+linuxlists:
+	gcc -o linuxlists linuxlists.c

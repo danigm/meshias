@@ -13,11 +13,57 @@ struct routing_table
     struct msh_route route_list;
 };
 
+void __fill_routing_table(struct nl_object* obj, void *arg)
+{
+    struct routing_table *table = (struct routing_table *)arg;
+    struct rtnl_route* route = (struct rtnl_route*)obj;
+    
+    char buf[128];
+    
+    struct nl_addr *addr = rtnl_route_get_dst(route);
+    
+    if(addr != NULL && rtnl_route_get_table(route) == 254)
+    {
+        struct msh_route* mshRoute = msh_route_alloc();
+        struct in_addr *addr_dst = nl_addr_get_binary_addr(addr);
+        
+        printf("Route \ttable %d\tdst %s\t\tdst len %d\n",
+            rtnl_route_get_table(route),
+            nl_addr2str(addr, buf, sizeof(buf)),
+            rtnl_route_get_dst_len(route));
+        
+        msh_route_set_dst_ip(mshRoute, *addr_dst);
+        msh_route_set_prefix_sz(mshRoute, rtnl_route_get_dst_len(route));
+        msh_route_unset_flag(mshRoute, RTFLAG_VALID_DEST_SEQ_NUM);
+        // As it's not a meshias route but an external one, it won't have a
+        // lifetime set, but it will be a valid entry. Forever.
+        msh_route_set_flag(mshRoute, RTFLAG_VALID_ENTRY);
+        routing_table_add(data.routing_table, mshRoute);
+    } else
+        printf("Route (unkown addr)\n");
+    
+    
+//     struct nl_dump_params dp = {
+//         .dp_type = NL_DUMP_FULL,
+//         .dp_fd = stdout,
+//         .dp_dump_msgtype = 1,
+//     };
+// 
+//     if(rtnl_route_get_table(route) == 254)
+//         nl_object_dump(obj, &dp);
+}
+
 struct routing_table *routing_table_alloc()
 {
     struct routing_table *table =
         (struct routing_table *)calloc(1, sizeof(struct routing_table));
     INIT_LIST_HEAD(&(table->route_list.list));
+    
+    // Fill the cache
+    struct nl_cache *route_cache = rtnl_route_alloc_cache(data.nl_handle);
+    printf("Route cache (%d ifaces):\n", nl_cache_nitems(route_cache));
+    nl_cache_foreach(route_cache, __fill_routing_table, (void *)table);
+    nl_cache_free(route_cache);
     
     return table;
 }
@@ -108,8 +154,11 @@ struct msh_route *routing_table_find(struct routing_table *table,
 {
     struct msh_route *entry;
     
+    puts("routing_table_find: ");
+    
     list_for_each_entry(entry, &table->route_list.list, list)
     {
+        puts("recorriendo entrada de la tabla de rutas");
         if(msh_route_compare(route, entry, attr_flags) == 0)
             return entry;
     }
@@ -123,7 +172,6 @@ uint8_t routing_table_use_route(struct routing_table *table,
 {
     struct msh_route *route;
     struct msh_route *find_route = msh_route_alloc();
-    printf("%p\n",find_route);
     msh_route_set_dst_ip(find_route, dst_ip);
     
     route = routing_table_find(table, find_route,

@@ -187,13 +187,17 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     // it's marked as invalid.
     struct msh_route *invalid_route = 0;
     
+    puts("manage_packet");
+    
     // If there's a route for the packet, let it go
     if(routing_table_use_route(data.routing_table, dest, &invalid_route))
     {
+        puts("ACCEPT");
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
     else
     {
+        puts("ST!OLEN");
         // Route not found. Queue the packet and find a route
         packets_fifo_push(data.packets_queue, id, dest);
         

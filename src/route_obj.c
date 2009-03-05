@@ -56,11 +56,8 @@ void msh_route_destroy(struct msh_route* route)
 
 void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip)
 {
-    printf("%p\n",route);
     route->dst_ip.s_addr = 0;
-    puts("prueba");
     dst_ip.s_addr;
-    puts("hola");
 }
 
 struct in_addr msh_route_get_dst_ip(struct msh_route *route)

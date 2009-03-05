@@ -8,6 +8,9 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/addr.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 
@@ -31,7 +34,11 @@ void print_route(struct nl_object* obj, void *arg)
     {
         if(rtnl_route_get_table(route) == 254)
         {
-        printf("Route %d \ttable %d\tdst %s\t\tdst len %d\n", *item,
+            struct in_addr *inaddr = (struct in_addr*)malloc(sizeof(struct in_addr));
+            inaddr = nl_addr_get_binary_addr(addr);
+            printf("Route %s\n", inet_ntoa(*inaddr));
+            
+            printf("Route %d \ttable %d\tdst %s\t\tdst len %d\n", *item,
                 rtnl_route_get_table(route),
                 nl_addr2str(addr, buf, sizeof(buf)),
                 rtnl_route_get_dst_len(route));
@@ -48,8 +55,8 @@ void print_route(struct nl_object* obj, void *arg)
         .dp_dump_msgtype = 1,
     };
 
-    if(rtnl_route_get_table(route) == 254)
-    	nl_object_dump(obj, &dp);
+//     if(rtnl_route_get_table(route) == 254)
+//     	nl_object_dump(obj, &dp);
 
 //     route_dump_full(route, &params);
 }
