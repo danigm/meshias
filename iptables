@@ -1,5 +1,5 @@
 # Para capturar paquetes con destino el puerto 2222 en la cola NFQUEUE
-sudo iptables -t filter -A OUTPUT -p tcp --dport 2222 -j NFQUEUE --queue-num 0
+sudo iptables -t filter -A OUTPUT -j NFQUEUE --queue-num 0
 
 
 # Para montar un servidor escuchando en el puerto 2222
@@ -9,4 +9,4 @@ nc -l -p 2222
 nc localhost 2222
 
 # Para dejar de capturar paquetes con destino el puerto 2222 en la cola NFQUEUE
-sudo iptables -t filter -D OUTPUT -p tcp --dport 2222 -j NFQUEUE --queue-num 0
+sudo iptables -t filter -D OUTPUT -j NFQUEUE --queue-num 0

@@ -141,7 +141,7 @@ uint32_t msh_route_get_net_iface(struct msh_route *route)
     return route->net_iface;
 }
 
-void msh_route__set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num)
+void msh_route_set_dest_seq_num(struct msh_route *route, uint32_t dest_seq_num)
 {
     route->dest_seq_num = dest_seq_num;
 }
