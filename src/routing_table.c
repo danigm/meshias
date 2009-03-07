@@ -34,13 +34,13 @@ void __fill_routing_table(struct nl_object* obj, void *arg)
         struct msh_route* mshRoute = msh_route_alloc();
         struct in_addr *addr_dst = nl_addr_get_binary_addr(addr);
         
-        printf("Route \ttable %d\tdst %s\t\tdst len %d\n",
+        printf("Route \ttable %d\tdst %s\t\tprefix size %d\n",
             rtnl_route_get_table(route),
             nl_addr2str(addr, buf, sizeof(buf)),
-            rtnl_route_get_dst_len(route));
+            32 - rtnl_route_get_dst_len(route));
         
         msh_route_set_dst_ip(mshRoute, *addr_dst);
-        msh_route_set_prefix_sz(mshRoute, rtnl_route_get_dst_len(route));
+        msh_route_set_prefix_sz(mshRoute, 32 - rtnl_route_get_dst_len(route));
         msh_route_unset_flag(mshRoute, RTFLAG_VALID_DEST_SEQ_NUM);
         msh_route_set_flag(mshRoute, RTFLAG_UNMANAGED);
         // As it's not a meshias route but an external one, it won't have a
@@ -109,7 +109,6 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     uint8_t dst_len = msh_route_get_prefix_sz(route);
     struct nl_addr *nexthop = in_addr2nl_addr(&route->nexthop_ip, dst_len);
     
-    
     rtnl_route_set_oif(nlroute, data.net_iface);
     rtnl_route_set_family(nlroute, AF_INET);
     rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
@@ -121,8 +120,6 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0)
     {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
-        //???
-        //nl_addr_destroy(nexthop);
         return -1;
     }
     // If we are successful, add the netlink route to the msh_route, set
@@ -193,8 +190,14 @@ uint8_t routing_table_use_route(struct routing_table *table,
     msh_route_destroy(find_route); // Not needed anymore
     
     // If route not found or not active/invalid, return 0
-    if(!route || !(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY))
+    if(!route)
     {
+        puts("route not found");
+        return 0;
+    }
+    if(!(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY))
+    {
+        puts("route found, invalid entry");
         invalid_route = &route;
         return 0;
     }

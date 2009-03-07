@@ -1,5 +1,8 @@
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <stdint.h>
 #include <sys/time.h>
+#include <stdlib.h>
 #include "alarm/linux_list.h"
 #include "route_obj.h"
 #include "common.h"
@@ -155,6 +158,9 @@ void msh_route_set_lifetime(struct msh_route *route, uint32_t lifetime)
 {
     unsigned long sc, usc;
     
+    if(route->flags & RTFLAG_UNMANAGED)
+        return;
+    
     msh_route_set_flag(route, RTFLAG_VALID_ENTRY);
     route->alarm_action = RTACTION_UNSET_VALID_ENTRY;
     
@@ -241,10 +247,10 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
     // of the second route.
     if(attr_flags & RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)
     {
-        uint32_t mask = 32 - second->prefix_sz;
+        uint32_t mask = INADDR_BROADCAST >> second->prefix_sz;
         uint32_t ip1mask = first->dst_ip.s_addr & mask;
         uint32_t ip2mask = second->dst_ip.s_addr & mask;
-        diff |= (ip1mask == ip2mask);
+        diff |= (ip1mask != ip2mask);
     }
 
     if(attr_flags & RTATTR_DST_IP)
