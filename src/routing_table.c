@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netlink/addr.h>
 #include <netinet/in.h>
 #include <netlink/route/rtnl.h>
@@ -7,6 +9,7 @@
 #include <netlink/addr.h>
 #include "routing_table.h"
 #include "msh_data.h"
+#include "utils.h"
 
 struct routing_table
 {
@@ -20,12 +23,13 @@ void __fill_routing_table(struct nl_object* obj, void *arg)
     
     char buf[128];
     
-    printf("primero %p %p\n",table,arg);
     struct nl_addr *addr = rtnl_route_get_dst(route);
     
-    // If it's of the main routing table and ipv4
-    if(addr != NULL && rtnl_route_get_table(route) == 254
-            && rtnl_route_get_family(route) == AF_INET)
+    printf("__fill_routing_table\n");
+    
+    // If it's of the main routing tables and ipv4
+    if(addr != NULL && rtnl_route_get_family(route) == AF_INET &&
+        rtnl_route_get_table(route) == 254)
     {
         struct msh_route* mshRoute = msh_route_alloc();
         struct in_addr *addr_dst = nl_addr_get_binary_addr(addr);
@@ -38,22 +42,12 @@ void __fill_routing_table(struct nl_object* obj, void *arg)
         msh_route_set_dst_ip(mshRoute, *addr_dst);
         msh_route_set_prefix_sz(mshRoute, rtnl_route_get_dst_len(route));
         msh_route_unset_flag(mshRoute, RTFLAG_VALID_DEST_SEQ_NUM);
+        msh_route_set_flag(mshRoute, RTFLAG_UNMANAGED);
         // As it's not a meshias route but an external one, it won't have a
         // lifetime set, but it will be a valid entry. Forever.
         msh_route_set_flag(mshRoute, RTFLAG_VALID_ENTRY);
-        routing_table_add(table, mshRoute);
-    } else
-        printf("Route (unkown addr)\n");
-    
-    
-//     struct nl_dump_params dp = {
-//         .dp_type = NL_DUMP_FULL,
-//         .dp_fd = stdout,
-//         .dp_dump_msgtype = 1,
-//     };
-// 
-//     if(rtnl_route_get_table(route) == 254)
-//         nl_object_dump(obj, &dp);
+        list_add(&mshRoute->list, &table->route_list.list);
+    }
 }
 
 struct routing_table *routing_table_alloc()
@@ -62,11 +56,26 @@ struct routing_table *routing_table_alloc()
         (struct routing_table *)calloc(1, sizeof(struct routing_table));
     INIT_LIST_HEAD(&(table->route_list.list));
     
-    // Fill the cache
+    // Fill the routing table with currently existant routes 
     struct nl_cache *route_cache = rtnl_route_alloc_cache(data.nl_handle);
     printf("Route cache (%d ifaces):\n", nl_cache_nitems(route_cache));
     nl_cache_foreach(route_cache, __fill_routing_table,table);
     nl_cache_free(route_cache);
+    
+    
+    // Make the routing table know routes for all local connections
+    // with route for 127.0.0.0/24
+    struct msh_route* mshRoute = msh_route_alloc();
+    struct in_addr addr_dst = { inet_addr("127.0.0.0") };
+    
+    msh_route_set_dst_ip(mshRoute, addr_dst);
+    msh_route_set_prefix_sz(mshRoute, 24);
+    msh_route_unset_flag(mshRoute, RTFLAG_VALID_DEST_SEQ_NUM);
+    msh_route_set_flag(mshRoute, RTFLAG_UNMANAGED);
+    // As it's not a meshias route but an external one, it won't have a
+    // lifetime set, but it will be a valid entry. Forever.
+    msh_route_set_flag(mshRoute, RTFLAG_VALID_ENTRY);
+    list_add(&mshRoute->list, &table->route_list.list);
     
     return table;
 }
@@ -85,7 +94,6 @@ void routing_table_delete(struct routing_table *table)
 int routing_table_add(struct routing_table *table, struct msh_route *route)
 {
     struct msh_route *found;
-    struct rtnl_route *nlroute;
     
     // If route exists then we have nothing to do here: this function only
     // adds new routes, it doesn't update existing entries.
@@ -93,24 +101,23 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
         RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)) != 0)
         return 1;
 
-    nlroute = rtnl_route_alloc();
+    struct rtnl_route *nlroute = rtnl_route_alloc();
  
     struct nl_addr *dst = in_addr2nl_addr(&route->dst_ip,
         msh_route_get_prefix_sz(route));
     
-    char buffer[512];
-    printf("lo que se envia %s\n",nl_addr2str(dst,buffer,512));
-    struct nl_addr *nexthop = in_addr2nl_addr(&route->nexthop_ip, 0);
+    uint8_t dst_len = msh_route_get_prefix_sz(route);
+    struct nl_addr *nexthop = in_addr2nl_addr(&route->nexthop_ip, dst_len);
     
-    uint8_t dst_len = 32 - msh_route_get_prefix_sz(route);
     
-    rtnl_route_set_oif(nlroute, msh_route_get_net_iface(route));
+    rtnl_route_set_oif(nlroute, data.net_iface);
     rtnl_route_set_family(nlroute, AF_INET);
     rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
     rtnl_route_set_dst(nlroute, dst);
-//TODO
-//     if(route->flags & RTFLAG_HAS_NEXTHOP)
-//         rtnl_route_add_nexthop(nlroute, nexthop);
+
+    if(route->flags & RTFLAG_HAS_NEXTHOP)
+        rtnl_route_set_gateway(nlroute, nexthop);
+    
     if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0)
     {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
@@ -126,7 +133,6 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     
     list_add(&route->list, &table->route_list.list);
     
-    nl_addr_destroy(dst);
     nl_addr_destroy(nexthop);
 
     return 0;
@@ -140,16 +146,22 @@ int routing_table_del(struct routing_table *table, struct msh_route *route)
     // If route is not in our list we have nothing to do here
     if((found = routing_table_find(table, route, 0)) != 0)
         return 1;
-
-    nlroute = msh_route_get_rtnl_route(route);
-    if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0)
+    
+    // If flag RTFLAG_UNMANAGED is set it means this is an route not managed
+    // by ourselves and thus external and readonly.
+    if(!(found->flags & RTFLAG_UNMANAGED))
     {
-        fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
-        return -1;
+        nlroute = msh_route_get_rtnl_route(route);
+        if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0)
+        {
+            fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
+            return -1;
+        }
+        msh_route_set_rtnl_route(route, 0);
     }
-    msh_route_set_rtnl_route(route, 0);
     rtnl_route_put(nlroute);
     list_del(&route->list);
+    msh_route_destroy(route);
     
     return 0;
 }
@@ -159,11 +171,8 @@ struct msh_route *routing_table_find(struct routing_table *table,
 {
     struct msh_route *entry;
     
-    puts("routing_table_find: ");
-    
     list_for_each_entry(entry, &table->route_list.list, list)
     {
-        puts("recorriendo entrada de la tabla de rutas");
         if(msh_route_compare(route, entry, attr_flags) == 0)
             return entry;
     }

@@ -56,8 +56,7 @@ void msh_route_destroy(struct msh_route* route)
 
 void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip)
 {
-    route->dst_ip.s_addr = 0;
-    dst_ip.s_addr;
+    route->dst_ip.s_addr =  dst_ip.s_addr;
 }
 
 struct in_addr msh_route_get_dst_ip(struct msh_route *route)
@@ -92,6 +91,8 @@ void msh_route_set_flag(struct msh_route *route, uint16_t flag)
         route->flags |= RTFLAG_VALID_DEST_SEQ_NUM;
     else if(flag == RTFLAG_VALID_ENTRY)
         route->flags |= RTFLAG_VALID_ENTRY;
+    else if(flag == RTFLAG_UNMANAGED)
+        route->flags |= RTFLAG_UNMANAGED;
 }
 
 
@@ -101,6 +102,8 @@ void msh_route_unset_flag(struct msh_route *route, uint16_t flag)
         route->flags &= ~RTFLAG_VALID_DEST_SEQ_NUM;
     else if(flag == RTFLAG_VALID_ENTRY)
         route->flags &= ~RTFLAG_VALID_ENTRY;
+    else if(flag == RTFLAG_UNMANAGED)
+        route->flags &= ~RTFLAG_UNMANAGED;
 }
 
 uint16_t msh_route_get_flags(struct msh_route *route)
@@ -259,7 +262,7 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
     if(attr_flags & RTATTR_HOP_COUNT)
         diff |= (first->hop_count != second->hop_count);
     
-    if(attr_flags & RTATTR_NEXT_HOP)
+    if(attr_flags & RTATTR_NEXTHOP_IP)
         diff |= (first->next_hop.s_addr != second->next_hop.s_addr);
     
     if(attr_flags & RTATTR_NET_IFACE)

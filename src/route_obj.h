@@ -16,6 +16,7 @@
 #define RTFLAG_VALID_DEST_SEQ_NUM               0x0001   
 #define RTFLAG_VALID_ENTRY                      0x0002
 #define RTFLAG_HAS_NEXTHOP                      0x0004
+#define RTFLAG_UNMANAGED                        0x0008
 // #define RTFLAG_REPAIRABLE                       0x0008
 // #define RTFLAG_BEING_REPAIRED                   0x0010
 
@@ -29,7 +30,6 @@
 #define RTATTR_DEST_SEQ_NUM                     0x0008
 #define RTATTR_FLAGS                            0x0010
 #define RTATTR_HOP_COUNT                        0x0020
-#define RTATTR_NEXT_HOP                         0x0040
 #define RTATTR_NET_IFACE                        0x0080
 #define RTATTR_LIFETIME                         0x0100
 #define RTATTR_UPDATED_CB                       0x0200

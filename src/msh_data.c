@@ -1,3 +1,5 @@
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netlink/route/link.h>
 #include <unistd.h>
@@ -25,7 +27,6 @@ void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
 //         if(!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
 //             aodv_find_route(dest, last_kown_dest_seq_num);
 }
-
 
 int msh_data_init(int argc, char **argv)
 {
@@ -79,7 +80,8 @@ int msh_data_init(int argc, char **argv)
         fprintf(stderr, "Error: Couldn't access the interface named %s\n", argv[1]);
         return ERR_INIT;
     }
-    
+
+    //TODO: How to get the IP?
     struct nl_addr *nladdr = rtnl_link_get_addr(link);
     int family = nl_addr_get_family(nladdr);
 
@@ -91,13 +93,15 @@ int msh_data_init(int argc, char **argv)
     }
     */
 
+    char  buf[256];
     memcpy(&data.ip_addr,nl_addr_get_binary_addr(nladdr),sizeof(uint32_t));
     data.net_iface = rtnl_link_name2i(link_cache,rtnl_link_get_name(link));
     
-    rtnl_link_put(link);
+//     rtnl_link_put(link);
     nl_cache_free(link_cache);
 
     data.routing_table = routing_table_alloc();
+    
     data.rreq_queue = rreq_fifo_alloc();
     data.packets_queue = packets_fifo_alloc();
 

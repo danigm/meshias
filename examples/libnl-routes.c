@@ -14,11 +14,27 @@
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 
+struct nl_addr* in_addr2nl_addr(struct in_addr *addr, uint8_t prefix_sz)
+{
+    char buf[256];
+    sprintf(buf, "%s/%d", (char *)inet_ntoa(*addr), (int)prefix_sz);
+    
+    return nl_addr_parse(buf, AF_INET);
+}
+
 void print_link(struct nl_object* obj, void *arg)
 {
     int *item = (int *)arg;
     struct rtnl_link* link = (struct rtnl_link*)obj;
     printf("Link %d name: %s\n", (*item)++, rtnl_link_get_name(link));
+    
+    struct nl_dump_params dp = {
+        .dp_type = NL_DUMP_FULL,
+        .dp_fd = stdout,
+        .dp_dump_msgtype = 1,
+    };
+
+    nl_object_dump(obj, &dp);
 }
 
 
@@ -30,34 +46,37 @@ void print_route(struct nl_object* obj, void *arg)
     
     struct nl_addr *addr = rtnl_route_get_dst(route);
     
-    if(addr != NULL)
+    if(addr != NULL && rtnl_route_get_family(route) == 2)
     {
-        if(rtnl_route_get_table(route) == 254)
-        {
-            struct in_addr *inaddr = (struct in_addr*)malloc(sizeof(struct in_addr));
-            inaddr = nl_addr_get_binary_addr(addr);
-            printf("Route %s\n", inet_ntoa(*inaddr));
-            
-            printf("Route %d \ttable %d\tdst %s\t\tdst len %d\n", *item,
-                rtnl_route_get_table(route),
-                nl_addr2str(addr, buf, sizeof(buf)),
-                rtnl_route_get_dst_len(route));
-        }
+        struct in_addr *inaddr = (struct in_addr*)malloc(sizeof(struct in_addr));
+        inaddr = nl_addr_get_binary_addr(addr);
+        printf("1: Route %s\n", inet_ntoa(*inaddr));
+        
+        printf("2: Route %d \ttable %d\tdst %s\t\tdst len %d family %d\n",
+            *item,
+            rtnl_route_get_table(route),
+            nl_addr2str(addr, buf, sizeof(buf)),
+            rtnl_route_get_dst_len(route),
+            rtnl_route_get_family(route));
+        struct nl_addr *my_nl_addr = in_addr2nl_addr(inaddr, rtnl_route_get_dst_len(route));
+        
+        printf("3: Route dst %s\t\tdst len %d\n",
+            nl_addr2str(my_nl_addr, buf, sizeof(buf)),
+            nl_addr_get_prefixlen(my_nl_addr));
     } else
         printf("Route %d\n", *item);
     
     (*item)++;
     
-    
-    struct nl_dump_params dp = {
-        .dp_type = NL_DUMP_FULL,
-        .dp_fd = stdout,
-        .dp_dump_msgtype = 1,
-    };
-
+//     struct nl_dump_params dp = {
+//         .dp_type = NL_DUMP_FULL,
+//         .dp_fd = stdout,
+//         .dp_dump_msgtype = 1,
+//     };
+// 
 //     if(rtnl_route_get_table(route) == 254)
 //     	nl_object_dump(obj, &dp);
-
+// 
 //     route_dump_full(route, &params);
 }
 
@@ -73,7 +92,8 @@ int main(int argc, char **argv)
     // the kernel and put them into a cache.
     struct nl_cache *link_cache = rtnl_link_alloc_cache(sock);
     nl_cache_mngt_provide(link_cache);
-    
+
+     printf("net iface: %d: %s", rtnl_link_name2i(link_cache, "lo"), "lo");
     // In a second step, we iterate the link interfaces and print its names.
     printf("Link cache (%d ifaces):\n", nl_cache_nitems(link_cache));
     int item = 0;
@@ -81,16 +101,28 @@ int main(int argc, char **argv)
     
     struct nl_cache *route_cache = rtnl_route_alloc_cache(sock);
     
-    printf("Route cache (%d ifaces):\n", nl_cache_nitems(route_cache));
-    
-    item = 0;
-    nl_cache_foreach(route_cache, print_route, (void *)&item);
+//     printf("Route cache (%d routes):\n", nl_cache_nitems(route_cache));
+//     item = 0;
+//     nl_cache_foreach(route_cache, print_route, (void *)&item);
     
     // Free the mallocs
+    
+    struct rtnl_route *nlroute = rtnl_route_alloc();
+    rtnl_route_set_oif(nlroute, 1);
+    rtnl_route_set_family(nlroute, AF_INET);
+    rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
+    rtnl_route_set_dst(nlroute, nl_addr_parse("127.0.0.0/24", AF_INET));
+//     rtnl_route_set_gateway(nlroute, nl_addr_parse("127.0.0.1", AF_INET));
+    
+    if (rtnl_route_del(sock, nlroute, 0) < 0)
+    {
+        fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
+    }
+    
     nl_cache_free(link_cache);
     nl_cache_free(route_cache);
     nl_handle_destroy(sock);
-	
+    
     return 0;
 }
 
