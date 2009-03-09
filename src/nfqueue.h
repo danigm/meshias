@@ -43,6 +43,11 @@ uint32_t nfqueue_packet_get_id(struct nfq_data *packet);
 struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
 
 /**
+ * @returns the orig ip of a packet.
+ */
+struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet);
+
+/**
  * Called by @see nfq_handle_packet() which in turns gets called by
  * @see nfqueue_receive_packets(). This function inspects each packet
  * and checks if we have a route for the packet and also checks for

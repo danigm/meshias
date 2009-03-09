@@ -176,11 +176,23 @@ struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
     return dest;
 }
 
+struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet)
+{
+    struct in_addr orig;
+    struct nfq_iphdr* ip_header;
+    
+    if( (ip_header = nfq_get_iphdr(packet)) != NULL )
+    {
+        orig.s_addr = ntohl(nfq_get_ip_saddr(ip_header));
+    }
+    return orig;
+}
+
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data2)
 {
-    struct in_addr dest;
-    dest.s_addr=nfqueue_packet_get_dest(nfa).s_addr;
+    struct in_addr dest = { nfqueue_packet_get_dest(nfa).s_addr };
+    
     uint32_t id = nfqueue_packet_get_id(nfa);
     // routing_table_use_route() will set invalid_route if it finds a route but
     // it's marked as invalid.
@@ -191,7 +203,39 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     // If there's a route for the packet, let it go
     if(routing_table_use_route(data.routing_table, dest, &invalid_route))
     {
+        //TODO: From Page 12 of RFC 3561
+//            Each time a route is used to forward a data packet, its Active Route
+//    Lifetime field of the source, destination and the next hop on the
+//    path to the destination is updated to be no less than the current
+//    time plus ACTIVE_ROUTE_TIMEOUT.  Since the route between each
+//    originator and destination pair is expected to be symmetric, the
+//    Active Route Lifetime for the previous hop, along the reverse path
+//    back to the IP source, is also updated to be no less than the current
+//    time plus ACTIVE_ROUTE_TIMEOUT.  The lifetime for an Active Route is
+//    updated each time the route is used regardless of whether the
+//    destination is a single node or a subnet.
         puts("ACCEPT");
+//         struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
+//         struct msh_route *find_route = msh_route_alloc();
+//         msh_route_set_dst_ip(find_route, orig);
+//         struct msh_route *route = routing_table_find(data.routing_table,
+//             find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+//         
+//         // If found a route for the orig ip, update it
+//         if(route)
+//         {
+//             // reset the lifetime and mark as valid
+//             msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
+//         }
+//         else
+//         {
+//             // If route for orig ip not found, create it
+//             route = msh_route_alloc();
+//             msh_route_set_dst_ip(route, orig);
+//             routing_table_add(data.routing_table, route);
+//         }
+        
+        // Finally accept the packet
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
     else

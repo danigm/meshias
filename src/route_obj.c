@@ -248,9 +248,15 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
     if(attr_flags & RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)
     {
         uint32_t mask = INADDR_BROADCAST >> second->prefix_sz;
-        uint32_t ip1mask = first->dst_ip.s_addr & mask;
-        uint32_t ip2mask = second->dst_ip.s_addr & mask;
-        diff |= (ip1mask != ip2mask);
+        uint32_t ip1masked = first->dst_ip.s_addr & mask;
+        uint32_t ip2masked = second->dst_ip.s_addr & mask;
+        struct in_addr ip1masked1 = { ip1masked }, ip2masked1 = { ip2masked },
+            maskip = { mask };
+        printf("compare: ipmask1 %s ipmask2 %s mask %s\n", inet_ntoa(ip1masked1),
+            inet_ntoa(ip2masked1), inet_ntoa(maskip));
+        printf("compare: ipmask1 %ud ipmask2 %ud mask %s\n", ip1masked1.s_addr,
+            ip2masked1.s_addr, inet_ntoa(maskip));
+        diff |= (ip1masked != ip2masked);
     }
 
     if(attr_flags & RTATTR_DST_IP)
@@ -283,6 +289,7 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
     if(attr_flags & RTATTR_CB_DATA)
         diff |= (first->cb_data != second->cb_data);
     
+    printf("diff: %d\n", diff);
     return diff;
 }
 

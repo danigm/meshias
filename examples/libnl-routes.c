@@ -101,9 +101,9 @@ int main(int argc, char **argv)
     
     struct nl_cache *route_cache = rtnl_route_alloc_cache(sock);
     
-//     printf("Route cache (%d routes):\n", nl_cache_nitems(route_cache));
-//     item = 0;
-//     nl_cache_foreach(route_cache, print_route, (void *)&item);
+    printf("Route cache (%d routes):\n", nl_cache_nitems(route_cache));
+    item = 0;
+    nl_cache_foreach(route_cache, print_route, (void *)&item);
     
     // Free the mallocs
     
@@ -114,10 +114,10 @@ int main(int argc, char **argv)
     rtnl_route_set_dst(nlroute, nl_addr_parse("127.0.0.0/24", AF_INET));
 //     rtnl_route_set_gateway(nlroute, nl_addr_parse("127.0.0.1", AF_INET));
     
-    if (rtnl_route_del(sock, nlroute, 0) < 0)
-    {
-        fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
-    }
+//     if (rtnl_route_del(sock, nlroute, 0) < 0)
+//     {
+//         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
+//     }
     
     nl_cache_free(link_cache);
     nl_cache_free(route_cache);

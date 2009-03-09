@@ -205,12 +205,5 @@ uint8_t routing_table_use_route(struct routing_table *table,
     // Active route found, reset the lifetime
     msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
     
-    /* TODO (RFC Page 12)
-     * Since the route between each
-     * originator and destination pair is expected to be symmetric, the
-     * Active Route Lifetime for the previous hop, along the reverse path
-     * back to the IP source, is also updated to be no less than the current
-     * time plus ACTIVE_ROUTE_TIMEOUT.
-     */
     return 1;
 }
