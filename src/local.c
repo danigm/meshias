@@ -28,130 +28,135 @@
 
 int local_server_create(struct local_server *server, struct local_conf *conf)
 {
-	int fd;
-	socklen_t len;
-	struct sockaddr_un local;
+    int fd;
+    socklen_t len;
+    struct sockaddr_un local;
 
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
-		return -1;
+    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
+        return -1;
 
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &conf->reuseaddr, 
-				sizeof(conf->reuseaddr)) == -1) {
-		close(fd);
-		unlink(conf->path);
-		return -1;
-	}
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &conf->reuseaddr, 
+        sizeof(conf->reuseaddr)) == -1)
+    {
+        close(fd);
+        unlink(conf->path);
+        return -1;
+    }
 
-	local.sun_family = AF_UNIX;
-	strcpy(local.sun_path, conf->path);
-	len = strlen(local.sun_path) + sizeof(local.sun_family);
-	unlink(conf->path);
+    local.sun_family = AF_UNIX;
+    strcpy(local.sun_path, conf->path);
+    len = strlen(local.sun_path) + sizeof(local.sun_family);
+    unlink(conf->path);
 
-	if (bind(fd, (struct sockaddr *) &local, len) == -1) {
-		close(fd);
-		unlink(conf->path);
-		return -1;
-	}
+    if (bind(fd, (struct sockaddr *) &local, len) == -1)
+    {
+        close(fd);
+        unlink(conf->path);
+        return -1;
+    }
 
-	if (listen(fd, conf->backlog) == -1) {
-		close(fd);
-		unlink(conf->path);
-		return -1;
-	}
+    if (listen(fd, conf->backlog) == -1)
+    {
+        close(fd);
+        unlink(conf->path);
+        return -1;
+    }
 
-	server->fd = fd;
-	strcpy(server->path, conf->path);
+    server->fd = fd;
+    strcpy(server->path, conf->path);
 
-	return 0;
+    return 0;
 }
 
 void local_server_destroy(struct local_server *server)
 {
-	unlink(server->path);
-	close(server->fd);
+    unlink(server->path);
+    close(server->fd);
 }
 
 int do_local_server_step(struct local_server *server, void *data, 
-			 void (*process)(int fd, void *data))
+    void (*process)(int fd, void *data))
 {
-	int rfd;
-	struct sockaddr_un local;
-	socklen_t sin_size = sizeof(struct sockaddr_un);
-	
-	rfd = accept(server->fd, (struct sockaddr *) &local, &sin_size);
-	if (rfd == -1)
-		return -1;
+    int rfd;
+    struct sockaddr_un local;
+    socklen_t sin_size = sizeof(struct sockaddr_un);
+    
+    rfd = accept(server->fd, (struct sockaddr *) &local, &sin_size);
+    if (rfd == -1)
+        return -1;
 
-	process(rfd, data);
-	close(rfd);
+    process(rfd, data);
+    close(rfd);
 
-	return 0;
+    return 0;
 }
 
 int local_client_create(struct local_conf *conf)
 {
-	socklen_t len;
-	struct sockaddr_un local;
-	int fd;
+    socklen_t len;
+    struct sockaddr_un local;
+    int fd;
 
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
-		return -1;
+    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
+        return -1;
 
-	local.sun_family = AF_UNIX;
-	strcpy(local.sun_path, conf->path);
-	len = strlen(local.sun_path) + sizeof(local.sun_family);
+    local.sun_family = AF_UNIX;
+    strcpy(local.sun_path, conf->path);
+    len = strlen(local.sun_path) + sizeof(local.sun_family);
 
-	if (connect(fd, (struct sockaddr *) &local, len) == -1) {
-		close(fd);
-		return -1;
-	}
+    if (connect(fd, (struct sockaddr *) &local, len) == -1)
+    {
+        close(fd);
+        return -1;
+    }
 
-	return fd;
+    return fd;
 }
 
 void local_client_destroy(int fd)
 {
-	close(fd);
+    close(fd);
 }
 
 int do_local_client_step(int fd, void (*process)(char *buf))
 {
-	int numbytes;
-	char buf[1024];
+    int numbytes;
+    char buf[1024];
 
-	memset(buf, 0, sizeof(buf));
-	while ((numbytes = recv(fd, buf, sizeof(buf)-1, 0)) > 0) {
-		buf[sizeof(buf)-1] = '\0';
-		if (process)
-			process(buf);
-		memset(buf, 0, sizeof(buf));
-	}
+    memset(buf, 0, sizeof(buf));
+    while ((numbytes = recv(fd, buf, sizeof(buf)-1, 0)) > 0)
+    {
+        buf[sizeof(buf)-1] = '\0';
+        if (process)
+            process(buf);
+        memset(buf, 0, sizeof(buf));
+    }
 
-	return 0;
+    return 0;
 }
 
 void local_step(char *buf)
 {
-	printf("%s", buf);
+    printf("%s", buf);
 }
 
 int do_local_request(int request,
-		     struct local_conf *conf,
-		     void (*step)(char *buf))
+            struct local_conf *conf,
+            void (*step)(char *buf))
 {
-	int fd, ret;
+    int fd, ret;
 
-	fd = local_client_create(conf);
-	if (fd == -1)
-		return -1;
+    fd = local_client_create(conf);
+    if (fd == -1)
+        return -1;
 
-	ret = send(fd, &request, sizeof(int), 0);
-	if (ret == -1)
-		return -1;
+    ret = send(fd, &request, sizeof(int), 0);
+    if (ret == -1)
+        return -1;
 
-	do_local_client_step(fd, step);
+    do_local_client_step(fd, step);
 
-	local_client_destroy(fd);
-	
-	return 0;
+    local_client_destroy(fd);
+    
+    return 0;
 }
