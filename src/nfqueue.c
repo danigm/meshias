@@ -49,11 +49,8 @@ int nfqueue_init()
     // End of NF_QUEUE initializing
 
     // Adding nfqueue socket to the set
-    FD_SET(data.nfqueue_fd,&data.all_fd);
+    register_fd(data.nfqueue_fd,data.fds);
 
-    // max_fd
-    if(data.nfqueue_fd>=data.max_fd)
-      data.max_fd=data.nfqueue_fd+1;
     
     debug(3,"Nf_queue initialized sucessfully");
     return 0;

@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <linux/types.h>
+
 #include "libnetfilter_queue/libnetfilter_queue.h"
 #include "alarm/alarm.h"
 
@@ -17,6 +18,7 @@
 #include "routing_table.h"
 #include "rreq_fifo.h"
 #include "packets_fifo.h"
+#include "fds.h"
 
 struct msh_data_t
 {
@@ -42,8 +44,7 @@ struct msh_data_t
     // This is the socket 654 UDP. It's listening to new packet of the
     // aodv protocol. It also used to send packet of aodv protocol.
     uint32_t daemon_fd;
-    fd_set all_fd;
-    uint32_t max_fd;
+    struct fds *fds;
 
     uint32_t net_iface;
     struct in_addr ip_addr;

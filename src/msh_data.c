@@ -34,7 +34,6 @@ int msh_data_init(int argc, char **argv)
     data.queue = NULL;
     data.netlink_handle = NULL;
     data.nl_handle = NULL; 
-    data.max_fd = 0;
     data.num_rreq_sent = 0;
     data.seq_num = 0;
     data.rreq_id = 0;
@@ -54,10 +53,12 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     }
 
-    /* Initializing the fd set */
-    FD_ZERO(&data.all_fd);
-
-    if(nfqueue_init())
+    if((data.fds=create_fds())==NULL)
+    {
+        perror("Error: fds");
+        return ERR_INIT;
+    }
+    else if(nfqueue_init())
     {
         return ERR_INIT;
     }
@@ -117,6 +118,10 @@ void msh_data_shutdown()
     rreq_fifo_delete(data.rreq_queue);
     packets_fifo_delete(data.packets_queue);
 
+    if(data.fds != NULL)
+    {
+        destroy_fds(data.fds);
+    }
     if(data.queue != NULL)
     {
         printf("unbinding from queue 0\n");

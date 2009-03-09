@@ -36,20 +36,21 @@ int main(int argc, char **argv)
     // Main loop
     // TODO: Here we should capture signals sent to the app
     
+    fd_set readfds=data.fds->readfds;
     //FIXME copiar de contract __run
     debug(3,"Entering main loop");
     while(1)
     {
         // We'll wait for new data in our sockets until a new alarm times out
-        while( select(data.max_fd, &data.all_fd, NULL, NULL, next_run) > 0 )
+        while( select(data.fds->maxfd+1,&readfds, NULL, NULL, next_run) > 0 )
         {
             /* Check for new packets */
-            if( FD_ISSET(data.nfqueue_fd, &data.all_fd) )
+            if( FD_ISSET(data.nfqueue_fd, &readfds) )
             {
                 debug(3,"Main loop: A packet was captured by nfqueue.");
                 nfqueue_receive_packets();
             }
-            if( FD_ISSET(data.daemon_fd, &data.all_fd) )
+            if( FD_ISSET(data.daemon_fd, &readfds) )
             {
                 debug(3,"Main loop: An AODV packet was received by the daemon.");
                 daemon_receive_packets();

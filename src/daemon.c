@@ -44,7 +44,6 @@ int daemon_init()
         return ERR_INIT;
     }
 
-
     debug(3, "binding socket");
     // Set the socket to listen
     if( bind(data.daemon_fd, (struct sockaddr *)&address,
@@ -56,11 +55,7 @@ int daemon_init()
     }
 
     // Adding daemon_fd to the set
-    FD_SET(data.daemon_fd, &data.all_fd);
-
-    // max_fd
-    if(data.daemon_fd >= data.max_fd)
-        data.max_fd = data.daemon_fd + 1;
+    register_fd(data.daemon_fd,data.fds);
 
     debug(3, "Daemon initialized sucessfully");
     return 0;
@@ -129,6 +124,7 @@ void daemon_receive_packets()
             break;
             
         default:
+            fprintf(stderr,"Error: no aodv packet received\n");
             break;
     }
 }
