@@ -9,3 +9,13 @@ examples/libnl-routes
 Makefile
 CMakeCache.txt
 meshias
+alarm
+getip
+libnl
+linuxlists
+recvmsg
+recvmsg
+../src/meshias-tools
+sendmsg
+meshias-tools
+.kdbgrc.meshias

@@ -9,14 +9,16 @@ set (ALARM_SRCS ../src/alarm/alarm.c ../src/alarm/rbtree.c alarm.c)
 set (RECVMSG_SRCS recvmsg.c)
 set (SENDMSG_SRCS sendmsg.c)
 set (LINUXLISTS_SRCS linuxlists.c)
+set (GETIP_SRCS getip.c)
 
 add_executable (libnl ${LIBNL_SRCS})
 add_executable (alarm ${ALARM_SRCS})
 add_executable (recvmsg ${RECVMSG_SRCS})
 add_executable (sendmsg ${SENDMSG_SRCS})
 add_executable (linuxlists ${LINUXLISTS_SRCS})
+add_executable (getip ${GETIP_SRCS})
 
 # Link the executable to the needed library. 
 target_link_libraries (libnl nl)
 
-install(TARGETS libnl alarm recvmsg sendmsg linuxlists RUNTIME DESTINATION bin)
+install(TARGETS libnl alarm recvmsg sendmsg linuxlists getip RUNTIME DESTINATION bin)
