@@ -21,14 +21,14 @@ struct local_server
 /* local server */
 int local_server_create(struct local_server *server, struct local_conf *conf);
 void local_server_destroy(struct local_server *server);
-int do_local_server_step(struct local_server *server, void *data, 
-    void (*process)(int fd, void *data));
+int local_server_do_step(struct local_server *server, void *data, 
+void (*process)(int fd, void *data));
 
 /* local client */
 int local_client_create(struct local_conf *conf);
 void local_client_destroy(int fd);
-int do_local_client_step(int fd, void (*process)(char *buf));
-int do_local_request(int, struct local_conf *,void (*step)(char *buf));
+int local_client_do_step(int fd, void (*process)(char *buf));
+int local_do_request(int, struct local_conf *,void (*step)(char *buf));
 void local_step(char *buf);
 
 #endif
