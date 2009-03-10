@@ -6,7 +6,8 @@ project (MESHIAS)
 
 set (MESHIAS_SRCS meshias.c msh_data.c alarm/alarm.c alarm/rbtree.c common.c
     nfqueue.c daemon.c log.c routing_table.c route_obj.c utils.c rreq_fifo.c
-    packets_fifo.c aodv_packet.c aodv_logic.c fds.c statistics.c local.c)
+    packets_fifo.c aodv_packet.c aodv_logic.c fds.c statistics.c local.c
+    unix_interface.c)
 
 set (MESHIAS_TOOLS_SRCS meshias-tools.c local.c)
 

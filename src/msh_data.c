@@ -30,13 +30,7 @@ void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
 
 int msh_data_init(int argc, char **argv)
 {
-    data.handle = NULL; 
-    data.queue = NULL;
-    data.netlink_handle = NULL;
-    data.nl_handle = NULL; 
-    data.num_rreq_sent = 0;
-    data.seq_num = 0;
-    data.rreq_id = 0;
+    memset(&data,0,sizeof(data));
     
     // Parse args
     if(argc < 2)
@@ -63,6 +57,10 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     }
     else if(daemon_init())
+    {
+        return ERR_INIT;
+    }
+    else if(unix_interface_init())
     {
         return ERR_INIT;
     }
@@ -118,17 +116,9 @@ void msh_data_shutdown()
     rreq_fifo_delete(data.rreq_queue);
     packets_fifo_delete(data.packets_queue);
 
-    if(data.fds != NULL)
-    {
-        destroy_fds(data.fds);
-    }
-    if(data.queue != NULL)
-    {
-        nfq_destroy_queue(data.queue);
-    }
-    if(data.handle != NULL)
-    {
-        nfq_close(data.handle);
-    }
+    destroy_fds(data.fds);
+    nfqueue_shutdown();
+    daemon_shutdown();
+    unix_interface_shutdown();
     debug(1,"Freed all memory");
 }

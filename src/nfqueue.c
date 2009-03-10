@@ -48,6 +48,18 @@ int nfqueue_init()
 
     return 0;
 }
+
+void nfqueue_shutdown()
+{
+    if(data.queue != NULL)
+    {
+        nfq_destroy_queue(data.queue);
+    }
+    if(data.handle != NULL)
+    {
+        nfq_close(data.handle);
+    }
+}
  
 void nfqueue_receive_packets()
 {
@@ -145,7 +157,7 @@ static uint32_t nfqueue_packet_print(struct nfq_data *packet)
     return id;
 }
 
-uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
+static uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
 {
     int id = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
@@ -156,7 +168,7 @@ uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
     return id;
 }
 
-struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
+static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
 {
     struct in_addr dest;
     struct nfq_iphdr* ip_header;
@@ -168,7 +180,7 @@ struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
     return dest;
 }
 
-struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet)
+static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet)
 {
     struct in_addr orig;
     struct nfq_iphdr* ip_header;

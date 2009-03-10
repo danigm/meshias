@@ -74,7 +74,7 @@ void local_server_destroy(struct local_server *server)
     close(server->fd);
 }
 
-int do_local_server_step(struct local_server *server, void *data, 
+int local_server_do_step(struct local_server *server, void *data, 
     void (*process)(int fd, void *data))
 {
     int rfd;
@@ -118,7 +118,7 @@ void local_client_destroy(int fd)
     close(fd);
 }
 
-int do_local_client_step(int fd, void (*process)(char *buf))
+int local_client_do_step(int fd, void (*process)(char *buf))
 {
     int numbytes;
     char buf[1024];
@@ -140,7 +140,7 @@ void local_step(char *buf)
     printf("%s", buf);
 }
 
-int do_local_request(int request,
+int local_do_request(int request,
             struct local_conf *conf,
             void (*step)(char *buf))
 {
@@ -154,7 +154,7 @@ int do_local_request(int request,
     if (ret == -1)
         return -1;
 
-    do_local_client_step(fd, step);
+    local_client_do_step(fd, step);
 
     local_client_destroy(fd);
     

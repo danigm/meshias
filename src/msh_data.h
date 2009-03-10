@@ -19,9 +19,13 @@
 #include "rreq_fifo.h"
 #include "packets_fifo.h"
 #include "fds.h"
+#include "local.h"
 
 struct msh_data_t
 {
+    // unix socket
+    struct local_server local_server;
+
     // needed for libnetfilter_queue
     struct nfq_handle *handle;
     struct nfq_q_handle *queue;

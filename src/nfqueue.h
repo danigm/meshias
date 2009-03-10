@@ -35,17 +35,17 @@ static uint32_t nfqueue_packet_print(struct nfq_data *packet);
 /**
  * @returns the id of a packet.
  */
-uint32_t nfqueue_packet_get_id(struct nfq_data *packet);
+static uint32_t nfqueue_packet_get_id(struct nfq_data *packet);
 
 /**
  * @returns the dest ip of a packet.
  */
-struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
+static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
 
 /**
  * @returns the orig ip of a packet.
  */
-struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet);
+static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet);
 
 /**
  * Called by @see nfq_handle_packet() which in turns gets called by
