@@ -8,6 +8,7 @@
 
 #include "aodv_packet.h"
 #include "msh_data.h"
+#include "statistics.h"
 
 #define DEFAULT_TTL 64
 
@@ -40,6 +41,9 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msg)
     {
         pkt->address=*(struct sockaddr_in*)msg->msg_name;
     }
+    else
+        stats.no_address_received++;
+
     // If data has been received
     if(msg->msg_iovlen>0)
     {
@@ -49,9 +53,14 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msg)
         pkt->payload=(char*)calloc(1,pkt->payload_len);
         memcpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
     }
+    else
+        stats.no_payload_received++;
+
     // If control data has been received
     if(msg->msg_controllen>0)
         pkt->ttl=aodv_pkt_receive_ttl(msg);
+    else
+        stats.no_control_received++;
 
     //FIXME dont check errors
     return pkt;
@@ -66,7 +75,11 @@ ssize_t aodv_pkt_send(struct aodv_pkt* pkt)
     int numbytes=sendto(data.daemon_fd,pkt->payload,pkt->payload_len,0,
             (struct sockaddr*)&(pkt->address),sizeof(pkt->address));
 
-    //FIXME resolve errors
+    if(numbytes==-1)
+        stats.send_aodv_errors++;
+    else if(numbytes!=pkt->payload_len)
+        stats.send_aodv_incomplete++;
+
     return numbytes;
 }
 
@@ -134,7 +147,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             }
             else
             {
-                debug(1, "Error: AODV_RREQ packet with incorrect size");
+                stats.rreq_incorrect_size++;
                 return 0;
             }
             break;
@@ -146,7 +159,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             }
             else
             {
-                debug(1, "Error: AODV_RREP packet with incorrect size");
+                stats.rrep_incorrect_size++;
                 return 0;
             }
             break;
@@ -162,7 +175,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
                 rerr = (struct aodv_rerr*)aodv_pkt_get_payload(pkt);
                 if(rerr->dest_count == 0)
                 {
-                    debug(1, "Error: AODV_RERR packet with DestCont = 0");
+                    stats.rerr_dest_cont_zero;
                     return 0;
                 }
                 else
@@ -174,14 +187,14 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
                     }
                     else
                     {
-                        debug(1, "Error: AODV_RERR packet with incorrect size");
+                        stats.rerr_incorrect_size++;
                         return 0;
                     }
                 }
             }
             else
             {
-                debug(1, "Error: AODV_RERR packet with incorrect size");
+                stats.rerr_incorrect_size++;
                 return 0;
             }
             break;
@@ -193,20 +206,17 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             }
             else
             {
-                debug(1, "Error: AODV_RERR_ACK packet with incorrect size");
+                stats.rrep_ack_incorrect_size++;
                 return 0;
             }
             break;
             
         default:
-            
-            debug(1, "Error: Incorrect packet aodv type");
             return 0;
             break;
     }
     return 1;
 }
-
 
 size_t aodv_pkt_get_size(struct aodv_pkt* pkt)
 {
@@ -217,9 +227,9 @@ int aodv_pkt_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
 {
 }
 
-void aodv_pkt_build_rrep(struct aodv_pkt* pkt,uint8_t flags, uint8_t prefix_sz,
-        uint8_t hop_count,uint32_t dest_ip_addr,uint32_t dest_seq_num,
-        uint32_t orig_ip_addr,uint32_t lifetime)
+void aodv_pkt_build_rrep(struct aodv_pkt* pkt,uint8_t flags,
+        uint8_t prefix_sz,uint8_t hop_count,uint32_t dest_ip_addr,
+        uint32_t dest_seq_num,uint32_t orig_ip_addr,uint32_t lifetime)
 {
     struct aodv_rrep* rrep;
 
@@ -239,9 +249,9 @@ void aodv_pkt_build_rrep(struct aodv_pkt* pkt,uint8_t flags, uint8_t prefix_sz,
     pkt->payload=(char*)rrep;
 }
 
-void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags, uint8_t hop_count,
-        uint32_t rreq_id,uint32_t dest_ip_addr,uint32_t dest_seq_num,
-        uint32_t orig_ip_addr,uint32_t orig_seq_num)
+void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags,
+        uint8_t hop_count,uint32_t rreq_id,uint32_t dest_ip_addr,
+        uint32_t dest_seq_num,uint32_t orig_ip_addr,uint32_t orig_seq_num)
 {
     struct aodv_rreq* rreq;
     
@@ -262,8 +272,8 @@ void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags, uint8_t hop_count,
     pkt->payload=(char*)rreq;
 }
 
-void aodv_pkt_build_rerr(struct aodv_pkt* pkt,uint8_t flag, uint8_t dest_count,
-    struct unrecheable_dest** dests)
+void aodv_pkt_build_rerr(struct aodv_pkt* pkt,uint8_t flag,
+        uint8_t dest_count,struct unrecheable_dest** dests)
 {
     struct aodv_rerr* rerr;
     struct unrecheable_dest* aux;
@@ -313,7 +323,8 @@ static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
                 && cmsg->cmsg_type == IP_TTL)
             return *(uint8_t*)CMSG_DATA(cmsg);
     }
-     // FIXME TTL no encontrado
+
+    stats.ttl_not_found++;
+    // FIXME TTL no encontrado
     return -1;
 }
-

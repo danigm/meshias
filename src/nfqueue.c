@@ -7,40 +7,35 @@
 int nfqueue_init()
 {
     // NF_QUEUE initializing
-    debug(3,"Nf_queue: opening library handle");
     data.handle = nfq_open();
     if (!data.handle)
     {
-        debug(1,"FATAL ERROR: during nfq_open()");
+        perror("Error: during nfq_open()");
         return ERR_INIT;
     }
 
-    debug(3,"unbinding existing nf_queue handler for AF_INET (if any)");
     if (nfq_unbind_pf(data.handle, AF_INET) < 0)
     {
-        debug(1,"FATAL ERROR: during nfq_unbind_pf()");
+        perror("Error: during nfq_unbind_pf()");
         return ERR_INIT;
     }
 
-    debug(3,"binding nfnetlink_queue as nf_queue handler for AF_INET");
     if (nfq_bind_pf(data.handle, AF_INET) < 0)
     {
-        debug(1,"FATAL ERROR: during nfq_bind_pf()");
+        perror("Error: during nfq_bind_pf()");
         return ERR_INIT;
     }
 
-    debug(3,"binding this socket to queue '0'");
     data.queue = nfq_create_queue(data.handle, 0, &manage_packet, NULL);
     if (!data.queue)
     {
-        debug(1,"FATAL ERROR: during nfq_create_queue()");
+        perror("Error: during nfq_create_queue()");
         return ERR_INIT;
     }
 
-    debug(3,"setting copy_packet mode");
     if (nfq_set_mode(data.queue, NFQNL_COPY_PACKET, 0xffff) < 0)
     {
-        debug(1,"FATAL_ERROR: can't set packet_copy mode\n");
+        perror("Error: can't set packet_copy mode");
         return ERR_INIT;
     }
 
@@ -51,8 +46,6 @@ int nfqueue_init()
     // Adding nfqueue socket to the set
     register_fd(data.nfqueue_fd,data.fds);
 
-    
-    debug(3,"Nf_queue initialized sucessfully");
     return 0;
 }
  
@@ -62,7 +55,6 @@ void nfqueue_receive_packets()
     int received;
     while ( (received = recv(data.nfqueue_fd, buf, sizeof(buf), 0)) >= 0 )
     {
-        debug(3,"Netfilter_queue packet received");
         nfq_handle_packet(data.handle, buf, received);
     }
 }

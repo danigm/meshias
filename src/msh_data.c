@@ -17,15 +17,15 @@ void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
     add_alarm(alarm, 1, 0);
     
     //TODO: Process data.rreq_wait_queue
-//     loop
-//         // Route not found. Queue the packet and find a route
-//         packets_fifo_push(data.packets_queue, id, dest);
-//         
-//         // Will only try to find a route if we are not already trying to find
-//         // one (i.e. when are not waiting response from a RREQ for that route
-//         // sent by us)
-//         if(!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
-//             aodv_find_route(dest, last_kown_dest_seq_num);
+    // loop
+    // Route not found. Queue the packet and find a route
+    // packets_fifo_push(data.packets_queue, id, dest);
+    // 
+    // Will only try to find a route if we are not already trying to find
+    // one (i.e. when are not waiting response from a RREQ for that route
+    // sent by us)
+    // if(!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
+    // aodv_find_route(dest, last_kown_dest_seq_num);
 }
 
 int msh_data_init(int argc, char **argv)
@@ -124,13 +124,11 @@ void msh_data_shutdown()
     }
     if(data.queue != NULL)
     {
-        printf("unbinding from queue 0\n");
         nfq_destroy_queue(data.queue);
     }
-
     if(data.handle != NULL)
     {
-        printf("closing library handle\n");
         nfq_close(data.handle);
     }
+    debug(1,"Freed all memory");
 }

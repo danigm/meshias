@@ -26,7 +26,8 @@ void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
         set_alarm_time(DELETE_PERIOD(), &sc, &usc);    
         add_alarm(alarm, sc, usc);
 
-    } else if(route->alarm_action == RTACTION_DESTROY)
+    }
+    else if(route->alarm_action == RTACTION_DESTROY)
         msh_route_destroy(route);
 }
 
@@ -59,7 +60,7 @@ void msh_route_destroy(struct msh_route* route)
 
 void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip)
 {
-    route->dst_ip.s_addr =  dst_ip.s_addr;
+    route->dst_ip.s_addr = dst_ip.s_addr;
 }
 
 struct in_addr msh_route_get_dst_ip(struct msh_route *route)
@@ -88,6 +89,9 @@ uint8_t msh_route_get_prefix_sz(struct msh_route *route)
     return route->prefix_sz;
 }
 
+// FIXME por que se comprueba si es de un solo tipo, no puede ser varios??
+// si no pueden ser varios porque no se borra el flag y dps se 
+// setea de nuevo?
 void msh_route_set_flag(struct msh_route *route, uint16_t flag)
 {
     if(flag == RTFLAG_VALID_DEST_SEQ_NUM)
@@ -98,7 +102,7 @@ void msh_route_set_flag(struct msh_route *route, uint16_t flag)
         route->flags |= RTFLAG_UNMANAGED;
 }
 
-
+// FIXME lo mismo que arriba
 void msh_route_unset_flag(struct msh_route *route, uint16_t flag)
 {
     if(flag == RTFLAG_VALID_DEST_SEQ_NUM)

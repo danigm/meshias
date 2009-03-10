@@ -10,6 +10,7 @@
 #include "routing_table.h"
 #include "msh_data.h"
 #include "utils.h"
+#include "statistics.h"
 
 struct routing_table
 {
@@ -177,7 +178,6 @@ struct msh_route *routing_table_find(struct routing_table *table,
     return NULL;
 }
 
-
 uint8_t routing_table_use_route(struct routing_table *table,
     struct in_addr dst_ip, struct msh_route **invalid_route)
 {
@@ -192,12 +192,12 @@ uint8_t routing_table_use_route(struct routing_table *table,
     // If route not found or not active/invalid, return 0
     if(!route)
     {
-        puts("route not found");
+        stats.route_not_found++;
         return 0;
     }
     if(!(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY))
     {
-        puts("route found, invalid entry");
+        stats.invalid_route++;
         invalid_route = &route;
         return 0;
     }

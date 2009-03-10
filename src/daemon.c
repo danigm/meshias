@@ -4,6 +4,7 @@
 #include "daemon.h"
 #include "route_obj.h"
 #include "aodv_packet.h"
+#include "statistics.h"
 
 #define BUF_SIZE 1024
 
@@ -12,11 +13,11 @@ int daemon_init()
     int option = 1;
     struct sockaddr_in address;
 
-    debug(3, "Daemon: opening aodv socket");
+    debug(1, "Daemon: opening aodv socket");
     // Create the udp daemon socket
     if( (data.daemon_fd = socket(AF_INET,SOCK_DGRAM,0)) == -1 )
     {
-        debug(1, "Error initializing the UDP socket");
+        perror("Error initializing the aodv UDP socket:");
         return ERR_INIT;
     }
 
@@ -27,12 +28,11 @@ int daemon_init()
     // Listen from any ip
     address.sin_addr.s_addr = INADDR_ANY;
 
-    debug(3, "changing socket options");
     // This call is what allows broadcast packets to be sent
     if(setsockopt(data.daemon_fd,SOL_SOCKET,SO_BROADCAST,&option,
                 sizeof option) == -1)
     {
-        debug(1, "setsockopt (SO_BROADCAST)");
+        perror("Error changing socket options (SO_BROADCAST):");
         return ERR_INIT;
     }
 
@@ -40,24 +40,22 @@ int daemon_init()
     if(setsockopt(data.daemon_fd,SOL_IP,IP_RECVTTL,&option,
                 sizeof option) == -1)
     {
-        debug(1, "setsockopt (SO_BROADCAST)");
+        perror("Error changing socket options (IP_RECVTTL):");
         return ERR_INIT;
     }
 
-    debug(3, "binding socket");
     // Set the socket to listen
     if( bind(data.daemon_fd, (struct sockaddr *)&address,
         sizeof(address)) == -1 )
     {
-        close(data.daemon_fd);
-        debug(1, "Error binding the UDP socket");
+        perror("Error binding the aodv UDP socket:");
         return ERR_INIT;
     }
 
     // Adding daemon_fd to the set
     register_fd(data.daemon_fd,data.fds);
 
-    debug(3, "Daemon initialized sucessfully");
+    debug(1, "Daemon initialized sucessfully");
     return 0;
 }
 
@@ -78,6 +76,7 @@ void daemon_receive_packets()
 
     // Set all memory to 0
     memset(&msg, 0, sizeof(msg));
+    memset(&io, 0, sizeof(io));
     memset(name_buf, 0, BUF_SIZE);
     memset(iov_buf, 0, BUF_SIZE);
     memset(control_buf, 0, BUF_SIZE);
@@ -96,13 +95,19 @@ void daemon_receive_packets()
     msg.msg_controllen=BUF_SIZE;
 
     //Receive the packet
-    if( (numbytes = recvmsg(data.daemon_fd, &msg, 0)) == -1 )
+    numbytes = recvmsg(data.daemon_fd, &msg, 0);
+
+    //FIXME numbytes = payload_len ??
+    if(numbytes==-1)
     {
-        perror("FATAL ERROR: recvmsg");
+        stats.error_recv++;
         return;
     }
 
     pkt=aodv_pkt_get(&msg);
+
+    if(aodv_pkt_check(pkt)==0)
+        return;
 
     //HERE STARTS THE AODV LOGIC
     switch(aodv_pkt_get_type(pkt))
@@ -122,9 +127,8 @@ void daemon_receive_packets()
         case AODV_RREP_ACK:
             daemon_process_rrep_ack(pkt);
             break;
-            
+        // Impossible, pkt is checked before
         default:
-            fprintf(stderr,"Error: no aodv packet received\n");
             break;
     }
 }
