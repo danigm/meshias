@@ -218,10 +218,8 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 //    time plus ACTIVE_ROUTE_TIMEOUT.
         puts("ACCEPT");
 //         struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
-//         struct msh_route *find_route = msh_route_alloc();
-//         msh_route_set_dst_ip(find_route, orig);
-//         struct msh_route *route = routing_table_find(data.routing_table,
-//             find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+//         struct msh_route *route = routing_table_find_by_ip(data.routing_table,
+//             orig);
 //         
 //         // If found a route for the orig ip, update it
 //         if(route)

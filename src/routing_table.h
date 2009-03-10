@@ -50,6 +50,16 @@ struct msh_route *routing_table_find(struct routing_table *table,
     struct msh_route *route, int attr_flags);
 
 /**
+ * Finds a route in the routing table by longest prefix matching for a given ip.
+ * Internally it uses routing_table_find(). It's the most common way to search
+ * a route.
+ * 
+ * @see routing_table_find()
+ */
+struct msh_route *routing_table_find_by_ip(struct routing_table *table,
+    struct in_addr addr);
+
+/**
  * Returns a non-zero number if there is an active route for the given dest in
  * the routing table, searching by longest prefix matching. If found, it will
  * assume that the route will be used and it will do necessary actions for

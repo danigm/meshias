@@ -64,10 +64,7 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
     struct in_addr addr;
     addr.s_addr = aodv_pkt_get_address(pkt);
     
-    struct msh_route *find_route = msh_route_alloc();
-    msh_route_set_dst_ip(find_route, addr);
-    struct msh_route *route = routing_table_find(data.routing_table,
-        find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+    struct msh_route *route = routing_table_find_by_ip(data.routing_table, addr);
     
     // If found a route for the prev_hop, update it
     if(route)
@@ -99,11 +96,8 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
     // section 6.2), using longest-prefix matching.  If need be, the route
     // is created, or updated using the Originator Sequence Number from the
     // RREQ in its routing table.
-    struct in_addr addr_orig;
-    addr_orig.s_addr = rreq->orig_ip_addr;
-    msh_route_set_dst_ip(find_route, addr_orig);
-    route = routing_table_find(data.routing_table,
-        find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+    struct in_addr addr_orig = { rreq->orig_ip_addr };
+    route = routing_table_find_by_ip(data.routing_table, addr_orig);
     
     uint32_t seq_num_new = rreq->orig_seq_num;
     uint32_t min_lifetime = minimal_lifetime(hop_count);
@@ -159,10 +153,7 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
         aodv_pkt_decrease_ttl(pkt);
         rreq->hop_count++;
         
-        msh_route_set_dst_ip(find_route, dest_addr);
-        
-        route = routing_table_find(data.routing_table,
-            find_route, RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+        route = routing_table_find_by_ip(data.routing_table, dest_addr);
         
         // If we didn't send a rrep is because we either don't have a route
         // for the destination or it's marked as invalid. If it's marked as
@@ -179,9 +170,6 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
         }
         aodv_pkt_send(pkt);
     }
-    
-    // Free the mallocs! we don't need this temporal route anymore
-    msh_route_destroy(find_route);
 }
 
 uint8_t aodv_answer_to_rreq(struct aodv_pkt* pkt_rreq)

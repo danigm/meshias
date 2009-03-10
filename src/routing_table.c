@@ -15,6 +15,9 @@
 struct routing_table
 {
     struct msh_route route_list;
+    
+    //Used for searching internally
+    struct msh_route *find_route;
 };
 
 void __fill_routing_table(struct nl_object* obj, void *arg)
@@ -56,13 +59,13 @@ struct routing_table *routing_table_alloc()
     struct routing_table *table =
         (struct routing_table *)calloc(1, sizeof(struct routing_table));
     INIT_LIST_HEAD(&(table->route_list.list));
+    table->find_route = msh_route_alloc();
     
     // Fill the routing table with currently existant routes 
     struct nl_cache *route_cache = rtnl_route_alloc_cache(data.nl_handle);
     printf("Route cache (%d ifaces):\n", nl_cache_nitems(route_cache));
     nl_cache_foreach(route_cache, __fill_routing_table,table);
     nl_cache_free(route_cache);
-    
     
     // Make the routing table know routes for all local connections
     // with route for 127.0.0.0/24
@@ -90,6 +93,7 @@ void routing_table_delete(struct routing_table *table)
         routing_table_del(table, entry);
         free(entry);
     }
+    msh_route_destroy(table->find_route);
 }
 
 int routing_table_add(struct routing_table *table, struct msh_route *route)
@@ -178,16 +182,25 @@ struct msh_route *routing_table_find(struct routing_table *table,
     return NULL;
 }
 
+struct msh_route *routing_table_find_by_ip(struct routing_table *table,
+    struct in_addr addr)
+{
+    struct msh_route *route;
+    
+    msh_route_set_dst_ip(table->find_route, addr);
+    route = routing_table_find(table, table->find_route,
+        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+    
+    return route;
+
+}
+
 uint8_t routing_table_use_route(struct routing_table *table,
     struct in_addr dst_ip, struct msh_route **invalid_route)
 {
     struct msh_route *route;
-    struct msh_route *find_route = msh_route_alloc();
-    msh_route_set_dst_ip(find_route, dst_ip);
     
-    route = routing_table_find(table, find_route,
-        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
-    msh_route_destroy(find_route); // Not needed anymore
+    route = routing_table_find_by_ip(table, dst_ip);
     
     // If route not found or not active/invalid, return 0
     if(!route)
