@@ -18,5 +18,19 @@
 void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     uint8_t prev_tries);
 
+/* Funtions to process incoming packets */
+void aodv_process_rreq(struct aodv_pkt* pkt);
+void aodv_process_rrep(struct aodv_pkt* pkt);
+void aodv_process_rerr(struct aodv_pkt* pkt);
+void aodv_process_rrep_ack(struct aodv_pkt* pkt);
+
+/**
+ * This function is used to send a RREP in response to a RREQ. If the RREP
+ * is sent (because we have an active route to the destination) it returns
+ * a non-zero value. Otherwise, it returns 0.
+ */
+uint8_t aodv_answer_to_rreq(struct aodv_pkt* pkt_rreq);
+
+
 #endif
 

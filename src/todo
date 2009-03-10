@@ -7,10 +7,7 @@ prev_hop y el origen y tal y pascual? ver manage_packet
 los next_hop en linux?
 
 
- makefile dos ejecutables meshias meshias-tools nueva carpeta
- renombrar main a meshias
- compilar local
- meter lógica de daemon en aodv_logic
+meter lógica de daemon en aodv_logic
  meter 
 *******************
 * acceder a internet. como?
