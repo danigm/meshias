@@ -11,8 +11,10 @@
 #include "libnetfilter_queue/libnetfilter_queue_headers.h"
 
 #include "msh_data.h"
+#include "statistics.h"
 
 struct msh_data_t data;
+struct statistics_t stats;
 
 int main(int argc, char **argv)
 {

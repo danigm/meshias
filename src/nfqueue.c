@@ -196,16 +196,14 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     if(routing_table_use_route(data.routing_table, dest, &invalid_route))
     {
         //TODO: From Page 12 of RFC 3561
-//            Each time a route is used to forward a data packet, its Active Route
+//    Each time a route is used to forward a data packet, its Active Route
 //    Lifetime field of the source, destination and the next hop on the
 //    path to the destination is updated to be no less than the current
 //    time plus ACTIVE_ROUTE_TIMEOUT.  Since the route between each
 //    originator and destination pair is expected to be symmetric, the
 //    Active Route Lifetime for the previous hop, along the reverse path
 //    back to the IP source, is also updated to be no less than the current
-//    time plus ACTIVE_ROUTE_TIMEOUT.  The lifetime for an Active Route is
-//    updated each time the route is used regardless of whether the
-//    destination is a single node or a subnet.
+//    time plus ACTIVE_ROUTE_TIMEOUT.
         puts("ACCEPT");
 //         struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
 //         struct msh_route *find_route = msh_route_alloc();

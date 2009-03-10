@@ -1,6 +1,10 @@
 ******TO ASK********
-* ttl?? setsockopt y getsockopt
-* varios programas mismo socket -> setsockopt y getsockopt
+1. Tenemos que procesar los paquetes de datos aunque usemos MASQUERADE para
+actualizar las rutas activas.
+2. Tenemos alguna manera de que al procesar un paquete de datos, saber el
+prev_hop y el origen y tal y pascual? ver manage_packet
+3. en las tablas de rutas usamos gateway o next_hop? cómo funciona el tema de
+los next_hop en linux?
 *******************
 * acceder a internet. como?
 
