@@ -5,12 +5,13 @@ enum commands_t
 {
     KILL,
     RESTART,
-    SHOW_ROUTING_TABLE,
+    SHOW_ROUTES,
     SHOW_STATISTICS,
     CLEAN_STATISTICS
 };
 
 int unix_interface_init();
+void unix_interface_receive_packets();
 void unix_interface_shutdown();
 void unix_interface_run_command(enum commands_t command);
 

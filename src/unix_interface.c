@@ -16,11 +16,17 @@ int unix_interface_init()
     sprintf(local_conf.path,"%s-%d","/tmp/meshias",getpid());
 
     local_server_create(&data.local_server,&local_conf);
+
+    register_fd(data.local_server.fd,data.fds);
 }
 
 void unix_interface_shutdown()
 {
     local_server_destroy(&data.local_server);
+}
+
+void unix_interface_receive_packets()
+{
 }
 
 void unix_interface_run_command(enum commands_t command)
@@ -31,7 +37,7 @@ void unix_interface_run_command(enum commands_t command)
             break;
         case RESTART:
             break;
-        case SHOW_ROUTING_TABLE:
+        case SHOW_ROUTES:
             break;
         case SHOW_STATISTICS:
             break;

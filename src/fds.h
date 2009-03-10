@@ -15,5 +15,6 @@ struct fds
 struct fds *create_fds(void);
 void destroy_fds(struct fds *);
 int register_fd(int fd, struct fds *fds);
+void unix_interface_receive_packets();
 
 #endif

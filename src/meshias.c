@@ -53,10 +53,16 @@ int main(int argc, char **argv)
             }
             if( FD_ISSET(data.daemon_fd, &readfds) )
             {
-                debug(3,"An AODV packet was received by the daemon.");
+                debug(1,"An AODV packet was received by the daemon.");
                 daemon_receive_packets();
             }
-            /* The code above has potentially added some new alarms which means
+            if( FD_ISSET(data.local_server.fd, &readfds) )
+            {
+                debug(1,"An AODV packet was received by the daemon.");
+                unix_interface_receive_packets();
+            }
+            /*
+             * The code above has potentially added some new alarms which means
              * we need to recalculate which is the next alarm to be called
              */
             next_run = get_next_alarm_run(next_run);
