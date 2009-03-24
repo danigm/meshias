@@ -12,7 +12,7 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msgh);
 
 ssize_t aodv_pkt_send(struct aodv_pkt* pkt);
 
-void aodv__pkt_destroy(struct aodv_pkt* pkt);
+void aodv_pkt_destroy(struct aodv_pkt* pkt);
 
 uint8_t aodv_pkt_get_ttl(struct aodv_pkt* pkt);
 

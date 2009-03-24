@@ -48,6 +48,11 @@ static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
 static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet);
 
 /**
+ * @returns whether a given IP packet is UDP and comes from AODV port.
+ */
+static int nfqueue_packet_is_aodv(struct nfq_data *packet);
+
+/**
  * Called by @see nfq_handle_packet() which in turns gets called by
  * @see nfqueue_receive_packets(). This function inspects each packet
  * and checks if we have a route for the packet and also checks for

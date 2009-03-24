@@ -192,6 +192,27 @@ static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet)
     return orig;
 }
 
+static int nfqueue_packet_is_aodv(struct nfq_data *packet)
+{
+    struct in_addr dest;
+    struct nfq_iphdr* ip_header;
+    struct nfq_udphdr* udp_header;
+    
+    if( (ip_header = nfq_get_iphdr(packet)) != NULL )
+    {
+        if(!ntohs(nfq_get_ip_protocol(ip_header))) // 17 is UDP
+            return 0;
+        
+        // Now we know it's udp; is it AODV traffic?
+        if( (udp_header = nfq_get_udphdr(packet)) == NULL)
+            return 0;
+        
+        //TODO: ntohs or not?
+        return ntohs(nfq_get_udp_dest(udp_header)) == AODV_UDP_PORT;
+    }
+    return 0;
+}
+
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data2)
 {
@@ -204,7 +225,14 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     
     printf ("packet for %s: ", inet_ntoa(dest));
     
-    // If there's a route for the packet, let it go
+    // If there's a route for the packet, or it's a broadcast or it's an AODV
+    // packet, let it go
+    if(dest.s_addr == INADDR_BROADCAST || nfqueue_packet_is_aodv(nfa))
+    {
+        puts("ACCEPT");
+        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    }
+    
     if(routing_table_use_route(data.routing_table, dest, &invalid_route))
     {
         //TODO: From Page 12 of RFC 3561
