@@ -3,4 +3,7 @@
 
 int main(int argc,char **argv);
 int init_fd();
-char* get_command();
+int process_command();
+void receive_response();
+
+#endif

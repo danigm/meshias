@@ -1,71 +1,98 @@
-int main()
-{
-    return 0;
-}
-/*
 #include "local.h"
 #include "unix_interface.h"
+#include "meshias-tools.h"
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdio.h>
 
 #define BUFFER_SIZE 128
+
 
 int main(int argc, char **argv)
 {
     int fd;
     struct local_conf conf;
+    int end;
 
+    /*
     conf->backlog=1;
     conf->reuseaddr=1;
     sprintf(conf.path,"%s-%d","/tmp/meshias",getpid());
     local_client_create();
+    */
+
+    while(!end)
+    {
+        end=process_command();
+        receive_response();
+    }
+
     return 0;
+}
+
+void receive_response()
+{
 }
 
 int init_fd()
 {
 }
 
-char* get_command()
+int process_command()
 {
     char buffer[BUFFER_SIZE];
+    char command[BUFFER_SIZE];
+    int size;
+    int ret=0;
+    int to_send=0;
+    char* aux;
 
     do
     {
         memset(buffer,0,BUFFER_SIZE);
-        puts("Escribe un comando AODV valido:");
-        scanf("%s",&buffer);
+        puts("Escribe un comando valido:");
+        scanf("%s",buffer);
 
-        char command[BUFFER_SIZE];
-        char* aux=strchr(buffer,' ');
+        aux=strchr(buffer,'\0');
 
         if(aux!=NULL)
-            strncpy(command,buffer,buffer-aux);
+        {
+            size=aux-buffer;
+            size++;
+        }
         else
-            strncpy(command,buffer,BUFFER_SIZE);
+        {
+            size=BUFFER_SIZE;
+        }
 
-        if(strcmp(command,"kill"))
+        printf("size %d\n",size);
+        strncpy(command,buffer,size);
+
+        if(strcmp(command,"kill")==0)
         {
+            puts("kill");
+            to_send=1;
+            ret=1;
         }
-        else if(strcmp(command,"restart"))
+        else if(strcmp(command,"restart")==0 ||
+            strcmp(command,"showstatistics")==0 ||
+            strcmp(command,"cleanstatistics")==0 ||
+            strcmp(command,"showroutes")==0)
         {
-        }
-        else if(strcmp(command,"showstatistics"))
-        {
-        }
-        else if(strcmp(command,"cleanstatistics"))
-        {
-        }
-        else if(strcmp(command,"showroutes"))
-        {
+            puts("entra");
+            to_send=1;
         }
         else if(strcmp(command,"help"))
         {
-            puts("Command avaliable: showroutes, cleanstatistics, showstatistics,kill,restart");
+            puts("Command avaliable: showroutes, cleanstatistics, showstatistics, kill, restart.");
         }
         else
-            puts("Command no valid. Writes help.");
-    }while(1);
+            puts("Command no valid. Write help.");
+
+        printf("command -> %s\n",command);
+    }while(to_send==0);
+
+    return ret;
 }
-*/

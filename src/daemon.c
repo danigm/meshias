@@ -105,6 +105,7 @@ void daemon_receive_packets()
         return;
     }
 
+    puts("haaaaaaaaaaaaaaaaaaaaaa");
     pkt=aodv_pkt_get(&msg);
 
     if(aodv_pkt_check(pkt)==0)
