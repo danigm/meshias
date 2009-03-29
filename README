@@ -11,7 +11,7 @@ the whole process.
 To be able to compile Meshias you need a recent version of the linux kernel,
 cmake and the headers for libnl. If you use debian or a debian derivative:
 
-    sudo apt-get install libnl-dev cmake
+    sudo apt-get install libnl-dev cmake build-essential
 
 Now, in order to compile meshias, you need to enter the src/ directory and
 compile it by executing the following commands:

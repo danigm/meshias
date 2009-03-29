@@ -31,9 +31,13 @@ To start with this project, we have to know what we'll be using and why:
  instead of using directly netlink because netlink is too much low level for
  what we need.
 
- * raw sockets
+ * udp sockets
  for sending AODV packets for route management via port 654 UDP, and
- libnetfilter_queue to receive the  packets coming from other ips.
+ libnetfilter_queue to receive the packets coming from other ips.
+
+ * unix sockets
+ for sending commands to the daemon and for receiving actual information
+ about it.
 
  * conntrack alarms,
  for managing timeouts of AODV protocol.
