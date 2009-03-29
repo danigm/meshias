@@ -1,8 +1,9 @@
-#include <sys/socket.h>
+// #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netlink/cache.h>
 #include <netlink/route/link.h>
+#include <netlink/route/addr.h>
 #include <unistd.h>
 #include <sys/types.h>
 
@@ -11,6 +12,7 @@
 
 void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
 {
+    puts("__msh_data_process_wait_queue_cb called");
     // Reset the number of rreq sent to zero
     data.num_rreq_sent = 0;
     
@@ -123,7 +125,7 @@ int msh_data_init(int argc, char **argv)
     data.packets_queue = packets_fifo_alloc();
 
     init_alarm(&data.rreq_flush_alarm, 0, __msh_data_process_wait_queue_cb);
-    //add_alarm(alarm, 1, 0);
+    add_alarm(&data.rreq_flush_alarm, 1, 0);
     return 1;
 }
 

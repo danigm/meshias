@@ -13,19 +13,27 @@ void __rreq_fifo_entry_delete(struct rreq_fifo* entry)
 
 void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
 {
+    puts("__rreq_fifo_alarm_cb called");
     struct rreq_fifo* entry = (struct rreq_fifo*)qdata;
     uint32_t rreq_id = entry->rreq_id;
-    struct in_addr dst = { .s_addr = entry->dst.s_addr };
+    struct in_addr dst = { entry->dst.s_addr };
     int8_t prev_tries = entry->prev_tries;
     
-    __rreq_fifo_entry_delete(entry);
-    
-    // If the RREQ was sent bby ourselves it means that no RREP
+    // If the RREQ was sent by ourselves it means that no RREP
     // has been received and thus we shall send a new RREQ
-    if(prev_tries >= 0)
+    if(entry->prev_tries < 0)
     {
+        __rreq_fifo_entry_delete(entry);
+    }
+    else
+    {
+        unsigned long  sc, usc;
         // Try one more time
-        prev_tries++;
+        entry->prev_tries++;
+        
+        if(entry->prev_tries > RREQ_RETRIES())
+            __rreq_fifo_entry_delete(entry);
+        
         // routing_table_use_route() will set invalid_route accordingly if
         // it find a route but it has been marked as invalid. That's the only thing we
         // will use the routing_table_use_route() call for: we can't expect that
@@ -35,16 +43,23 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
         if(routing_table_use_route(data.routing_table, dst, &expired_route))
             fprintf(stderr, "Error: Found an unexpected route when a waiting RREQ expired\n");
         
-        aodv_find_route(dst, expired_route, prev_tries);
-    }
+        set_alarm_time(binary_exponential_backoff_time(entry->prev_tries), &sc, &usc);
+        add_alarm(&entry->alarm, sc, usc);
+        
+        aodv_find_route(dst, expired_route, entry->prev_tries);
+        
+        // We might have send a new rreq (with aodv_find_route()), so we update
+        // this entry's seq_num
+        entry->rreq_id = data.rreq_id;
+    } 
 }
 
 struct rreq_fifo* rreq_fifo_alloc()
 {
     struct rreq_fifo* queue = (struct rreq_fifo*)
         calloc(1, sizeof(struct rreq_fifo));
-        
-    init_alarm(&queue->alarm, queue, __rreq_fifo_alarm_cb);
+
+    init_alarm(&queue->alarm, queue, __rreq_fifo_alarm_cb);        
     INIT_LIST_HEAD(&(queue->list));
     
     return queue;
@@ -73,8 +88,8 @@ void rreq_fifo_push(struct rreq_fifo* queue, uint32_t rreq_id,
     entry->prev_tries = -1;
     
     set_alarm_time(PATH_DISCOVERY_TIME(), &sc, &usc);
-    add_alarm(&queue->alarm, sc, usc);
-    
+    init_alarm(&entry->alarm, entry, __rreq_fifo_alarm_cb);
+    add_alarm(&entry->alarm, sc, usc);
     list_add(&entry->list, &queue->list);
 }
 
@@ -91,8 +106,11 @@ void rreq_fifo_push_owned(struct rreq_fifo* queue, uint32_t rreq_id,
     
     // Binary exponential backoff
     set_alarm_time(binary_exponential_backoff_time(prev_tries), &sc, &usc);
-    add_alarm(&queue->alarm, sc, usc);
+    init_alarm(&entry->alarm, entry, __rreq_fifo_alarm_cb);
+    add_alarm(&entry->alarm, sc, usc);
     
+    printf("prev_tries %d\n", entry->prev_tries);
+    printf("list_add %p\n", entry);
     list_add(&entry->list, &queue->list);
 }
 
@@ -116,6 +134,8 @@ uint8_t rreq_fifo_waiting_response_for(struct rreq_fifo* queue,
     
     list_for_each_entry(entry, &queue->list, list)
     {
+        // We check that prev_tries non-zero because the packed must be owned"
+        // i.e. must have been sent by us
         if(entry->prev_tries >= 0 && entry->dst.s_addr == dst.s_addr)
             return 1;
     }

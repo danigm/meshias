@@ -65,11 +65,13 @@ int main(int argc, char **argv)
              * The code above has potentially added some new alarms which means
              * we need to recalculate which is the next alarm to be called
              */
-            next_run = get_next_alarm_run(next_run);
+            next_run = get_next_alarm_run(&next);
+            if(next_run)
+                printf("next_run: %d\n", get_alarm_time(next_run->tv_sec,
+                    next_run->tv_usec));
         }
-        //TODO Signals
         debug(1,"An alarm is about to ring");
-        process_alarms(next_run);
+        process_alarms(&next);
     }
 
     debug(1,"Exiting from the mainloop");

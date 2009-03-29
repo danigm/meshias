@@ -56,10 +56,14 @@ void packets_fifo_drop_packets(struct packets_fifo* queue, struct in_addr dest)
 {
     struct packets_fifo *entry, *tmp;
     
+    puts("packets_fifo_drop_packets");
     list_for_each_entry_safe(entry, tmp, &queue->list, list)
     {
         if(entry->dest.s_addr == dest.s_addr)
+        {
+            puts("packet DROP");
             packet_obj_drop(entry);
+        }
     }
 }
 
@@ -78,7 +82,6 @@ uint32_t packets_fifo_process_route(struct packets_fifo* queue,
             RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING))
             packet_obj_accept(entry);
     }
-    free(route);
     msh_route_destroy(second);
 }
 

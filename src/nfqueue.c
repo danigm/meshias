@@ -66,7 +66,7 @@ void nfqueue_receive_packets()
 {
     char buf[4096] __attribute__ ((aligned));
     int received;
-    while ( (received = recv(data.nfqueue_fd, buf, sizeof(buf), 0)) >= 0 )
+    if( (received = recv(data.nfqueue_fd, buf, sizeof(buf), 0)) >= 0 )
     {
         nfq_handle_packet(data.handle, buf, received);
     }

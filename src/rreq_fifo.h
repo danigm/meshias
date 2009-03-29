@@ -9,6 +9,7 @@
 struct rreq_fifo
 {
     uint32_t rreq_id;
+    // TODO: shouldn't we buffer the orig too? and check the orig instead
     struct in_addr dst;
     // If the rrep was not send by ourselves, prev_tries will be less than 
     // zero. Otherwise, it stores how many times has this rrep been sent

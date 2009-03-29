@@ -11,7 +11,7 @@
 void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     uint8_t prev_tries)
 {
-    //First, check that preev_tries hasn't exceeded its limit.
+    //First, check that prev_tries hasn't exceeded its limit.
     if(prev_tries > RREQ_RETRIES())
     {
         // Route to the dest definitely not found: drop packets
@@ -23,14 +23,22 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     // TODO: Second, Do not send more than RREQ_RATELIMIT() RREQs per second.
     // Buffer the RREQs when they can't be sent
     
-    // Third, buffer the rreq we're about to add. Any previous rreq
-    // originating from ourselves should have been removed from the queue
-    // already so we won't check that here; it's assumed. Also, we must
-    // increment our sequence number before generating a RREQ (see RFC 3561
-    // Page 11)
+    // we must increment our sequence number before generating a RREQ (see RFC
+    // 3561 Page 11)
     data.seq_num++;
-    //TODO: what about the timeout when sending the RREQ? doesn't seem to work
-    rreq_fifo_push(data.rreq_queue, data.seq_num, data.ip_addr);
+    
+    // We are going to send a new RREQ, so we increment the global rreq id
+    // counter
+    data.rreq_id++;
+        
+    // Third, buffer the rreq we're about to add. Any previous rreq
+    // originating from ourselves should have been already added to the queue
+    // already so we won't add it there; it's not needed. So we only add the
+    // rreq to the RREQ FIFO if this is the first try i.e. prev_tries = 0
+    if(prev_tries == 0)
+    {
+        rreq_fifo_push_owned(data.rreq_queue, data.rreq_id, dest, prev_tries);
+    }
     
     struct aodv_pkt* pkt = aodv_pkt_alloc();
     uint8_t hop_count = (invalid_route) ?
@@ -44,9 +52,6 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     
     aodv_pkt_set_ttl(pkt, expanding_ring_search_ttl(hop_count, prev_tries));
 
-    // We are going to send a new RREQ, so we increment the global rreq id
-    // counter
-    data.rreq_id++;
     
     // After gathering all the needed information, we can build our rreq
     aodv_pkt_build_rreq(pkt, flags, hop_count, data.rreq_id, dest.s_addr,
@@ -92,6 +97,10 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
     if(rreq_fifo_contains(data.rreq_queue, rreq->rreq_id,
         dest_addr))
         return;
+    
+    // As this RREQ is new, we should add it to the queue
+    rreq_fifo_push(data.rreq_queue, rreq->rreq_id, dest_addr);
+        
 
     uint8_t hop_count = rreq->hop_count;
     rreq->hop_count = hop_count + 1;
