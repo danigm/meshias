@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netlink/cache.h>
 #include <netlink/route/link.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -26,6 +27,26 @@ void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
     // sent by us)
     // if(!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
     // aodv_find_route(dest, last_kown_dest_seq_num);
+}
+
+void __init_addr(struct nl_object* obj, void *arg)
+{
+    struct rtnl_addr* addr = (struct rtnl_addr*)obj;
+    
+    struct nl_dump_params dp = {
+        .dp_type = NL_DUMP_FULL,
+        .dp_fd = stdout,
+        .dp_dump_msgtype = 1,
+    };
+    
+    struct nl_addr *local = rtnl_addr_get_local(addr);
+    memcpy(&data.ip_addr, nl_addr_get_binary_addr(local), sizeof(uint32_t));
+    
+    struct nl_addr *broadcast = rtnl_addr_get_broadcast(addr);
+    memcpy(&data.broadcast_addr, nl_addr_get_binary_addr(broadcast), sizeof(uint32_t));
+    
+    printf("local %s\n", inet_ntoa (data.ip_addr));
+    printf("broadcast %s\n", inet_ntoa (data.broadcast_addr));
 }
 
 int msh_data_init(int argc, char **argv)
@@ -79,25 +100,22 @@ int msh_data_init(int argc, char **argv)
         fprintf(stderr, "Error: Couldn't access the interface named %s\n", argv[1]);
         return ERR_INIT;
     }
-
-    //TODO: How to get the IP?
-    struct nl_addr *nladdr = rtnl_link_get_addr(link);
-    int family = nl_addr_get_family(nladdr);
-
-    /*TODO
-    if(nl_addr_get_family(nladdr) != AF_INET)
-    {
-        fprintf(stderr, "Error: We only support interfaces using IPv4\n");
-        return ERR_INIT;
-    }
-    */
-
-    char  buf[256];
-    memcpy(&data.ip_addr,nl_addr_get_binary_addr(nladdr),sizeof(uint32_t));
-    data.net_iface = rtnl_link_name2i(link_cache,rtnl_link_get_name(link));
     
+    data.net_iface = rtnl_link_name2i(link_cache,rtnl_link_get_name(link));
+
 //     rtnl_link_put(link);
     nl_cache_free(link_cache);
+    
+    // Get the IP address and netmask of the interface
+    struct nl_cache* addr_cache = rtnl_addr_alloc_cache(data.nl_handle);
+    struct rtnl_addr* filter = rtnl_addr_alloc();
+    rtnl_addr_set_ifindex(filter, data.net_iface);
+    rtnl_addr_set_family(filter, AF_INET);
+    
+    nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, __init_addr, 0);
+    rtnl_addr_put(filter);
+    
+    nl_cache_free(addr_cache);
 
     data.routing_table = routing_table_alloc();
     

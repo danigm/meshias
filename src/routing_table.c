@@ -20,66 +20,12 @@ struct routing_table
     struct msh_route *find_route;
 };
 
-void __fill_routing_table(struct nl_object* obj, void *arg)
-{
-    struct routing_table *table = (struct routing_table *)arg;
-    struct rtnl_route* route = (struct rtnl_route*)obj;
-    
-    char buf[128];
-    
-    struct nl_addr *addr = rtnl_route_get_dst(route);
-    
-    printf("__fill_routing_table\n");
-    
-    // If it's of the main routing tables and ipv4
-    if(addr != NULL && rtnl_route_get_family(route) == AF_INET &&
-        rtnl_route_get_table(route) == 254)
-    {
-        struct msh_route* mshRoute = msh_route_alloc();
-        struct in_addr *addr_dst = nl_addr_get_binary_addr(addr);
-        
-        printf("Route \ttable %d\tdst %s\t\tprefix size %d\n",
-            rtnl_route_get_table(route),
-            nl_addr2str(addr, buf, sizeof(buf)),
-            32 - rtnl_route_get_dst_len(route));
-        
-        msh_route_set_dst_ip(mshRoute, *addr_dst);
-        msh_route_set_prefix_sz(mshRoute, 32 - rtnl_route_get_dst_len(route));
-        msh_route_unset_flag(mshRoute, RTFLAG_VALID_DEST_SEQ_NUM);
-        msh_route_set_flag(mshRoute, RTFLAG_UNMANAGED);
-        // As it's not a meshias route but an external one, it won't have a
-        // lifetime set, but it will be a valid entry. Forever.
-        msh_route_set_flag(mshRoute, RTFLAG_VALID_ENTRY);
-        list_add(&mshRoute->list, &table->route_list.list);
-    }
-}
-
 struct routing_table *routing_table_alloc()
 {
     struct routing_table *table =
         (struct routing_table *)calloc(1, sizeof(struct routing_table));
     INIT_LIST_HEAD(&(table->route_list.list));
     table->find_route = msh_route_alloc();
-    
-    // Fill the routing table with currently existant routes 
-    struct nl_cache *route_cache = rtnl_route_alloc_cache(data.nl_handle);
-    printf("Route cache (%d ifaces):\n", nl_cache_nitems(route_cache));
-    nl_cache_foreach(route_cache, __fill_routing_table,table);
-    nl_cache_free(route_cache);
-    
-    // Make the routing table know routes for all local connections
-    // with route for 127.0.0.0/24
-    struct msh_route* mshRoute = msh_route_alloc();
-    struct in_addr addr_dst = { inet_addr("127.0.0.0") };
-    
-    msh_route_set_dst_ip(mshRoute, addr_dst);
-    msh_route_set_prefix_sz(mshRoute, 24);
-    msh_route_unset_flag(mshRoute, RTFLAG_VALID_DEST_SEQ_NUM);
-    msh_route_set_flag(mshRoute, RTFLAG_UNMANAGED);
-    // As it's not a meshias route but an external one, it won't have a
-    // lifetime set, but it will be a valid entry. Forever.
-    msh_route_set_flag(mshRoute, RTFLAG_VALID_ENTRY);
-    list_add(&mshRoute->list, &table->route_list.list);
     
     return table;
 }

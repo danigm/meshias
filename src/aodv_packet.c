@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/socket.h>
 
 #include "aodv_packet.h"
 #include "msh_data.h"
@@ -29,7 +30,7 @@ struct aodv_pkt *aodv_pkt_alloc()
     pkt->ttl=DEFAULT_TTL;
     pkt->address.sin_family=AF_INET;
     pkt->address.sin_port=htons(AODV_UDP_PORT);
-    pkt->address.sin_addr.s_addr=INADDR_BROADCAST;
+    pkt->address.sin_addr.s_addr=data.broadcast_addr.s_addr;
 }
 
 struct aodv_pkt *aodv_pkt_get(struct msghdr* msg)
@@ -72,12 +73,14 @@ ssize_t aodv_pkt_send(struct aodv_pkt* pkt)
     setsockopt(data.daemon_fd,SOL_IP,IP_TTL,&(pkt->ttl),sizeof(pkt->ttl));
 
     // Sending the information
-    int numbytes=sendto(data.daemon_fd,pkt->payload,pkt->payload_len,0,
+    int numbytes=sendto(data.daemon_fd, pkt->payload, pkt->payload_len, 0,
             (struct sockaddr*)&(pkt->address),sizeof(pkt->address));
 
-    if(numbytes==-1)
+    printf("pkt_send: dest %s\n", inet_ntoa((struct in_addr)pkt->address.sin_addr));
+    if(numbytes==-1) {
         stats.send_aodv_errors++;
-    else if(numbytes!=pkt->payload_len)
+        puts("pkt_send: errorcito");
+    } else if(numbytes!=pkt->payload_len)
         stats.send_aodv_incomplete++;
 
     return numbytes;

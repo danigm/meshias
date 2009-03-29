@@ -1,91 +1,165 @@
 1. Introduction
 ---------------
 
-First we want to implement AODV, and then even add some changes to it and improve it. AODV stands for
-Ad hoc On-Demand Distance Vector Routing, and it's a protocol for converting an Ad-hoc network in a
-mesh network in which each node doesn't necesarily be directly connected to the node he wish to
-communicate with, but instead it only needs to have a path of connected intermediate nodes between
-it and the other communicating node.
+Meshias is an implementation of AODV for mesh networks. To use it, you need to
+need to compile it and then configure it and finally run it. Here we document
+the whole process.
 
-2. Libraries
-------------
+2. Compilation and installation
+-------------------------------
 
-To start with this project, we have to know what we'll be using and why:
+To be able to compile Meshias you need a recent version of the linux kernel,
+cmake and the headers for libnl. If you use debian or a debian derivative:
 
- * libnetfilter_queue,
- for capturing and filtering packets. This way we inspect each packet and determine
- if its route is known, in which case we let the packet continue is usual path, or if the route for the
- destination ip is not known, then we retain and buffer the packet and in the same time we try to find
- a route for it using AODV. When we find the route it's added to the systems route table and after that
- we let the packet continue its way. The kernel will find the route in the route table and send it
- accordingly. 
+    sudo apt-get install libnl-dev cmake
 
- * libnl,
- for communicating with the kernel for route management purposes, like getting the route table and
- updating and modifing it. In this case we will use libnl instead of using directly netlink because
- netlink is too much low level for what we need.
+Now, in order to compile meshias, you need to enter the src/ directory and
+compile it by executing the following commands:
 
- * raw sockets
- For sending AODV packets for route management via port 654 UDP, and libnetfilter_queue to receive the
-packets coming from other ips.
+    cd src/
+    cmake .
+    make
 
- * conntrack alarms,
- for managing timeouts of AODV protocol.
+And then, we install meshias in the system:
 
-3. Overview of AODV
--------------------
+    sudo make install
 
-AODV protocol is described in RFC 3561. Route Requests (RREQs), Route Replies (RREPs) and Route Errors
-(RERRs) are the message types defined by AODV. These message types are received via UDP in port 654.
+3. Usage
+--------
 
-fields for each route table entry:
- * dest ip addr
- * prefix size (for subnets)
- * dest seq nº
- * valid dest seq nº flag
- * other flags: valid/invalid, repairable/being repared
- * network iface
- * hop count (to reach dest)
- * next hop
- * list of precursors
- * lifetime (expiration or deletion time of the route)
+At the moment, meshias is highly experimental, and it's not prepared to be used
+but for testing. The first thing to do is set up the interface that will be
+working in the mesh network. if it's a wifi interface (which is most probably
+the case), we need it to work in Ad-Hoc mode. This mode can be set up in
+different ways depeding on the driver of your network card, for example in
+atheros cards you do this:
 
-buffer of RREQs. This buffer is there so that a rreq is processed and broadcasted only once and
-thus no loops happen. It contains:
- * orig addr
- * RREQ ID
- * lifetime (each entry remains stored for PATH_DISCOVERY_TIME)
+    sudo wlanconfig ath0 destroy
+    sudo wlanconfig ath0 create wlandev wifi0 wlanmode Ad-Hoc
 
-We also needd to store the current RREQ ID for this machine.
+The first commands is optional and only needed if the atheros interface was
+already created, which is the case by default. The second one creates the
+interface and sets it up in Ad-Hoc mode. You can check that the interface is
+correctly set up in Ad-Hoc mode with the iwconfig command, which should say
+"Mode: Ad-Hoc", as in this example:
 
-common vars:
-(copiar del RFC)
+    sudo iwconfig ath0
+    ath0      IEEE 802.11g  ESSID:""  Nickname:""
+            Mode:Managed  Channel:0  Access Point: Not-Associated
+            Bit Rate:0 kb/s   Tx-Power:16 dBm   Sensitivity=1/1
+            Retry:off   RTS thr:off   Fragment thr:off
+            Encryption key:off
+            Power Management:off
+            Link Quality=0/70  Signal level=-96 dBm  Noise level=-96 dBm
+            Rx invalid nwid:1836  Rx invalid crypt:0  Rx invalid frag:0
+            Tx excessive retries:0  Invalid misc:0   Missed beacon:0
 
-   Parameter Name           Value
-   ----------------------   -----
-   ACTIVE_ROUTE_TIMEOUT     3,000 Milliseconds
-   ALLOWED_HELLO_LOSS       2
-   BLACKLIST_TIMEOUT        RREQ_RETRIES * NET_TRAVERSAL_TIME
-   DELETE_PERIOD            see note below
-   HELLO_INTERVAL           1,000 Milliseconds
-   LOCAL_ADD_TTL            2
-   MAX_REPAIR_TTL           0.3 * NET_DIAMETER
-   MIN_REPAIR_TTL           see note below
-   MY_ROUTE_TIMEOUT         2 * ACTIVE_ROUTE_TIMEOUT
-   NET_DIAMETER             35
-   NET_TRAVERSAL_TIME       2 * NODE_TRAVERSAL_TIME * NET_DIAMETER
-   NEXT_HOP_WAIT            NODE_TRAVERSAL_TIME + 10
-   NODE_TRAVERSAL_TIME      40 milliseconds
-   PATH_DISCOVERY_TIME      2 * NET_TRAVERSAL_TIME
-   RERR_RATELIMIT           10
-   RING_TRAVERSAL_TIME      2 * NODE_TRAVERSAL_TIME *
-                            (TTL_VALUE + TIMEOUT_BUFFER)
-   RREQ_RETRIES             2
-   RREQ_RATELIMIT           10
-   TIMEOUT_BUFFER           2
-   TTL_START                1
-   TTL_INCREMENT            2
-   TTL_THRESHOLD            7
-   TTL_VALUE                see note below
+The interface which will be used for the mesh network is now created, but now
+we need to bring it up, sets its ip address and network mask. For example if
+we want to have ip address 192.168.0.2 and all the machine have ips of the type
+192.168.0.X, this is the command that we need to execute:
 
+    sudo ifconfig ath0 192.168.0.2 netmask 255.255.255.0 up
 
+We can check that this command worked properly by executing the following
+command, which should let us see that the interface is up and have the correct
+ip address and network mask, showing an output similar to the one shown in this
+example:
+
+    sudo ifconfig ath0
+    ath0      Link encap:Ethernet  HWaddr de:ad:be:ef:de:ad:be
+            inet addr:192.168.6.2  Bcast:192.168.6.255  Mask:255.255.255.0
+            inet6 addr: fe80::223:4eff:fe3e:2851/64 Scope:Link
+            UP BROADCAST MULTICAST  MTU:1500  Metric:1
+            RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+            TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+            collisions:0 txqueuelen:0
+            RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+When we brought up the ath0 network interface, a new route should have been
+added automatically to the routing table, which should contain an entry similar
+to the following one:
+
+    sudo route -n
+    Kernel IP routing table
+    Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+    192.168.0.0     0.0.0.0         255.255.255.0   U     0      0        0 ath0
+
+Now we need to set up iptables to let meshias capture the traffic:
+
+    sudo iptables -t filter -A OUTPUT -o ath0 -j NFQUEUE --queue-num 0
+
+The above iptables rule will capture the outgoing traffic in your machine and
+move the captured packets to the netfilter queue number 0. Meshias will read the
+packets from that queue, and it will check if there is a route for the packet's
+IP address destination. If there's a route, meshias will let packet be sended,
+or else it will try to find a route.
+
+This iptables will only capture the traffic going out through ath0 network
+interface. We have assumed here in this example this is the interface working
+with the mesh network, but if you want to setup you need to replace "ath0" with
+the name of your interface in this and the following commands.
+
+Another two iptables are needed for meshias to work:
+
+    sudo iptables -t filter -A INPUT -i ath0 -j NFQUEUE --queue-num 1
+    sudo iptables -t filter -A FORWARD -i ath0 -j NFQUEUE --queue-num 2
+
+These first of these two rules will allow meshias capture incoming traffic to be
+able to reset some timers for timeouts, whose packets will be send to nefilter 
+queue number 1. The second rule captures the packets for which this machine acts
+as a router, and will send them to netfilter queue number 2, allowing meshias
+again to reset some timers for timeouts.
+
+Before being able to run meshias we also need to tell the kernel to act as a
+router forwading packets whose destination ip is not our machine but
+another machine for which we have an entry in the routing table. This can be
+done with the following command:
+
+    sudo echo 1 > /proc/sys/net/ipv4/ip_forward
+
+Finally, we need to start meshias by simply executing the following command:
+
+    sudo meshias ath0
+
+Now meshias will be showing its output in this terminal so we need to open a new
+terminal and work from there.
+
+If we have another machine connected to the mesh network with another instance
+of meshias running, we can test that meshias is working by issuing pinging to
+it's ip address (in this example, this ip is 192.168.0.1):
+
+    ping 192.168.0.1 -c 5
+    PING 192.168.0.1 (192.168.0.1) 56(84) bytes of data.
+    64 bytes from 192.168.0.1: icmp_seq=1 ttl=64 time=55.161 ms
+    64 bytes from 192.168.0.1: icmp_seq=2 ttl=64 time=48.213 ms
+    64 bytes from 192.168.0.1: icmp_seq=3 ttl=64 time=47.137 ms
+    64 bytes from 192.168.0.1: icmp_seq=4 ttl=64 time=49.168 ms
+    64 bytes from 192.168.0.1: icmp_seq=5 ttl=64 time=48.175 ms
+
+    --- 192.168.0.1 ping statistics ---
+    5 packets transmitted, 5 received, 0% packet loss, time 3999ms
+    rtt min/avg/max/mdev = 47.137/49.170/55.161/1.029 ms
+
+After pinging to the machine, meshias output in the first terminal should look
+like this:
+
+    ....                                   
+    [1] A packet was captured by nfqueue.
+    STOLEN: Finding route for 192.168.0.1...
+    route for 192.168.0.1 found, packet previously stolen accepted
+    ACCEPT: packet for 192.168.0.1, route known
+    ACCEPT: packet for 192.168.0.1, route known
+    ACCEPT: packet for 192.168.0.1, route known
+    ACCEPT: packet for 192.168.0.1, route known
+
+As a result of meshias work, a new route to the routing table should have been
+added to the routing table:
+
+    route -n
+    Kernel IP routing table
+    Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+    192.168.0.1     192.168.0.1     255.255.255.255 U     0      0        0 ath0
+    192.168.0.0     0.0.0.0         255.255.255.0   U     0      0        0 ath0
+
+And this is how meshias works in essence.

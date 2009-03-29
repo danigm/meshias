@@ -20,7 +20,6 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
         return;
     }
     
-    
     // TODO: Second, Do not send more than RREQ_RATELIMIT() RREQs per second.
     // Buffer the RREQs when they can't be sent
     

@@ -2,6 +2,7 @@
 #include "aodv_logic.h"
 #include "nfqueue.h"
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 
 int nfqueue_init()
@@ -268,7 +269,7 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     }
     else
     {
-        puts("STOLEN");
+        puts("STOLEN: Route not found, finding route..");
         // Route not found. Queue the packet and find a route
         packets_fifo_push(data.packets_queue, id, dest);
         

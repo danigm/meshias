@@ -1,0 +1,100 @@
+1. Introduction
+---------------
+
+In this file you will find implementation details, and in general information
+for developers who want to know how meshias works internally.
+
+First we want to implement AODV, and then even add some changes to it and
+improve it. AODV stands for Ad hoc On-Demand Distance Vector Routing, and it's a
+protocol for converting an Ad-hoc network in a mesh network in which each node
+doesn't necesarily be directly connected to the node he wish to communicate
+with, but instead it only needs to have a path of connected intermediate nodes
+between it and the other communicating node.
+
+2. Libraries
+------------
+
+To start with this project, we have to know what we'll be using and why:
+
+ * libnetfilter_queue,
+ for capturing and filtering packets. This way we inspect each packet and
+ determine if its route is known, in which case we let the packet continue is
+ usual path, or if the route for the destination ip is not known, then we retain
+ and buffer the packet and in the same time we try to find a route for it using
+ AODV. When we find the route it's added to the systems route table and after
+ that we let the packet continue its way. The kernel will find the route in the
+ route table and send it accordingly. 
+
+ * libnl,
+ for communicating with the kernel for route management purposes, like getting
+ the route table and updating and modifing it. In this case we will use libnl
+ instead of using directly netlink because netlink is too much low level for
+ what we need.
+
+ * raw sockets
+ for sending AODV packets for route management via port 654 UDP, and
+ libnetfilter_queue to receive the  packets coming from other ips.
+
+ * conntrack alarms,
+ for managing timeouts of AODV protocol.
+
+3. Overview of AODV
+-------------------
+
+AODV protocol is described in RFC 3561. Route Requests (RREQs), Route Replies
+(RREPs) and Route Errors (RERRs) are the message types defined by AODV. These
+message types are received via UDP in port 654.
+
+fields for each route table entry:
+ * dest ip addr
+ * prefix size (for subnets)
+ * dest seq nº
+ * valid dest seq nº flag
+ * other flags: valid/invalid, repairable/being repared
+ * network iface
+ * hop count (to reach dest)
+ * next hop
+ * list of precursors
+ * lifetime (expiration or deletion time of the route)
+
+buffer of RREQs. This buffer is there so that a rreq is processed and
+broadcasted only once and thus no loops happen. It contains:
+ * orig addr
+ * RREQ ID
+ * lifetime (each entry remains stored for PATH_DISCOVERY_TIME)
+
+We also needd to store the current RREQ ID for this machine.
+
+common vars:
+(copiar del RFC)
+
+   Parameter Name           Value
+   ----------------------   -----
+   ACTIVE_ROUTE_TIMEOUT     3,000 Milliseconds
+   ALLOWED_HELLO_LOSS       2
+   BLACKLIST_TIMEOUT        RREQ_RETRIES * NET_TRAVERSAL_TIME
+   DELETE_PERIOD            see note below
+   HELLO_INTERVAL           1,000 Milliseconds
+   LOCAL_ADD_TTL            2
+   MAX_REPAIR_TTL           0.3 * NET_DIAMETER
+   MIN_REPAIR_TTL           see note below
+   MY_ROUTE_TIMEOUT         2 * ACTIVE_ROUTE_TIMEOUT
+   NET_DIAMETER             35
+   NET_TRAVERSAL_TIME       2 * NODE_TRAVERSAL_TIME * NET_DIAMETER
+   NEXT_HOP_WAIT            NODE_TRAVERSAL_TIME + 10
+   NODE_TRAVERSAL_TIME      40 milliseconds
+   PATH_DISCOVERY_TIME      2 * NET_TRAVERSAL_TIME
+   RERR_RATELIMIT           10
+   RING_TRAVERSAL_TIME      2 * NODE_TRAVERSAL_TIME *
+                            (TTL_VALUE + TIMEOUT_BUFFER)
+   RREQ_RETRIES             2
+   RREQ_RATELIMIT           10
+   TIMEOUT_BUFFER           2
+   TTL_START                1
+   TTL_INCREMENT            2
+   TTL_THRESHOLD            7
+   TTL_VALUE                see note below
+
+This file is by any means not complete. If you want to read more information
+about the protocol you can READ RFC 3561,which can be found in this same
+directory with the name rfc3561.txt.

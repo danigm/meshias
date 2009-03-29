@@ -256,10 +256,9 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
         uint32_t ip2masked = second->dst_ip.s_addr & mask;
         struct in_addr ip1masked1 = { ip1masked }, ip2masked1 = { ip2masked },
             maskip = { mask };
-        printf("compare: ipmask1 %s ipmask2 %s mask %s\n", inet_ntoa(ip1masked1),
-            inet_ntoa(ip2masked1), inet_ntoa(maskip));
-        printf("compare: ipmask1 %ud ipmask2 %ud mask %s\n", ip1masked1.s_addr,
-            ip2masked1.s_addr, inet_ntoa(maskip));
+        printf("compare: ipmask1 %s ", inet_ntoa(ip1masked1));
+        printf("ipmask2 %s ", inet_ntoa(ip2masked1));
+        printf("mask %s\n", inet_ntoa(maskip));
         diff |= (ip1masked != ip2masked);
     }
 

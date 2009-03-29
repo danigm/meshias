@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
+#include <netlink/route/addr.h>
 #include <netlink/route/rtnl.h>
 // BUG: it breaks if you don't include rtnl.h first !!
 #include <netlink/route/route.h>
@@ -80,6 +81,19 @@ void print_route(struct nl_object* obj, void *arg)
 //     route_dump_full(route, &params);
 }
 
+void print_addr(struct nl_object* obj, void *arg)
+{
+    int ifindex = *(int*)arg;
+    struct rtnl_addr* addr = (struct rtnl_addr*)obj;
+    struct nl_dump_params dp = {
+        .dp_type = NL_DUMP_FULL,
+        .dp_fd = stdout,
+        .dp_dump_msgtype = 1,
+    };
+    
+    nl_object_dump(obj, &dp);
+}
+
 int main(int argc, char **argv)
 {
     struct nl_handle *sock;
@@ -92,37 +106,51 @@ int main(int argc, char **argv)
     // the kernel and put them into a cache.
     struct nl_cache *link_cache = rtnl_link_alloc_cache(sock);
     nl_cache_mngt_provide(link_cache);
+    
+    char ath0[] = "ath0";
+    char *ifname = (argc > 1) ? argv[1] : ath0;
+    int ifindex = rtnl_link_name2i(link_cache, ifname);
 
-     printf("net iface: %d: %s", rtnl_link_name2i(link_cache, "lo"), "lo");
+     printf("net iface: %d: %s", ifindex, ifname);
     // In a second step, we iterate the link interfaces and print its names.
     printf("Link cache (%d ifaces):\n", nl_cache_nitems(link_cache));
-    int item = 0;
-    nl_cache_foreach(link_cache, print_link, (void *)&item);
-    
-    struct nl_cache *route_cache = rtnl_route_alloc_cache(sock);
-    
-    printf("Route cache (%d routes):\n", nl_cache_nitems(route_cache));
-    item = 0;
-    nl_cache_foreach(route_cache, print_route, (void *)&item);
-    
-    // Free the mallocs
-    
-    struct rtnl_route *nlroute = rtnl_route_alloc();
-    rtnl_route_set_oif(nlroute, 1);
-    rtnl_route_set_family(nlroute, AF_INET);
-    rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
-    rtnl_route_set_dst(nlroute, nl_addr_parse("127.0.0.0/24", AF_INET));
+//     int item = 0;
+//     nl_cache_foreach(link_cache, print_link, (void *)&item);
+//     
+//     struct nl_cache *route_cache = rtnl_route_alloc_cache(sock);
+//     
+//     printf("Route cache (%d routes):\n", nl_cache_nitems(route_cache));
+//     item = 0;
+//     nl_cache_foreach(route_cache, print_route, (void *)&item);
 //     rtnl_route_set_gateway(nlroute, nl_addr_parse("127.0.0.1", AF_INET));
-    
 //     if (rtnl_route_del(sock, nlroute, 0) < 0)
 //     {
 //         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
 //     }
     
+    struct nl_cache* addr_cache = rtnl_addr_alloc_cache(sock);
+    
+    struct rtnl_addr* filter = rtnl_addr_alloc();
+    rtnl_addr_set_ifindex(filter, ifindex);
+    rtnl_addr_set_family(filter, AF_INET);
+    
+    nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, print_addr,
+        &ifindex);
+    
+//     struct nl_object* obj = nl_cache_search(addr_cache, (struct nl_object*)needle);
+//     nl_object_dump(obj, &dp);
+//     nl_cache_dump_filter(addr_cache, &dp, (struct nl_object*)needle);
+    
+    // Free the mallocs
+    nl_cache_free(addr_cache);
     nl_cache_free(link_cache);
-    nl_cache_free(route_cache);
+//     nl_cache_free(route_cache);
     nl_handle_destroy(sock);
     
+    uint32_t temp = 0xffffffff, temp2 = temp >> 2;
+    
+    printf("temp  %x\n", temp);
+    printf("temp2 %x\n", temp2);
     return 0;
 }
 

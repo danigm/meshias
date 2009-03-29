@@ -19,3 +19,4 @@ recvmsg
 sendmsg
 meshias-tools
 .kdbgrc.meshias
+examples/broadcastupd/broadcaster

@@ -2,9 +2,14 @@
 1. tenemos que capturar los paquetes entrantes de INPUT que no sean tipo AODV
 y que vengan por la interfaz de AODV  y vengan dirigidos a nosotros. ¿Cómo?
 
+tenemos que capturar en INPUT, OUTPUT y FORWARD
+
 2. Los paquetes enrutados por el kernel con ip forwarding, vienen y se enrutan
 por la misma interfaz de red. ¿Cambian de ip origen o se preserva? Nota de edu:
 creo que Pablo me dijo que se preserva pero hay que asegurarse.
+
+efectivamente
+
 ******ASKED********
 1. Tenemos que procesar los paquetes de datos aunque usemos MASQUERADE para
 actualizar las rutas activas.

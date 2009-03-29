@@ -52,6 +52,7 @@ struct msh_data_t
 
     uint32_t net_iface;
     struct in_addr ip_addr;
+    struct in_addr broadcast_addr;
 
     // Our own sequence number;
     uint32_t seq_num;
