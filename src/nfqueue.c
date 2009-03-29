@@ -228,7 +228,7 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     
     // If there's a route for the packet, or it's a broadcast or it's an AODV
     // packet, let it go
-    if(dest.s_addr == INADDR_BROADCAST || nfqueue_packet_is_aodv(nfa))
+    if(dest.s_addr == data.broadcast_addr.s_addr || nfqueue_packet_is_aodv(nfa))
     {
         puts("ACCEPT");
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);

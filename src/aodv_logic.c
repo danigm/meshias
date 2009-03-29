@@ -29,6 +29,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     // increment our sequence number before generating a RREQ (see RFC 3561
     // Page 11)
     data.seq_num++;
+    //TODO: what about the timeout when sending the RREQ? doesn't seem to work
     rreq_fifo_push(data.rreq_queue, data.seq_num, data.ip_addr);
     
     struct aodv_pkt* pkt = aodv_pkt_alloc();
@@ -52,6 +53,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
             dest_seq_num, data.ip_addr.s_addr, data.seq_num);
     
     // Finally we send the packet
+    printf("sending broadcast RREQ: ");
     aodv_pkt_send(pkt);
     
     aodv_pkt_destroy(pkt);
@@ -151,7 +153,7 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
 //    forwarding node.
     if(!aodv_answer_to_rreq(rreq) && aodv_pkt_get_ttl(pkt) > 1)
     {
-        aodv_pkt_set_address(pkt, INADDR_BROADCAST);
+        aodv_pkt_set_address(pkt, data.broadcast_addr.s_addr);
         aodv_pkt_decrease_ttl(pkt);
         rreq->hop_count++;
         

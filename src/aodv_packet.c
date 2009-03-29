@@ -76,10 +76,9 @@ ssize_t aodv_pkt_send(struct aodv_pkt* pkt)
     int numbytes=sendto(data.daemon_fd, pkt->payload, pkt->payload_len, 0,
             (struct sockaddr*)&(pkt->address),sizeof(pkt->address));
 
-    printf("pkt_send: dest %s\n", inet_ntoa((struct in_addr)pkt->address.sin_addr));
+    printf("sent an aodv packet (%d bytes)\n", numbytes);
     if(numbytes==-1) {
         stats.send_aodv_errors++;
-        puts("pkt_send: errorcito");
     } else if(numbytes!=pkt->payload_len)
         stats.send_aodv_incomplete++;
 
