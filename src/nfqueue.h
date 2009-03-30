@@ -38,6 +38,11 @@ static uint32_t nfqueue_packet_print(struct nfq_data *packet);
 static uint32_t nfqueue_packet_get_id(struct nfq_data *packet);
 
 /**
+ * @returns the hook of a packet.
+ */
+static uint32_t nfqueue_packet_get_hook(struct nfq_data *packet);
+
+/**
  * @returns the dest ip of a packet.
  */
 static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
@@ -60,5 +65,14 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet);
  */
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data);
+
+static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
+        *nfmsg, struct nfq_data *nfa);
+
+static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
+        *nfmsg, struct nfq_data *nfa);
+
+static int manage_forward_packet(struct nfq_q_handle *qh,struct nfgenmsg
+        *nfmsg, struct nfq_data *nfa);
 
 #endif

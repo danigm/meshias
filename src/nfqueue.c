@@ -4,6 +4,21 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+//NO COMPILA
+//#include <linux/netfilter_ipv4.h> // Iptables hooks
+/* IP Hooks */
+/* After promisc drops, checksum checks. */
+#define NF_IP_PRE_ROUTING   0
+/* If the packet is destined for this box. */
+#define NF_IP_LOCAL_IN      1
+/* If the packet is destined for another interface. */
+#define NF_IP_FORWARD       2
+/* Packets coming from a local process. */
+#define NF_IP_LOCAL_OUT     3
+/* Packets about to hit the wire. */
+#define NF_IP_POST_ROUTING  4
+#define NF_IP_NUMHOOKS      5
+
 
 int nfqueue_init()
 {
@@ -52,6 +67,7 @@ int nfqueue_init()
 
 void nfqueue_shutdown()
 {
+    // Free the mallocs
     if(data.queue != NULL)
     {
         nfq_destroy_queue(data.queue);
@@ -64,10 +80,12 @@ void nfqueue_shutdown()
  
 void nfqueue_receive_packets()
 {
+    // Receive the data from the fd
     char buf[4096] __attribute__ ((aligned));
     int received;
     if( (received = recv(data.nfqueue_fd, buf, sizeof(buf), 0)) >= 0 )
     {
+        // Call the handle
         nfq_handle_packet(data.handle, buf, received);
     }
 }
@@ -160,13 +178,26 @@ static uint32_t nfqueue_packet_print(struct nfq_data *packet)
 
 static uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
 {
-    int id = -1;
+    uint32_t id = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
 
     if( (packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL )
-        id = ntohl(packetHeader->packet_id);
+        id = packetHeader->packet_id;
        
     return id;
+}
+
+static uint32_t nfqueue_packet_get_hook(struct nfq_data *packet)
+{
+    uint32_t hook = -1;
+    struct nfqnl_msg_packet_hdr *packetHeader;
+
+    // FIXME: Seguro que hay que usar ntohl??
+    // Esto es una cabecera que se crea en el nucleo
+    if( (packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL )
+        hook = packetHeader->hook;
+       
+    return hook;
 }
 
 static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
@@ -201,7 +232,7 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet)
     
     if( (ip_header = nfq_get_iphdr(packet)) != NULL )
     {
-        if(!ntohs(nfq_get_ip_protocol(ip_header))) // 17 is UDP
+        if(ntohs(nfq_get_ip_protocol(ip_header))!=IPPROTO_UDP) // 17 is UDP
             return 0;
         
         // Now we know it's udp; is it AODV traffic?
@@ -216,6 +247,50 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet)
 
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data2)
+{
+    uint32_t hook=nfqueue_packet_get_hook(nfa);
+    /* OPTIMIZACION? si no se necesita actualizar
+       los timers con los paquetes aodv descomentar
+       estas lineas
+    uint32_t id=nfqueue_packet_get_id(nfa);
+    if(nfqueue_packet_is_aodv(nfa))
+        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    */
+        
+    /*
+     * We see from table the packet comes
+     */
+    printf("hook %d\n",hook);
+    switch(hook)
+    {
+        // Input table
+        case NF_IP_LOCAL_IN:
+            puts("input");
+            return manage_input_packet(qh,nfmsg,nfa);
+            break;
+        // Forward table
+        case NF_IP_FORWARD:
+            puts("forward");
+            return manage_forward_packet(qh,nfmsg,nfa);
+            break;
+        // Output table
+        case NF_IP_LOCAL_OUT:
+            puts("output");
+            return manage_output_packet(qh,nfmsg,nfa);
+            break;
+        // Prerouting table
+        // We mustn't receive nothing from here
+        case NF_IP_PRE_ROUTING:
+        // Postrouting table
+        // We mustn't receive nothing from here
+        case NF_IP_POST_ROUTING:
+            puts("Herror");
+            break;
+    }
+}
+
+static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
+        *nfmsg, struct nfq_data *nfa)
 {
     struct in_addr dest = { nfqueue_packet_get_dest(nfa).s_addr };
     
@@ -280,4 +355,16 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
             aodv_find_route(dest, invalid_route, 0);
         return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
     }
+}
+static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
+        *nfmsg, struct nfq_data *nfa)
+{
+    uint32_t id = nfqueue_packet_get_id(nfa);
+    return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+}
+static int manage_forward_packet(struct nfq_q_handle *qh,struct nfgenmsg
+        *nfmsg, struct nfq_data *nfa)
+{
+    uint32_t id = nfqueue_packet_get_id(nfa);
+    return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }

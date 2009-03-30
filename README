@@ -102,8 +102,8 @@ the name of your interface in this and the following commands.
 
 Another two iptables are needed for meshias to work:
 
-    sudo iptables -t filter -A INPUT -i ath0 -j NFQUEUE --queue-num 1
-    sudo iptables -t filter -A FORWARD -i ath0 -j NFQUEUE --queue-num 2
+    sudo iptables -t filter -A INPUT -i ath0 -j NFQUEUE --queue-num 0
+    sudo iptables -t filter -A FORWARD -i ath0 -j NFQUEUE --queue-num 0
 
 These first of these two rules will allow meshias capture incoming traffic to be
 able to reset some timers for timeouts, whose packets will be send to nefilter 
