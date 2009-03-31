@@ -54,11 +54,11 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
 
     struct rtnl_route *nlroute = rtnl_route_alloc();
  
-    struct nl_addr *dst = in_addr2nl_addr(&route->dst_ip,
+    struct nl_addr *dst = in_addr2nl_addr(route->dst_ip,
         msh_route_get_prefix_sz(route));
     
     uint8_t dst_len = msh_route_get_prefix_sz(route);
-    struct nl_addr *nexthop = in_addr2nl_addr(&route->nexthop_ip, dst_len);
+    struct nl_addr *nexthop = in_addr2nl_addr(route->nexthop_ip, dst_len);
     
     rtnl_route_set_oif(nlroute, data.net_iface);
     rtnl_route_set_family(nlroute, AF_INET);
@@ -125,7 +125,7 @@ struct msh_route *routing_table_find(struct routing_table *table,
             return entry;
     }
     
-    return NULL;
+    return 0;
 }
 
 struct msh_route *routing_table_find_by_ip(struct routing_table *table,
@@ -142,9 +142,9 @@ struct msh_route *routing_table_find_by_ip(struct routing_table *table,
 }
 
 uint8_t routing_table_use_route(struct routing_table *table,
-    struct in_addr dst_ip, struct msh_route **invalid_route)
+    struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip)
 {
-    struct msh_route *route;
+    struct msh_route *route, *next_hop_route, *orig_route, *prev_hop_route;
     
     route = routing_table_find_by_ip(table, dst_ip);
     
@@ -161,8 +161,60 @@ uint8_t routing_table_use_route(struct routing_table *table,
         return 0;
     }
     
+    
+    // From Page 12 of RFC 3561:
+//    Each time a route is used to forward a data packet, its Active Route
+//    Lifetime field of the source, destination and the next hop on the
+//    path to the destination is updated to be no less than the current
+//    time plus ACTIVE_ROUTE_TIMEOUT.  Since the route between each
+//    originator and destination pair is expected to be symmetric, the
+//    Active Route Lifetime for the previous hop, along the reverse path
+//    back to the IP source, is also updated to be no less than the current
+//    time plus ACTIVE_ROUTE_TIMEOUT.
+
     // Active route found, reset the lifetime
     msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
+
+    // Update also the lifetime of the next_hop
+    struct in_addr next_hop =  msh_route_get_next_hop(route);
+    if((next_hop_route = routing_table_find_by_ip(table, next_hop)) != 0)
+    {
+        msh_route_set_lifetime(next_hop_route, ACTIVE_ROUTE_TIMEOUT());
+    }
+    else
+        // not finding a route to the next_hop is a bug because if we have a
+        // route to the destination, we should have already found a route to
+        // the next_hop too.
+        puts("BUG: no route to next_hop found!");
+    
+    // orig_ip is set to zero means we don't want to update that part of the route
+    if(orig_ip.s_addr == 0)
+        return 1;
+    
+    // If found a route for the orig ip, update it
+    if((orig_route = routing_table_find_by_ip(data.routing_table,
+        orig_ip)) != 0)
+    {
+        // reset the lifetime and mark as valid
+        msh_route_set_lifetime(orig_route, ACTIVE_ROUTE_TIMEOUT());
+        // Update also the lifetime of the next_hop
+        struct in_addr prev_hop =  msh_route_get_next_hop(orig_route);
+        if((prev_hop_route = routing_table_find_by_ip(table, prev_hop)) != 0)
+        {
+            msh_route_set_lifetime(next_hop_route, ACTIVE_ROUTE_TIMEOUT());
+        }
+        else
+            puts("BUG: no route to prev_hop found!");
+    }
+    else
+    {
+        
+        puts("BUG: no route to orig found!");
+        // If route for orig ip not found, create it. this shouldn't happen though!
+        orig_route = msh_route_alloc();
+        msh_route_set_dst_ip(orig_route, orig_ip);
+        routing_table_add(data.routing_table, orig_route);
+    }
     
     return 1;
 }

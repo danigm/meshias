@@ -66,12 +66,21 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet);
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data);
 
+/**
+ * Called by @see manage_packet() when the packet comes from OUPUT table
+ */
 static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
         *nfmsg, struct nfq_data *nfa);
 
+/**
+ * Called by @see manage_packet() when the packet comes from INPUT table
+ */
 static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
         *nfmsg, struct nfq_data *nfa);
 
+/**
+ * Called by @see manage_packet() when the packet comes from FORWARD table
+ */
 static int manage_forward_packet(struct nfq_q_handle *qh,struct nfgenmsg
         *nfmsg, struct nfq_data *nfa);
 
