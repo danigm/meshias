@@ -67,6 +67,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
 
     if(route->flags & RTFLAG_HAS_NEXTHOP)
         rtnl_route_set_gateway(nlroute, nexthop);
+    else
+        puts("BUG: adding a route  without a next hop");
     
     if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0)
     {
@@ -207,14 +209,7 @@ uint8_t routing_table_use_route(struct routing_table *table,
             puts("BUG: no route to prev_hop found!");
     }
     else
-    {
-        
         puts("BUG: no route to orig found!");
-        // If route for orig ip not found, create it. this shouldn't happen though!
-        orig_route = msh_route_alloc();
-        msh_route_set_dst_ip(orig_route, orig_ip);
-        routing_table_add(data.routing_table, orig_route);
-    }
     
     return 1;
 }

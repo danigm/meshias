@@ -132,4 +132,6 @@ void daemon_receive_packets()
         default:
             break;
     }
+    // We're done with this packet: now free the mallocs!
+    aodv_pkt_destroy(pkt);
 }

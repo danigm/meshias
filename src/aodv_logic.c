@@ -16,6 +16,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     {
         // Route to the dest definitely not found: drop packets
         packets_fifo_drop_packets(data.packets_queue, dest);
+        //TODO: it's packets drop. drop drop drop
         stats.packets_dropped++;
         return;
     }
@@ -69,38 +70,40 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
     // (See page 16 of RFC 3561)
     // First create/update a route to the previous hop without a valid sequence
     // number
-    //TODO: is this the prev hop or the orig??
-    struct in_addr addr;
-    addr.s_addr = aodv_pkt_get_address(pkt);
+    // The sender of the packet is the prev_hop because even if it's not the
+    // orig, the prev_hop doesn't just forward the RREQ (preserving the orig ip)
+    // but resends it with its own IP address
+    struct in_addr prev_hop = { aodv_pkt_get_address(pkt) };
     
-    struct msh_route *route = routing_table_find_by_ip(data.routing_table, addr);
+    struct msh_route *route_to_prev_hop =
+        routing_table_find_by_ip(data.routing_table, prev_hop);
     
     // If found a route for the prev_hop, update it
-    if(route)
+    if(route_to_prev_hop)
     {
         // reset the lifetime and mark as valid
-        msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
+        msh_route_set_lifetime(route_to_prev_hop, ACTIVE_ROUTE_TIMEOUT());
     }
     else
     {
         // If route for prev_hop not found, create it
-        route = msh_route_alloc();
-        msh_route_set_dst_ip(route, addr);
-        routing_table_add(data.routing_table, route);
+        route_to_prev_hop = msh_route_alloc();
+        msh_route_set_dst_ip(route_to_prev_hop, prev_hop);
+        msh_route_set_next_hop(route_to_prev_hop, prev_hop);
+        routing_table_add(data.routing_table, route_to_prev_hop);
     }
     
     // Second, check if the rreq_queue has this rreq buffered. If so, we must
     // discard it.
+    // TODO: rreq_fifo_contains() takes dest & rreq_id? what about orig? check
     struct aodv_rreq* rreq = (struct aodv_rreq*)aodv_pkt_get_payload(pkt);
-    struct in_addr dest_addr;
-    dest_addr.s_addr = rreq->dest_ip_addr;
+    struct in_addr dest_addr = { rreq->dest_ip_addr };
     if(rreq_fifo_contains(data.rreq_queue, rreq->rreq_id,
         dest_addr))
         return;
     
     // As this RREQ is new, we should add it to the queue
-    rreq_fifo_push(data.rreq_queue, rreq->rreq_id, dest_addr);
-        
+    rreq_fifo_push(data.rreq_queue, rreq->rreq_id, dest_addr);    
 
     uint8_t hop_count = rreq->hop_count;
     rreq->hop_count = hop_count + 1;
@@ -110,44 +113,43 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
     // is created, or updated using the Originator Sequence Number from the
     // RREQ in its routing table.
     struct in_addr addr_orig = { rreq->orig_ip_addr };
-    route = routing_table_find_by_ip(data.routing_table, addr_orig);
+    struct msh_route *route_to_orig = routing_table_find_by_ip(data.routing_table, addr_orig);
     
     uint32_t seq_num_new = rreq->orig_seq_num;
     uint32_t min_lifetime = minimal_lifetime(hop_count);
     // If found a route for the orig ip, update it
-    if(route)
+    if(route_to_orig)
     {
         // reset the lifetime and mark as valid
-        uint32_t seq_num_old = msh_route_get_dest_seq_num(route);
-        uint32_t lifetime_old = msh_route_get_lifetime(route);
+        uint32_t seq_num_old = msh_route_get_dest_seq_num(route_to_orig);
+        uint32_t lifetime_old = msh_route_get_lifetime(route_to_orig);
         
-        msh_route_set_flag(route, RTFLAG_VALID_DEST_SEQ_NUM);
-        msh_route_set_next_hop(route, addr);
-        msh_route_set_hop_count(route, hop_count);
+        msh_route_set_flag(route_to_orig, RTFLAG_VALID_DEST_SEQ_NUM);
+        msh_route_set_next_hop(route_to_orig, prev_hop);
+        msh_route_set_hop_count(route_to_orig, hop_count);
         
         //signed comparation as explained in RFC 3561 page 11
         if((int32_t)seq_num_old < (int32_t)seq_num_new)
-            msh_route_set_dest_seq_num(route, seq_num_new);
+            msh_route_set_dest_seq_num(route_to_orig, seq_num_new);
         if(min_lifetime > lifetime_old)
-            msh_route_set_lifetime(route, min_lifetime);
-        
+            msh_route_set_lifetime(route_to_orig, min_lifetime);    
     }
     else
     {
         // If route for orig ip not found, create it
-        route = msh_route_alloc();
-        msh_route_set_dst_ip(route, addr_orig);
-        msh_route_set_dest_seq_num(route, seq_num_new);
-        msh_route_set_next_hop(route, addr);
-        msh_route_set_hop_count(route, hop_count);
-        msh_route_set_lifetime(route, min_lifetime);
-        msh_route_set_flag(route, RTFLAG_VALID_DEST_SEQ_NUM);
-        routing_table_add(data.routing_table, route);
+        route_to_orig = msh_route_alloc();
+        msh_route_set_dst_ip(route_to_orig, addr_orig);
+        msh_route_set_dest_seq_num(route_to_orig, seq_num_new);
+        msh_route_set_next_hop(route_to_orig, prev_hop);
+        msh_route_set_hop_count(route_to_orig, hop_count);
+        msh_route_set_lifetime(route_to_orig, min_lifetime);
+        msh_route_set_flag(route_to_orig, RTFLAG_VALID_DEST_SEQ_NUM);
+        routing_table_add(data.routing_table, route_to_orig);
     }
     
 //    If a node does not generate a RREP (following the processing rules in
 //    section 6.6), and if the incoming IP header has TTL larger than 1,
-//    the node updates and broadcasts the RREQ to address 255.255.255.255
+//    the node updates and broadcasts the RREQ to the broadcast address
 //    on each of its configured interfaces (see section 6.14).  To update
 //    the RREQ, the TTL or hop limit field in the outgoing IP header is
 //    decreased by one, and the Hop Count field in the RREQ message is
@@ -160,36 +162,42 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
 //    the destination sequence number, even if the value received in the
 //    incoming RREQ is larger than the value currently maintained by the
 //    forwarding node.
-    if(!aodv_answer_to_rreq(rreq) && aodv_pkt_get_ttl(pkt) > 1)
+    if(!aodv_answer_to_rreq(rreq, prev_hop, route_to_orig) &&
+        aodv_pkt_get_ttl(pkt) > 1)
     {
         aodv_pkt_set_address(pkt, data.broadcast_addr.s_addr);
         aodv_pkt_decrease_ttl(pkt);
         rreq->hop_count++;
         
-        route = routing_table_find_by_ip(data.routing_table, dest_addr);
+        //TODO: redundant, this also done in aodv_answer_to_rreq()
+        struct msh_route* route_to_dest =
+            routing_table_find_by_ip(data.routing_table, dest_addr);
         
         // If we didn't send a rrep it's because we either don't have a route
         // for the destination or it's marked as invalid. If it's marked as
         // invalid, we might need to update the rreq's dest seq num before
         // broadcasting it.
-        if(route && !(msh_route_get_flags(route) & RTFLAG_VALID_ENTRY) &&
-                (msh_route_get_flags(route) & RTFLAG_VALID_DEST_SEQ_NUM)) 
+        if(route_to_dest && !(msh_route_get_flags(route_to_dest) & RTFLAG_VALID_ENTRY) &&
+                (msh_route_get_flags(route_to_dest) & RTFLAG_VALID_DEST_SEQ_NUM)) 
         {
-            uint32_t dest_seq_num_old = msh_route_get_dest_seq_num(route);
-            uint32_t dest_seq_num_new = ntohl(rreq->orig_seq_num);
+            uint32_t dest_seq_num_old = msh_route_get_dest_seq_num(route_to_dest);
+            uint32_t dest_seq_num_new = rreq->dest_seq_num;
             if(dest_seq_num_old < dest_seq_num_new)
-                msh_route_set_dest_seq_num(route, dest_seq_num_new);
+                rreq->dest_seq_num = dest_seq_num_new;
                 
         }
+        printf("forwarding a RREQ: ");
         aodv_pkt_send(pkt);
     }
 }
 
-uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
+uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq, struct in_addr prev_hop,
+    struct msh_route* route_to_orig)
 {
 //    Check if we're going to answer the RREQ A node generates a RREP if either:
     struct in_addr dest_addr = { rreq->dest_ip_addr };
-    // We the destination of the RREQ
+    struct msh_route *route_to_dest = 0;
+    // (i)  We are the destination of the RREQ
     if(dest_addr.s_addr == data.ip_addr.s_addr)
     {
 //    6.6.1. Route Reply Generation by the Destination
@@ -214,8 +222,12 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
         aodv_pkt_set_address(pkt, rreq->orig_ip_addr);
         aodv_pkt_build_rrep(pkt, 0, 0, 0, data.ip_addr.s_addr, data.seq_num,
             rreq->orig_ip_addr, MY_ROUTE_TIMEOUT());
+            
+        printf("answering with a RREP to a RREQ: ");
         aodv_pkt_send(pkt);
         aodv_pkt_destroy(pkt);
+        
+        return 1;
     }
 
 //    (ii)      it has an active route to the destination, the destination
@@ -224,9 +236,8 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
 //              the Destination Sequence Number of the RREQ (comparison
 //              using signed 32-bit arithmetic), and the "destination only"
 //              ('D') flag is NOT set.
-    struct msh_route *route_to_dest = 0;
-    if((route_to_dest = routing_table_find_by_ip(data.routing_table, dest_addr)) != 0 &&
-        rreq->dest_seq_num >= data.seq_num &&
+    else if((route_to_dest = routing_table_find_by_ip(data.routing_table, dest_addr)) != 0 &&
+        (int32_t)rreq->dest_seq_num >= (int32_t)data.seq_num &&
         !(rreq->flags & RREQ_DEST_ONLY_FLAG))
     {
 // 6.6.2. Route Reply Generation by an Intermediate Node
@@ -252,6 +263,10 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
 //    field in the RREP.  The Lifetime field of the RREP is calculated by
 //    subtracting the current time from the expiration time in its route
 //    table entry.
+        msh_route_add_precursor(route_to_dest, prev_hop);
+        struct in_addr next_hop = msh_route_get_next_hop(route_to_dest);
+        msh_route_add_precursor(route_to_orig, next_hop);
+        
         struct aodv_pkt* pkt = aodv_pkt_alloc();
         uint32_t known_dest_seq_num = msh_route_get_dest_seq_num(route_to_dest);
         uint32_t dest_hop_count = msh_route_get_hop_count(route_to_dest);
@@ -261,7 +276,7 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
         uint32_t lifetime = msh_route_get_lifetime(route_to_dest) -
             get_alarm_time(now.tv_sec, now.tv_usec);
         
-        aodv_pkt_set_address(pkt, dest_addr.s_addr);
+        aodv_pkt_set_address(pkt, rreq->orig_ip_addr);
         aodv_pkt_build_rrep(pkt, 0, 0, dest_hop_count, dest_addr.s_addr,
             known_dest_seq_num, rreq->orig_ip_addr, lifetime);
         
@@ -298,9 +313,8 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
 //    issued a RREQ for the originating node and this RREP was produced in
 //    response to that (fictitious) RREQ.  The RREP that is sent to the
 //    originator of the RREQ is the same whether or not the 'G' bit is set.
+            // TODO: that last sentence.. what does it mean?
             struct aodv_pkt* pkt = aodv_pkt_alloc();
-            struct msh_route *route_to_orig =
-                routing_table_find_by_ip(data.routing_table, dest_addr);
             uint32_t orig_hop_count = msh_route_get_hop_count(route_to_orig);
             uint32_t orig_lifetime = msh_route_get_lifetime(route_to_orig);
             aodv_pkt_set_address(pkt, dest_addr.s_addr);
@@ -309,6 +323,7 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
             
             aodv_pkt_destroy(pkt);
         }
+        return 1;
     }
     
     return 0;
@@ -316,7 +331,158 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq)
 
 void aodv_process_rrep(struct aodv_pkt* pkt)
 {
+    struct aodv_rrep* rrep = (struct aodv_rrep*)aodv_pkt_get_payload(pkt);
+// 6.7. Receiving and Forwarding Route Replies
+// 
+//    When a node receives a RREP message, it searches (using longest-
+//    prefix matching) for a route to the previous hop.  If needed, a route
+//    is created for the previous hop, but without a valid sequence number
+//    (see section 6.2).  Next, the node then increments the hop count
+//    value in the RREP by one, to account for the new hop through the
+//    intermediate node.  Call this incremented value the "New Hop Count".
+//    Then the forward route for this destination is created if it does not
+//    already exist.
+
+    struct in_addr prev_hop = { aodv_pkt_get_address(pkt) };
     
+    struct msh_route *route_to_prev_hop =
+        routing_table_find_by_ip(data.routing_table, prev_hop);
+    
+    // If found a route for the prev_hop, update it
+    if(route_to_prev_hop)
+    {
+        // reset the lifetime and mark as valid
+        msh_route_set_lifetime(route_to_prev_hop, ACTIVE_ROUTE_TIMEOUT());
+    }
+    else
+    {
+        // If route for prev_hop not found, create it
+        route_to_prev_hop = msh_route_alloc();
+        msh_route_set_dst_ip(route_to_prev_hop, prev_hop);
+        msh_route_set_next_hop(route_to_prev_hop, prev_hop);
+        msh_route_unset_flag(route_to_prev_hop, RTFLAG_VALID_DEST_SEQ_NUM);
+        routing_table_add(data.routing_table, route_to_prev_hop);
+    }
+
+    rrep->hop_count++;
+    
+    struct in_addr dest_addr = { rrep->dest_ip_addr };
+    struct msh_route* route_to_dest =
+        routing_table_find_by_ip(data.routing_table, dest_addr);
+    char route_to_dest_created = 0;
+    if(!route_to_dest)
+    {
+        //No route to dest so we create one
+        route_to_dest = msh_route_alloc();
+        msh_route_set_dst_ip(route_to_dest, dest_addr);
+        msh_route_set_next_hop(route_to_dest, prev_hop);
+        msh_route_set_dest_seq_num(route_to_dest, rrep->dest_seq_num);
+        msh_route_set_flag(route_to_dest, RTFLAG_VALID_DEST_SEQ_NUM);
+        routing_table_add(data.routing_table, route_to_dest);
+        route_to_dest_created = 1;
+    }
+//    Otherwise, the node compares the Destination Sequence
+//    Number in the message with its own stored destination sequence number
+//    for the Destination IP Address in the RREP message.  Upon comparison,
+//    the existing entry is updated only in the following circumstances:
+// 
+//    (i)       the sequence number in the routing table is marked as
+//              invalid in route table entry.
+// 
+//    (ii)      the Destination Sequence Number in the RREP is greater than
+//              the node's copy of the destination sequence number and the
+//              known value is valid, or
+// 
+//    (iii)     the sequence numbers are the same, but the route is is
+//              marked as inactive, or
+// 
+//    (iv)      the sequence numbers are the same, and the New Hop Count is
+//              smaller than the hop count in route table entry.
+    uint32_t dest_seq_num = msh_route_get_dest_seq_num(route_to_dest);
+    uint32_t dest_hop_count = msh_route_get_hop_count(route_to_dest);
+    if(route_to_dest_created ||
+        !(msh_route_get_flags(route_to_dest) & RTFLAG_VALID_DEST_SEQ_NUM) ||
+        (int32_t)rrep->dest_seq_num > (int32_t)dest_seq_num ||
+        ((int32_t)rrep->dest_seq_num == (int32_t)dest_seq_num &&
+            !(msh_route_get_flags(route_to_dest) & RTFLAG_VALID_ENTRY)) ||
+        ((int32_t)rrep->hop_count == (int32_t)dest_hop_count))
+    {
+//    If the route table entry to the destination is created or updated,
+//    then the following actions occur:
+//    -  the destination sequence number is marked as valid,
+//    -  the next hop in the route entry is assigned to be the node from
+//       which the RREP is received, which is indicated by the source IP
+//       address field in the IP header,
+//    -  the hop count is set to the value of the New Hop Count,
+//    -  the route is marked as active and the expiry time is set to the current
+//       time plus the value of the Lifetime in the RREP message,
+//    -  and the destination sequence number is the Destination Sequence
+//       Number in the RREP message.
+        msh_route_set_dest_seq_num(route_to_dest, rrep->dest_seq_num);
+        msh_route_set_flag(route_to_dest, RTFLAG_VALID_DEST_SEQ_NUM);
+        msh_route_set_next_hop(route_to_dest, prev_hop);
+        msh_route_set_hop_count(route_to_dest, rrep->hop_count);
+        
+        struct timeval now;
+        gettimeofday(&now, NULL);
+        uint32_t lifetime = get_alarm_time(now.tv_sec, now.tv_usec) +
+            rrep->lifetime;
+        msh_route_set_lifetime(route_to_dest, lifetime);
+
+ 
+//    The current node can subsequently use this route to forward data
+//    packets to the destination.
+// 
+//    If the current node is not the node indicated by the Originator IP
+//    Address in the RREP message AND a forward route has been created or
+//    updated as described above, the node consults its route table entry
+//    for the originating node to determine the next hop for the RREP
+//    packet, and then forwards the RREP towards the originator using the
+//    information in that route table entry.
+        struct in_addr orig_addr = { rrep->orig_ip_addr };
+        struct msh_route* route_to_orig =
+            routing_table_find_by_ip(data.routing_table, orig_addr);
+        if(route_to_orig)
+        {
+            struct in_addr next_hop = msh_route_get_next_hop(route_to_orig);
+            aodv_pkt_set_address(pkt, next_hop.s_addr);
+            aodv_pkt_decrease_ttl(pkt);
+            
+            printf("forwarding a RREP: ");
+            aodv_pkt_send(pkt);
+
+//    //TODO: If a node forwards a RREP
+//    over a link that is likely to have errors or be unidirectional, the
+//    node SHOULD set the 'A' flag to require that the recipient of the
+//    RREP acknowledge receipt of the RREP by sending a RREP-ACK message
+//    back (see section 6.8).
+        
+//    When any node transmits a RREP, the precursor list for the
+//    corresponding destination node is updated by adding to it the next
+//    hop node to which the RREP is forwarded.
+            msh_route_add_precursor(route_to_dest, next_hop);
+//    Also, at each node the
+//    (reverse) route used to forward a RREP has its lifetime changed to be
+//    the maximum of (existing-lifetime, (current time +
+//    ACTIVE_ROUTE_TIMEOUT).  
+            struct msh_route* route_to_next_hop =
+                routing_table_find_by_ip(data.routing_table, next_hop);
+            if(route_to_next_hop)
+            {
+                uint32_t lifetime = msh_route_get_lifetime(route_to_next_hop);
+                uint32_t timeout = get_alarm_time(now.tv_sec, now.tv_usec) +
+                    ACTIVE_ROUTE_TIMEOUT();
+                if(lifetime < timeout)
+                    msh_route_set_lifetime(route_to_next_hop, lifetime);
+                
+            } else
+                puts("BUG: no route towards next hop for RREP being forwaded");
+//    Finally, the precursor list for the next hop
+//    towards the destination is updated to contain the next hop towards
+//    the source.
+            msh_route_add_precursor(route_to_prev_hop, next_hop);
+        }
+    }
 }
 
 void aodv_process_rerr(struct aodv_pkt* pkt)

@@ -29,7 +29,8 @@ void aodv_process_rrep_ack(struct aodv_pkt* pkt);
  * is sent (because we have an active route to the destination) it returns
  * a non-zero value. Otherwise, it returns 0.
  */
-uint8_t aodv_answer_to_rreq(struct aodv_rreq* pkt_rreq);
+uint8_t aodv_answer_to_rreq(struct aodv_rreq* pkt_rreq, struct in_addr prev_hop,
+    struct msh_route* route_to_orig);
 
 
 #endif

@@ -130,11 +130,14 @@ uint8_t msh_route_get_hop_count(struct msh_route *route)
 
 void msh_route_set_next_hop(struct msh_route *route, struct in_addr next_hop)
 {
+    //TODO: call to update the god damned routing table!
     route->next_hop = next_hop;
 }
 
 struct in_addr msh_route_get_next_hop(struct msh_route *route)
 {
+    if(!(route->flags & RTFLAG_HAS_NEXTHOP))
+        puts("accessing to the next hop of a route without one set");
     return route->next_hop;
 }
 
