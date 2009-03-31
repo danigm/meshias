@@ -18,6 +18,6 @@ void set_alarm_time(uint32_t miliseconds, unsigned long* sc,
  */
 uint32_t get_alarm_time(unsigned long sc, unsigned long usc);
 
-struct nl_addr* in_addr2nl_addr(struct in_addr *addr, uint8_t prefix_sz);
+struct nl_addr* in_addr2nl_addr(struct in_addr addr, uint8_t prefix_sz);
 
 #endif

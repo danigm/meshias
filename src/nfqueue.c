@@ -192,8 +192,6 @@ static uint32_t nfqueue_packet_get_hook(struct nfq_data *packet)
     uint32_t hook = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
 
-    // FIXME: Seguro que hay que usar ntohl??
-    // Esto es una cabecera que se crea en el nucleo
     if( (packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL )
         hook = packetHeader->hook;
        
@@ -249,42 +247,35 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data2)
 {
     uint32_t hook=nfqueue_packet_get_hook(nfa);
-    /* OPTIMIZACION? si no se necesita actualizar
-       los timers con los paquetes aodv descomentar
-       estas lineas
+    
+    // AODV traffic is handled elsewhere already (by the daemon)
     uint32_t id=nfqueue_packet_get_id(nfa);
     if(nfqueue_packet_is_aodv(nfa))
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
-    */
         
-    /*
-     * We see from table the packet comes
-     */
-    printf("hook %d\n",hook);
+    // packets coming from different hooks are handled in different ways
     switch(hook)
     {
         // Input table
         case NF_IP_LOCAL_IN:
-            puts("input");
+            puts("capturing packet from INPUT iptables hook");
             return manage_input_packet(qh,nfmsg,nfa);
             break;
         // Forward table
         case NF_IP_FORWARD:
-            puts("forward");
+            puts("capturing packet from FORWARD iptables hook");
             return manage_forward_packet(qh,nfmsg,nfa);
             break;
         // Output table
         case NF_IP_LOCAL_OUT:
-            puts("output");
+            puts("capturing packet from OUTPUT iptables hook");
             return manage_output_packet(qh,nfmsg,nfa);
             break;
-        // Prerouting table
-        // We mustn't receive nothing from here
-        case NF_IP_PRE_ROUTING:
-        // Postrouting table
-        // We mustn't receive nothing from here
-        case NF_IP_POST_ROUTING:
-            puts("Herror");
+        // Any other table: we shouldn't  be receiving packets from any other
+        // hook. Accept the packet
+        default:
+            puts("error: capturing packet from an iptables hook we shouldn't");
+            return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
             break;
     }
 }
@@ -308,36 +299,11 @@ static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
         puts("ACCEPT");
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
+    struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
     
-    if(routing_table_use_route(data.routing_table, dest, &invalid_route))
+    if(routing_table_use_route(data.routing_table, dest, &invalid_route, orig))
     {
-        //TODO: From Page 12 of RFC 3561
-//    Each time a route is used to forward a data packet, its Active Route
-//    Lifetime field of the source, destination and the next hop on the
-//    path to the destination is updated to be no less than the current
-//    time plus ACTIVE_ROUTE_TIMEOUT.  Since the route between each
-//    originator and destination pair is expected to be symmetric, the
-//    Active Route Lifetime for the previous hop, along the reverse path
-//    back to the IP source, is also updated to be no less than the current
-//    time plus ACTIVE_ROUTE_TIMEOUT.
         puts("ACCEPT");
-//         struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
-//         struct msh_route *route = routing_table_find_by_ip(data.routing_table,
-//             orig);
-//         
-//         // If found a route for the orig ip, update it
-//         if(route)
-//         {
-//             // reset the lifetime and mark as valid
-//             msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
-//         }
-//         else
-//         {
-//             // If route for orig ip not found, create it
-//             route = msh_route_alloc();
-//             msh_route_set_dst_ip(route, orig);
-//             routing_table_add(data.routing_table, route);
-//         }
         
         // Finally accept the packet
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);

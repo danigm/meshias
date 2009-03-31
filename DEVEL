@@ -36,8 +36,7 @@ To start with this project, we have to know what we'll be using and why:
  libnetfilter_queue to receive the packets coming from other ips.
 
  * unix sockets
- for sending commands to the daemon and for receiving actual information
- about it.
+ for the communication between the daemon and the daemon-tools.
 
  * conntrack alarms,
  for managing timeouts of AODV protocol.

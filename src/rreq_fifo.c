@@ -35,12 +35,15 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
             __rreq_fifo_entry_delete(entry);
         
         // routing_table_use_route() will set invalid_route accordingly if
-        // it find a route but it has been marked as invalid. That's the only thing we
+        // it finds a route but it has been marked as invalid. That's the only thing we
         // will use the routing_table_use_route() call for: we can't expect that
         // magically a route can be found, and if it's found it's actually an error
         // because in that case the RREQ should have been removed from the queue.
         struct msh_route *expired_route = 0;
-        if(routing_table_use_route(data.routing_table, dst, &expired_route))
+        
+        // An optional parameter set to zero
+        struct in_addr orig = { 0 };
+        if(routing_table_use_route(data.routing_table, dst, &expired_route, orig))
             fprintf(stderr, "Error: Found an unexpected route when a waiting RREQ expired\n");
         
         set_alarm_time(binary_exponential_backoff_time(entry->prev_tries), &sc, &usc);
@@ -48,7 +51,7 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
         
         aodv_find_route(dst, expired_route, entry->prev_tries);
         
-        // We might have send a new rreq (with aodv_find_route()), so we update
+        // We might have sent a new rreq (with aodv_find_route()), so we update
         // this entry's seq_num
         entry->rreq_id = data.rreq_id;
     } 

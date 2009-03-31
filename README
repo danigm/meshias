@@ -107,8 +107,8 @@ Another two iptables are needed for meshias to work:
 
 These first of these two rules will allow meshias capture incoming traffic to be
 able to reset some timers for timeouts, whose packets will be send to nefilter 
-queue number 1. The second rule captures the packets for which this machine acts
-as a router, and will send them to netfilter queue number 2, allowing meshias
+queue number 0 too. The second rule captures the packets for which this machine acts
+as a router, and will send them to the same netfilter queue, allowing meshias
 again to reset some timers for timeouts.
 
 Before being able to run meshias we also need to tell the kernel to act as a
