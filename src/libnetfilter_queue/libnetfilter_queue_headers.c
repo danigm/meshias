@@ -98,17 +98,17 @@ extern uint8_t nfq_get_ip_tos(struct nfq_iphdr *hdr)
 
 extern uint16_t nfq_get_ip_tot_len(struct nfq_iphdr *hdr)
 {
-    return htons(hdr->tot_len);
+    return ntohs(hdr->tot_len);
 }
 
 extern uint16_t nfq_get_ip_id(struct nfq_iphdr *hdr)
 {
-    return htons(hdr->id);
+    return ntohs(hdr->id);
 }
 
 extern uint16_t nfq_get_ip_fragoff(struct nfq_iphdr *hdr)
 {
-    return htons(hdr->frag_off);
+    return ntohs(hdr->frag_off);
 }
 
 extern uint8_t nfq_get_ip_ttl(struct nfq_iphdr *hdr)
@@ -123,17 +123,17 @@ extern uint8_t nfq_get_ip_protocol(struct nfq_iphdr *hdr)
 
 extern uint16_t nfq_get_ip_check(struct nfq_iphdr *hdr)
 {
-    return htons(hdr->check);
+    return ntohs(hdr->check);
 }
 
 extern uint32_t nfq_get_ip_saddr(struct nfq_iphdr *hdr)
 {
-    return htonl(hdr->saddr);
+    return ntohl(hdr->saddr);
 }
 
 extern uint32_t nfq_get_ip_daddr(struct nfq_iphdr *hdr)
 {
-    return htonl(hdr->daddr);
+    return ntohl(hdr->daddr);
 }
 
 extern struct nfq_tcphdr* nfq_get_tcphdr(struct nfq_data *nfad)
@@ -148,99 +148,99 @@ extern struct nfq_tcphdr* nfq_get_tcphdr(struct nfq_data *nfad)
 
 extern uint16_t nfq_get_tcp_source(struct nfq_tcphdr *hdr)
 {
-    return htons(hdr->source);
+    return ntohs(hdr->source);
 }
 
 extern uint16_t nfq_get_tcp_dest(struct nfq_tcphdr *hdr)
 {
-    return htons(hdr->dest);
+    return ntohs(hdr->dest);
 }
 
 extern uint32_t nfq_get_tcp_seq(struct nfq_tcphdr *hdr)
 {
-    return htonl(hdr->seq);
+    return ntohl(hdr->seq);
 }
 
 extern uint32_t nfq_get_tcp_ack_seq(struct nfq_tcphdr *hdr)
 {
-    return htonl(hdr->ack_seq);
+    return ntohl(hdr->ack_seq);
 }
 
 extern uint16_t nfq_get_tcp_flags(struct nfq_tcphdr *hdr)
 {
-    return htons(hdr->source);
+    return ntohs(hdr->source);
 }
 
 /*
    extern uint16_t nfq_get_tcp_doff(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->source);
+   return ntohs(hdr->source);
    }
 
    extern uint16_t nfq_get_tcp_res1(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->source);
+   return ntohs(hdr->source);
    }
 
    extern uint16_t nfq_get_tcp_cwr(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->cwr);
+   return ntohs(hdr->cwr);
    }
 
    extern uint16_t nfq_get_tcp_ece(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->ece);
+   return ntohs(hdr->ece);
    }
 
    extern uint16_t nfq_get_tcp_urg(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->urg);
+   return ntohs(hdr->urg);
    }
 
    extern uint16_t nfq_get_tcp_ack(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->ack);
+   return ntohs(hdr->ack);
    }
 
    extern uint16_t nfq_get_tcp_psh(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->psh);
+   return ntohs(hdr->psh);
    }
 
    extern uint16_t nfq_get_tcp_rst(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->rst);
+   return ntohs(hdr->rst);
    }
 
    extern uint16_t nfq_get_tcp_syn(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->syn);
+   return ntohs(hdr->syn);
    }
 
    extern uint16_t nfq_get_tcp_fin(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->fin);
+   return ntohs(hdr->fin);
    }
 
    extern uint16_t nfq_get_tcp_seq(struct nfq_tcphdr *hdr)
    {
-   return htons(hdr->seq);
+   return ntohs(hdr->seq);
    }
 
 */
 extern uint16_t nfq_get_tcp_window(struct nfq_tcphdr *hdr)
 {
-    return htons(hdr->window);
+    return ntohs(hdr->window);
 }
 
 extern uint16_t nfq_get_tcp_check(struct nfq_tcphdr *hdr)
 {
-    return htons(hdr->check);
+    return ntohs(hdr->check);
 }
 
 extern uint16_t nfq_get_tcp_urg_ptr(struct nfq_tcphdr *hdr)
 {
-    return htons(hdr->urg_ptr);
+    return ntohs(hdr->urg_ptr);
 }
 
 extern struct nfq_udphdr* nfq_get_udphdr(struct nfq_data *nfad)
@@ -256,20 +256,20 @@ extern struct nfq_udphdr* nfq_get_udphdr(struct nfq_data *nfad)
 
 extern uint16_t nfq_get_udp_source(struct nfq_udphdr *hdr)
 {
-    return hdr->source;
+    return ntohs(hdr->source);
 }
 
 extern uint16_t nfq_get_udp_dest(struct nfq_udphdr *hdr)
 {
-    return hdr->dest;
+    return ntohs(hdr->dest);
 }
 
 extern uint16_t nfq_get_udp_len(struct nfq_udphdr *hdr)
 {
-    return hdr->len;
+    return ntohs(hdr->len);
 }
 
 extern uint16_t nfq_get_udp_check(struct nfq_udphdr *hdr)
 {
-    return hdr->check;
+    return ntohs(hdr->check);
 }

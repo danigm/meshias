@@ -232,15 +232,14 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet)
     
     if( (ip_header = nfq_get_iphdr(packet)) != NULL )
     {
-        if(ntohs(nfq_get_ip_protocol(ip_header))!=IPPROTO_UDP) // 17 is UDP
+        if(nfq_get_ip_protocol(ip_header)!=IPPROTO_UDP) // 17 is UDP
             return 0;
         
         // Now we know it's udp; is it AODV traffic?
         if( (udp_header = nfq_get_udphdr(packet)) == NULL)
             return 0;
         
-        //TODO: ntohs or not?
-        return ntohs(nfq_get_udp_dest(udp_header)) == AODV_UDP_PORT;
+        return nfq_get_udp_dest(udp_header) == AODV_UDP_PORT;
     }
     return 0;
 }
@@ -260,7 +259,6 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     /*
      * We see from table the packet comes
      */
-    printf("hook %d\n",hook);
     switch(hook)
     {
         // Input table
@@ -356,12 +354,24 @@ static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
         return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
     }
 }
+
 static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
         *nfmsg, struct nfq_data *nfa)
 {
+    struct nfq_iphdr* ip_header;
+    struct nfq_udphdr* udp_header;
+    
+    if( (ip_header = nfq_get_iphdr(nfa)) != NULL )
+    {
+        if( (udp_header = nfq_get_udphdr(nfa)) == NULL)
+            return 0;
+        printf("%d\n",nfq_get_udp_dest(udp_header));
+    }
+
     uint32_t id = nfqueue_packet_get_id(nfa);
     return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }
+
 static int manage_forward_packet(struct nfq_q_handle *qh,struct nfgenmsg
         *nfmsg, struct nfq_data *nfa)
 {
