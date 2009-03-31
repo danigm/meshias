@@ -79,9 +79,6 @@ void msh_route_destroy(struct msh_route* route);
 void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip);
 struct in_addr msh_route_get_dst_ip(struct msh_route *route);
 
-void msh_route_set_nexthop_ip(struct msh_route *route, struct in_addr nexthop_ip);
-struct in_addr msh_route_get_nexthop_ip(struct msh_route *route);
-
 void msh_route_set_prefix_sz(struct msh_route *route, uint8_t prefix_sz);
 uint8_t msh_route_get_prefix_sz(struct msh_route *route);
 

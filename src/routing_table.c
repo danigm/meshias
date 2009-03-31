@@ -85,6 +85,7 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     
     nl_addr_destroy(nexthop);
 
+    packets_fifo_process_route(data.packets_queue, route);
     return 0;
 }
 

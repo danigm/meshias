@@ -68,17 +68,6 @@ struct in_addr msh_route_get_dst_ip(struct msh_route *route)
     return route->dst_ip;
 }
 
-void msh_route_set_nexthop_ip(struct msh_route *route, struct in_addr nexthop_ip)
-{
-    route->nexthop_ip = nexthop_ip;
-    __msh_route_updated(route, RTACTION_CHANGE_NEXTHOP_IP);
-}
-
-struct in_addr msh_route_get_nexthop_ip(struct msh_route *route)
-{
-    return route->nexthop_ip;
-}
-
 void msh_route_set_prefix_sz(struct msh_route *route, uint8_t prefix_sz)
 {
     route->prefix_sz = prefix_sz;
@@ -130,8 +119,8 @@ uint8_t msh_route_get_hop_count(struct msh_route *route)
 
 void msh_route_set_next_hop(struct msh_route *route, struct in_addr next_hop)
 {
-    //TODO: call to update the god damned routing table!
     route->next_hop = next_hop;
+    __msh_route_updated(route, RTACTION_CHANGE_NEXTHOP_IP);
 }
 
 struct in_addr msh_route_get_next_hop(struct msh_route *route)
