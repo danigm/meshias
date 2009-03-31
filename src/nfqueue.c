@@ -325,23 +325,75 @@ static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
 static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
         *nfmsg, struct nfq_data *nfa)
 {
-    struct nfq_iphdr* ip_header;
-    struct nfq_udphdr* udp_header;
+    struct in_addr dest = { nfqueue_packet_get_dest(nfa).s_addr };
     
-    if( (ip_header = nfq_get_iphdr(nfa)) != NULL )
-    {
-        if( (udp_header = nfq_get_udphdr(nfa)) == NULL)
-            return 0;
-        printf("%d\n",nfq_get_udp_dest(udp_header));
-    }
-
     uint32_t id = nfqueue_packet_get_id(nfa);
-    return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    // routing_table_use_route() will set invalid_route if it finds a route but
+    // it's marked as invalid.
+    struct msh_route *invalid_route = 0;
+    
+    printf ("packet for %s: ", inet_ntoa(dest));
+    
+    // If there's a route for the packet, or it's a broadcast or it's an AODV
+    // packet, let it go
+    if(dest.s_addr == data.broadcast_addr.s_addr || nfqueue_packet_is_aodv(nfa))
+    {
+        puts("ACCEPT");
+        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    }
+    struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
+    
+    // Actually, we only need to process packets being forwarded in order to
+    // be able to call routing_table_use_route() to update statistics
+    if(routing_table_use_route(data.routing_table, dest, &invalid_route, orig))
+    {
+        puts("ACCEPT");
+        
+        // Finally accept the packet
+        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    }
+    else
+        puts("BUG: we are receiving a packet directed to us, routing_table_use_route() should by definition work");
 }
 
 static int manage_forward_packet(struct nfq_q_handle *qh,struct nfgenmsg
         *nfmsg, struct nfq_data *nfa)
 {
+    struct in_addr dest = { nfqueue_packet_get_dest(nfa).s_addr };
+    
     uint32_t id = nfqueue_packet_get_id(nfa);
-    return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    // routing_table_use_route() will set invalid_route if it finds a route but
+    // it's marked as invalid.
+    struct msh_route *invalid_route = 0;
+    
+    printf ("packet for %s: ", inet_ntoa(dest));
+    
+    // If there's a route for the packet, or it's a broadcast or it's an AODV
+    // packet, let it go
+    if(dest.s_addr == data.broadcast_addr.s_addr || nfqueue_packet_is_aodv(nfa))
+    {
+        puts("ACCEPT");
+        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    }
+    struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
+    
+    // Actually, we only need to process packets being forwarded in order to
+    // be able to call routing_table_use_route() to update statistics
+    if(routing_table_use_route(data.routing_table, dest, &invalid_route, orig))
+    {
+        puts("ACCEPT");
+        
+        // Finally accept the packet
+        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    }
+    else
+    {
+        puts("BUG: we shoudln't be forwarding a packet if we haven't got a route for it (!)");
+        
+        //TODO: We should do something else (RERR..), but we happily accept the packet by now.
+        puts("ACCEPT");
+        
+        // Finally accept the packet
+        return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    }
 }
