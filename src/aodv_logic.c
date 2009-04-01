@@ -16,7 +16,6 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     {
         // Route to the dest definitely not found: drop packets
         packets_fifo_drop_packets(data.packets_queue, dest);
-        //TODO: it's packets drop. drop drop drop
         stats.packets_dropped++;
         return;
     }
@@ -60,6 +59,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     
     // Finally we send the packet
     printf("sending broadcast RREQ: ");
+    data.num_rreq_sent++;
     aodv_pkt_send(pkt);
     
     aodv_pkt_destroy(pkt);
@@ -187,6 +187,7 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
                 
         }
         printf("forwarding a RREQ: ");
+        data.num_rreq_sent++;
         aodv_pkt_send(pkt);
     }
 }

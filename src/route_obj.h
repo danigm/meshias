@@ -50,7 +50,6 @@ struct precursor_t
 struct msh_route
 {
     struct in_addr dst_ip;
-    struct in_addr nexthop_ip;
     uint8_t prefix_sz;
     uint32_t dest_seq_num;
     uint16_t flags;
@@ -103,6 +102,11 @@ uint32_t msh_route_get_lifetime(struct msh_route *route);
 
 void msh_route_set_rtnl_route(struct msh_route *route, struct rtnl_route *nlroute);
 struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route);
+
+void msh_route_set_updated_callback(struct msh_route *route,
+    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *));
+void (*msh_route_get_updated_callback(struct msh_route *route))
+    (struct msh_route*, uint32_t, void *);
 
 void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip);
 void msh_route_del_precursor(struct msh_route *route, struct in_addr dst_ip);

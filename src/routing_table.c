@@ -20,6 +20,36 @@ struct routing_table
     struct msh_route *find_route;
 };
 
+void __routing_table_route_updated_cb(struct msh_route* route, uint32_t change_flag,
+    void *qdata)
+{
+    if(change_flag & RTACTION_DESTROY)
+    {
+        struct rtnl_route *nlroute = msh_route_get_rtnl_route(route);
+        
+        if(!nlroute)
+            return;
+        
+        if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0)
+        {
+            fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
+        }
+        msh_route_set_rtnl_route(route, 0);
+        rtnl_route_put(nlroute);
+    }
+    else if(change_flag & RTACTION_CHANGE_NEXTHOP_IP)
+    {
+        struct rtnl_route *nlroute = msh_route_get_rtnl_route(route);
+        if(!nlroute)
+            return;
+        uint8_t dst_len = msh_route_get_prefix_sz(route);
+        struct in_addr next_hop_addr = msh_route_get_next_hop(route);
+        struct nl_addr *nexthop = in_addr2nl_addr(next_hop_addr, dst_len);
+        if(route->flags & RTFLAG_HAS_NEXTHOP)
+            rtnl_route_set_gateway(nlroute, nexthop);
+    }
+}
+
 struct routing_table *routing_table_alloc()
 {
     struct routing_table *table =
@@ -57,8 +87,10 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     struct nl_addr *dst = in_addr2nl_addr(route->dst_ip,
         msh_route_get_prefix_sz(route));
     
+    
     uint8_t dst_len = msh_route_get_prefix_sz(route);
-    struct nl_addr *nexthop = in_addr2nl_addr(route->nexthop_ip, dst_len);
+    struct in_addr next_hop_addr = msh_route_get_next_hop(route);
+    struct nl_addr *nexthop = in_addr2nl_addr(next_hop_addr, dst_len);
     
     rtnl_route_set_oif(nlroute, data.net_iface);
     rtnl_route_set_family(nlroute, AF_INET);
@@ -79,7 +111,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     // the lifetime of the route and add the route to the list of the routing table
     msh_route_set_rtnl_route(route, nlroute);
     msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
-    //TODO: add a callback to the route for getting updates
+    // add a callback to the route for getting updates
+//     route __routing_table_route_updated_cb;
     
     list_add(&route->list, &table->route_list.list);
     

@@ -188,6 +188,19 @@ struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route)
     return route->nlroute;
 }
 
+void msh_route_set_updated_callback(struct msh_route *route,
+    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *))
+{
+    route->updated_cb = updated_cb;
+}
+
+void (*msh_route_get_updated_callback(struct msh_route *route))
+    (struct msh_route*, uint32_t, void *)
+{
+    return route->updated_cb;
+}
+
+//TODO: we don't do anything yet with precursors
 void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip)
 {
     // Check the precursor is not already added
