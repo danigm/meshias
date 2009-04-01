@@ -43,12 +43,14 @@ void __init_addr(struct nl_object* obj, void *arg)
     
     struct nl_addr *local = rtnl_addr_get_local(addr);
     memcpy(&data.ip_addr, nl_addr_get_binary_addr(local), sizeof(uint32_t));
+    data.ip_addr.s_addr = ntohl(data.ip_addr.s_addr);
     
     struct nl_addr *broadcast = rtnl_addr_get_broadcast(addr);
     memcpy(&data.broadcast_addr, nl_addr_get_binary_addr(broadcast), sizeof(uint32_t));
+    data.broadcast_addr.s_addr = ntohl(data.broadcast_addr.s_addr);
     
-    printf("local %s\n", inet_ntoa (data.ip_addr));
-    printf("broadcast %s\n", inet_ntoa (data.broadcast_addr));
+    printf("local %s\n", inet_htoa (data.ip_addr));
+    printf("broadcast %s\n", inet_htoa (data.broadcast_addr));
 }
 
 int msh_data_init(int argc, char **argv)
@@ -125,7 +127,7 @@ int msh_data_init(int argc, char **argv)
     data.packets_queue = packets_fifo_alloc();
 
     init_alarm(&data.rreq_flush_alarm, 0, __msh_data_process_wait_queue_cb);
-    add_alarm(&data.rreq_flush_alarm, 1, 0);
+//     add_alarm(&data.rreq_flush_alarm, 1, 0);
     return 1;
 }
 

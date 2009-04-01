@@ -42,13 +42,16 @@ int main(int argc, char **argv)
 
     while(1)
     {
+        puts("while1");
+        //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
         while( select(data.fds->maxfd+1,&readfds, NULL, NULL, next_run) > 0 )
         {
+            puts("select");
             /* Check for new packets */
             if( FD_ISSET(data.nfqueue_fd, &readfds) )
             {
-                debug(1,"A packet was captured by nfqueue.");
+                printf("A packet was captured by the nfqueue");
                 nfqueue_receive_packets();
             }
             if( FD_ISSET(data.daemon_fd, &readfds) )
@@ -70,7 +73,7 @@ int main(int argc, char **argv)
                 printf("next_run: %d\n", get_alarm_time(next_run->tv_sec,
                     next_run->tv_usec));
         }
-        debug(1,"An alarm is about to ring");
+        next_run = get_next_alarm_run(&next);
         process_alarms(&next);
     }
 

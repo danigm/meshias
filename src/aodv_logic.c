@@ -1,4 +1,6 @@
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "rreq_fifo.h"
 #include "packets_fifo.h"
@@ -49,7 +51,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
             dest_seq_num, data.ip_addr.s_addr, data.seq_num);
     
     // Finally we send the packet
-    printf("sending broadcast RREQ: ");
+    printf("sending broadcast RREQ requestion info for dest %s: ", inet_htoa(dest));
     data.num_rreq_sent++;
     aodv_pkt_send(pkt);
     

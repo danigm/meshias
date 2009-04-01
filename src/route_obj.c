@@ -6,7 +6,6 @@
 #include "alarm/linux_list.h"
 #include "route_obj.h"
 #include "common.h"
-
 void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
 {
     if(route->updated_cb)
@@ -256,14 +255,14 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
     // of the second route.
     if(attr_flags & RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)
     {
-        uint32_t mask = INADDR_BROADCAST >> second->prefix_sz;
+        uint32_t mask = INADDR_BROADCAST << second->prefix_sz;
         uint32_t ip1masked = first->dst_ip.s_addr & mask;
         uint32_t ip2masked = second->dst_ip.s_addr & mask;
         struct in_addr ip1masked1 = { ip1masked }, ip2masked1 = { ip2masked },
             maskip = { mask };
-        printf("compare: ipmask1 %s ", inet_ntoa(ip1masked1));
-        printf("ipmask2 %s ", inet_ntoa(ip2masked1));
-        printf("mask %s\n", inet_ntoa(maskip));
+        printf("compare: ipmask1 %s ", inet_htoa(ip1masked1));
+        printf("ipmask2 %s ", inet_htoa(ip2masked1));
+        printf("mask %s\n", inet_htoa(maskip));
         diff |= (ip1masked != ip2masked);
     }
 

@@ -7,6 +7,7 @@
 #define AODV_UDP_PORT 654
 
 #include "log.h"
+#include "utils.h"
 
 /* Types of aodv packets */
 #define AODV_RREQ 1

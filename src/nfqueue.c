@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//NO COMPILA
+//TODO: Doesn't build
 //#include <linux/netfilter_ipv4.h> // Iptables hooks
 /* IP Hooks */
 /* After promisc drops, checksum checks. */
@@ -182,7 +182,7 @@ static uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
     struct nfqnl_msg_packet_hdr *packetHeader;
 
     if( (packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL )
-        id = packetHeader->packet_id;
+        id = ntohl(packetHeader->packet_id);
        
     return id;
 }
@@ -205,7 +205,7 @@ static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet)
     
     if( (ip_header = nfq_get_iphdr(packet)) != NULL )
     {
-        dest.s_addr = ntohl(nfq_get_ip_daddr(ip_header));
+        dest.s_addr = nfq_get_ip_daddr(ip_header);
     }
     return dest;
 }
@@ -217,7 +217,7 @@ static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet)
     
     if( (ip_header = nfq_get_iphdr(packet)) != NULL )
     {
-        orig.s_addr = ntohl(nfq_get_ip_saddr(ip_header));
+        orig.s_addr = nfq_get_ip_saddr(ip_header);
     }
     return orig;
 }
@@ -250,7 +250,10 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     // AODV traffic is handled elsewhere already (by the daemon)
     uint32_t id=nfqueue_packet_get_id(nfa);
     if(nfqueue_packet_is_aodv(nfa))
+    {
+        printf("accepting AODV packet: id: %d\n", id);
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+    }
         
     // packets coming from different hooks are handled in different ways
     switch(hook)
@@ -289,7 +292,7 @@ static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
     // it's marked as invalid.
     struct msh_route *invalid_route = 0;
     
-    printf ("packet for %s: ", inet_ntoa(dest));
+    printf ("packet for %s: ", inet_htoa(dest));
     
     // If there's a route for the packet, or it's a broadcast or it's an AODV
     // packet, let it go
@@ -332,7 +335,7 @@ static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
     // it's marked as invalid.
     struct msh_route *invalid_route = 0;
     
-    printf ("packet for %s: ", inet_ntoa(dest));
+    printf ("packet for %s: ", inet_htoa(dest));
     
     // If there's a route for the packet, or it's a broadcast or it's an AODV
     // packet, let it go
@@ -366,7 +369,7 @@ static int manage_forward_packet(struct nfq_q_handle *qh,struct nfgenmsg
     // it's marked as invalid.
     struct msh_route *invalid_route = 0;
     
-    printf ("packet for %s: ", inet_ntoa(dest));
+    printf ("packet for %s: ", inet_htoa(dest));
     
     // If there's a route for the packet, or it's a broadcast or it's an AODV
     // packet, let it go

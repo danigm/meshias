@@ -10,6 +10,7 @@ set (RECVMSG_SRCS recvmsg.c)
 set (SENDMSG_SRCS sendmsg.c)
 set (LINUXLISTS_SRCS linuxlists.c)
 set (GETIP_SRCS getip.c)
+set (NFQUEUE_SRCS nfqueue.c)
 
 add_executable (libnl ${LIBNL_SRCS})
 add_executable (alarm ${ALARM_SRCS})
@@ -17,8 +18,10 @@ add_executable (recvmsg ${RECVMSG_SRCS})
 add_executable (sendmsg ${SENDMSG_SRCS})
 add_executable (linuxlists ${LINUXLISTS_SRCS})
 add_executable (getip ${GETIP_SRCS})
+add_executable (nfqueue ${NFQUEUE_SRCS})
 
 # Link the executable to the needed library. 
 target_link_libraries (libnl nl)
+target_link_libraries (nfqueue netfilter_queue nfnetlink)
 
-install(TARGETS libnl alarm recvmsg sendmsg linuxlists getip RUNTIME DESTINATION bin)
+install(TARGETS libnl alarm recvmsg sendmsg linuxlists getip nfqueue RUNTIME DESTINATION bin)
