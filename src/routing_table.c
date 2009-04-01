@@ -96,7 +96,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     rtnl_route_set_family(nlroute, AF_INET);
     rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
     rtnl_route_set_dst(nlroute, dst);
-
+    // TODO: call to rtnl_route_set_ttl() ... or maybe not?
+    
     if(route->flags & RTFLAG_HAS_NEXTHOP)
         rtnl_route_set_gateway(nlroute, nexthop);
     else
@@ -107,12 +108,13 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
         return -1;
     }
+    
     // If we are successful, add the netlink route to the msh_route, set
     // the lifetime of the route and add the route to the list of the routing table
     msh_route_set_rtnl_route(route, nlroute);
     msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
     // add a callback to the route for getting updates
-//     route __routing_table_route_updated_cb;
+    // route __routing_table_route_updated_cb;
     
     list_add(&route->list, &table->route_list.list);
     

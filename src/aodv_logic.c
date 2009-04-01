@@ -11,15 +11,6 @@
 void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     uint8_t prev_tries)
 {
-    //First, check that prev_tries hasn't exceeded its limit.
-    if(prev_tries > RREQ_RETRIES())
-    {
-        // Route to the dest definitely not found: drop packets
-        packets_fifo_drop_packets(data.packets_queue, dest);
-        stats.packets_dropped++;
-        return;
-    }
-    
     // TODO: Second, Do not send more than RREQ_RATELIMIT() RREQs per second.
     // Buffer the RREQs when they can't be sent
     

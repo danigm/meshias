@@ -1,7 +1,9 @@
 #include "rreq_fifo.h"
 #include "route_obj.h"
 #include "utils.h"
+#include "statistics.h"
 #include "msh_data.h"
+#include "packets_fifo.h"
 #include <stdlib.h>
 
 void __rreq_fifo_entry_delete(struct rreq_fifo* entry)
@@ -19,12 +21,14 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
     struct in_addr dst = { entry->dst.s_addr };
     int8_t prev_tries = entry->prev_tries;
     
-    // If the RREQ was sent by ourselves it means that no RREP
-    // has been received and thus we shall send a new RREQ
+    // If the RREQ was not send  by us (i.e. if prev_tries < 0), we just delete
+    // the entry.
     if(entry->prev_tries < 0)
     {
         __rreq_fifo_entry_delete(entry);
     }
+    // If the RREQ was sent by ourselves it means that no RREP
+    // has been received and thus we shall send a new RREQ
     else
     {
         unsigned long  sc, usc;
@@ -32,7 +36,13 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
         entry->prev_tries++;
         
         if(entry->prev_tries > RREQ_RETRIES())
+        {
             __rreq_fifo_entry_delete(entry);
+            // Route to the dest definitely not found: drop packets
+            packets_fifo_drop_packets(data.packets_queue, entry->dst);
+            stats.packets_dropped++;
+            return;
+        }
         
         // routing_table_use_route() will set invalid_route accordingly if
         // it finds a route but it has been marked as invalid. That's the only thing we
