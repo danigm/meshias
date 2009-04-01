@@ -1,5 +1,5 @@
-#ifndef _ALARM_H_
-#define _ALARM_H_
+#ifndef _UTILS_H_
+#define _UTILS_H_
 
 #include <netinet/in.h>
 #include <netlink/addr.h>
