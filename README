@@ -45,7 +45,7 @@ correctly set up in Ad-Hoc mode with the iwconfig command, which should say
 
     sudo iwconfig ath0
     ath0      IEEE 802.11g  ESSID:""  Nickname:""
-            Mode:Managed  Channel:0  Access Point: Not-Associated
+            Mode:Ad-Hoc  Channel:0  Access Point: Not-Associated
             Bit Rate:0 kb/s   Tx-Power:16 dBm   Sensitivity=1/1
             Retry:off   RTS thr:off   Fragment thr:off
             Encryption key:off
@@ -84,6 +84,13 @@ to the following one:
     Kernel IP routing table
     Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
     192.168.0.0     0.0.0.0         255.255.255.0   U     0      0        0 ath0
+
+We're going to add some iptables rules that will allow us to capture traffic.
+But before adding those rules, we need to add a rule  to do exactly the
+opposite, to ACCEPT one kind of  packets: the ones we send with meshias, because
+obviously those are already managed  by us:
+
+    sudo iptables -t filter -A OUTPUT -o ath0 -p udp --dport 654 -j ACCEPT
 
 Now we need to set up iptables to let meshias capture the traffic:
 
