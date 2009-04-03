@@ -86,6 +86,8 @@ void msh_route_set_flag(struct msh_route *route, uint16_t flag)
         route->flags |= RTFLAG_VALID_DEST_SEQ_NUM;
     else if(flag == RTFLAG_VALID_ENTRY)
         route->flags |= RTFLAG_VALID_ENTRY;
+    else if(flag == RTFLAG_HAS_NEXTHOP)
+        route->flags |= RTFLAG_HAS_NEXTHOP;
     else if(flag == RTFLAG_UNMANAGED)
         route->flags |= RTFLAG_UNMANAGED;
 }
@@ -97,6 +99,8 @@ void msh_route_unset_flag(struct msh_route *route, uint16_t flag)
         route->flags &= ~RTFLAG_VALID_DEST_SEQ_NUM;
     else if(flag == RTFLAG_VALID_ENTRY)
         route->flags &= ~RTFLAG_VALID_ENTRY;
+    else if(flag == RTFLAG_HAS_NEXTHOP)
+        route->flags &= ~RTFLAG_HAS_NEXTHOP;
     else if(flag == RTFLAG_UNMANAGED)
         route->flags &= ~RTFLAG_UNMANAGED;
 }
@@ -118,6 +122,7 @@ uint8_t msh_route_get_hop_count(struct msh_route *route)
 
 void msh_route_set_next_hop(struct msh_route *route, struct in_addr next_hop)
 {
+    msh_route_set_flag(route, RTFLAG_HAS_NEXTHOP);
     route->next_hop = next_hop;
     __msh_route_updated(route, RTACTION_CHANGE_NEXTHOP_IP);
 }

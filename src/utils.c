@@ -1,5 +1,4 @@
 #include <stdio.h> 
-#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netlink/addr.h>
 #include <sys/socket.h>
@@ -22,7 +21,10 @@ uint32_t get_alarm_time(unsigned long sc, unsigned long usc)
 struct nl_addr* in_addr2nl_addr(struct in_addr addr, uint8_t prefix_sz)
 {
     char buf[256];
-    sprintf(buf, "%s/%d", inet_htoa(addr), prefix_sz);
+    if(prefix_sz > 0)
+      sprintf(buf, "%s/%d", inet_htoa(addr), prefix_sz);
+    else
+      sprintf(buf, "%s", inet_htoa(addr));
     
     return nl_addr_parse(buf, AF_INET);
 }

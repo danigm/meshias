@@ -141,16 +141,35 @@ int main(int argc, char **argv)
 //     nl_object_dump(obj, &dp);
 //     nl_cache_dump_filter(addr_cache, &dp, (struct nl_object*)needle);
     
+    
+    
+    
+    
+    struct rtnl_route *nlroute = rtnl_route_alloc();
+    char buf[256];
+    sprintf(buf, "192.168.0.1/0");
+    struct nl_addr *addr1 = nl_addr_parse(buf, AF_INET);
+    sprintf(buf, "192.168.0.0/0");
+    struct nl_addr *addr2 = nl_addr_parse(buf, AF_INET);
+    
+    printf("addr1: dst: %s\n", nl_addr2str(addr1, buf, 256));
+    rtnl_route_set_oif(nlroute, ifindex);
+    rtnl_route_set_family(nlroute, AF_INET);
+    rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
+    rtnl_route_set_dst(nlroute, addr1);
+//     rtnl_route_set_gateway(nlroute, addr1);
+    
+    if (rtnl_route_add(sock, nlroute, 0) < 0)
+    {
+        printf("rtnl_route_add failed: %s\n", nl_geterror());
+    }
+    
     // Free the mallocs
     nl_cache_free(addr_cache);
     nl_cache_free(link_cache);
 //     nl_cache_free(route_cache);
     nl_handle_destroy(sock);
     
-    uint32_t temp = 0xffffffff, temp2 = temp >> 2;
-    
-    printf("temp  %x\n", temp);
-    printf("temp2 %x\n", temp2);
     return 0;
 }
 

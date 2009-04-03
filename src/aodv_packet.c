@@ -132,8 +132,9 @@ int aodv_pkt_get_payload_len(struct aodv_pkt *pkt)
 
 int aodv_pkt_get_type(struct aodv_pkt *pkt)
 {
-    const int *type = (int*)aodv_pkt_get_payload(pkt);
-    return *type;
+    // The first byte (i.e. the first char) is the type
+    char type = aodv_pkt_get_payload(pkt)[0];
+    return (int)type;
 }
 
 int aodv_pkt_check(struct aodv_pkt* pkt)
@@ -146,9 +147,15 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
     switch(aodv_pkt_get_type(pkt))
     {
         case AODV_RREQ:
-            if( sizeof(struct aodv_rreq) == aodv_pkt_get_payload_len(pkt) )
+            if( sizeof(struct aodv_rreq) <= aodv_pkt_get_payload_len(pkt) )
             {
                 rreq = (struct aodv_rreq*)aodv_pkt_get_payload(pkt);
+                rreq->rreq_id = ntohl(rreq->rreq_id);
+                rreq->dest_ip_addr = ntohl(rreq->dest_ip_addr);
+                rreq->dest_seq_num = ntohl(rreq->dest_seq_num);
+                rreq->orig_ip_addr = ntohl(rreq->orig_ip_addr);
+                rreq->orig_seq_num = ntohl(rreq->orig_seq_num);
+                struct in_addr addr = { rreq->dest_ip_addr };
             }
             else
             {
@@ -158,9 +165,13 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             break;
             
         case AODV_RREP:
-            if( sizeof(struct aodv_rrep) == aodv_pkt_get_payload_len(pkt) )
+            if( sizeof(struct aodv_rrep) <= aodv_pkt_get_payload_len(pkt) )
             {
                 rrep = (struct aodv_rrep*)aodv_pkt_get_payload(pkt);
+                rrep->dest_ip_addr = ntohl(rrep->dest_ip_addr);
+                rrep->dest_seq_num = ntohl(rrep->dest_seq_num);
+                rrep->orig_ip_addr = ntohl(rrep->orig_ip_addr);
+                rrep->lifetime = ntohl(rrep->lifetime);
             }
             else
             {
@@ -174,6 +185,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
              * Buffer size must be at least header size +
              * one unrecheable_dest
              */
+            //TODO: do the ntohl/ntohs things
             if( aodv_pkt_get_payload_len(pkt) >=
                 sizeof(uint32_t) + sizeof(struct unrecheable_dest))
             {
@@ -205,7 +217,8 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             break;
             
         case AODV_RREP_ACK:
-            if( sizeof(struct aodv_rrep_ack) == aodv_pkt_get_payload_len(pkt) )
+            //TODO: do the ntohl/ntohs things
+            if( sizeof(struct aodv_rrep_ack) <= aodv_pkt_get_payload_len(pkt) )
             {
                 rrep_ack = (struct aodv_rrep_ack*)aodv_pkt_get_payload(pkt);
             }
@@ -217,6 +230,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             break;
             
         default:
+            puts("error: unkown type of AODV packet found");
             return 0;
             break;
     }
@@ -242,10 +256,10 @@ void aodv_pkt_build_rrep(struct aodv_pkt* pkt,uint8_t flags,
     rrep=(struct aodv_rrep*)calloc(1,sizeof(struct aodv_rrep));
     pkt->payload_len=sizeof(struct aodv_rrep);
 
-    rrep->type = htons(AODV_RREP);
-    rrep->flags = htons(flags);
-    rrep->prefix_sz = htons(prefix_sz);
-    rrep->hop_count = htons(hop_count);
+    rrep->type = AODV_RREP;
+    rrep->flags = flags;
+    rrep->prefix_sz = prefix_sz;
+    rrep->hop_count = hop_count;
     rrep->dest_ip_addr = htonl(dest_ip_addr);
     rrep->dest_seq_num = htonl(dest_seq_num);
     rrep->orig_ip_addr = htonl(orig_ip_addr);
@@ -264,10 +278,9 @@ void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags,
     rreq=(struct aodv_rreq*)calloc(1,sizeof(struct aodv_rreq));
     pkt->payload_len=sizeof(struct aodv_rreq);
 
-
-    rreq->type = htons(AODV_RREQ);
-    rreq->flags = htons(flags);
-    rreq->hop_count = htons(hop_count);
+    rreq->type = AODV_RREQ;
+    rreq->flags = flags;
+    rreq->hop_count = hop_count;
     rreq->rreq_id = htonl(rreq_id);
     rreq->dest_ip_addr = htonl(dest_ip_addr);
     rreq->dest_seq_num = htonl(dest_seq_num);
@@ -280,6 +293,7 @@ void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags,
 void aodv_pkt_build_rerr(struct aodv_pkt* pkt,uint8_t flag,
         uint8_t dest_count,struct unrecheable_dest** dests)
 {
+    //TODO: do the htonl/htons things
     struct aodv_rerr* rerr;
     struct unrecheable_dest* aux;
     int i=0;
@@ -289,9 +303,9 @@ void aodv_pkt_build_rerr(struct aodv_pkt* pkt,uint8_t flag,
     /* Reserve memory for the structure */
     rerr=(struct aodv_rerr*)calloc(1,pkt->payload_len);
 
-    rerr->type = htons(AODV_RERR);
-    rerr->flag = htons(flag);
-    rerr->dest_count = htons(dest_count);
+    rerr->type = AODV_RERR;
+    rerr->flag = flag;
+    rerr->dest_count = dest_count;
 
     aux=(struct unrecheable_dest*)rerr+sizeof(struct aodv_rerr);
     for(i=0;i<dest_count;i++)
@@ -306,6 +320,7 @@ void aodv_pkt_build_rerr(struct aodv_pkt* pkt,uint8_t flag,
 
 void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)
 {
+    //TODO: do the htonl/htons things
     struct aodv_rrep_ack* rrep_ack;
 
     pkt->payload_len=sizeof(struct aodv_rrep_ack);
@@ -313,7 +328,7 @@ void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)
     /* Reserve memory for the structure */
     rrep_ack=(struct aodv_rrep_ack*)calloc(1,sizeof(struct aodv_rrep_ack));
     
-    rrep_ack->type = htons(AODV_RREP_ACK);
+    rrep_ack->type = AODV_RREP_ACK;
 
     pkt->payload=(char*)rrep_ack;
 }

@@ -48,6 +48,15 @@ Finalmente para instalar meshias en el sistema:
 3. Uso
 ------
 
+Ahora vamos a configurar la red a mano porque por ahora meshias no tiene ninguna
+utilidad para hacerlo de forma más sencilla. Si usamos algún demonio de red
+que intenta automática conectarse a redes wifi disponibles, tenemos que
+deshabilitarlo para que no deshaga lo que nosotros configuremos. Probablemente
+en tu distribución uses el Network Manager, en cuyo caso debes ejecutar como
+superusuario:
+
+  /etc/init.d/NetworkManager stop
+
 Para hacer funcionar a meshias, tenemos que añadir varias reglas de iptables
 (todas hay que ejecutarlas como superusuario). Sin embargo, lo primero que
 necesitamos es poner nuestra tarjeta wireless en modo Ad-Hoc. Si tenemos una
@@ -70,16 +79,42 @@ de sacar en su salida que el modo en el que está la tarjeta es Ad-Hoc.
 
     iwconfig ath0
     ath0      IEEE 802.11g  ESSID:""  Nickname:""
-            Mode:Ad-Hoc Channel:0  Access Point: Not-Associated
-            Bit Rate:0 kb/s   Tx-Power:16 dBm   Sensitivity=1/1
-            Retry:off   RTS thr:off   Fragment thr:off
-            Encryption key:off
-            Power Management:off
-            Link Quality=0/70  Signal level=-96 dBm  Noise level=-96 dBm
-            Rx invalid nwid:1836  Rx invalid crypt:0  Rx invalid frag:0
-            Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+              Mode:Ad-Hoc Channel:0  Access Point: Not-Associated
+              Bit Rate:0 kb/s   Tx-Power:16 dBm   Sensitivity=1/1
+              Retry:off   RTS thr:off   Fragment thr:off
+              Encryption key:off
+              Power Management:off
+              Link Quality=0/70  Signal level=-96 dBm  Noise level=-96 dBm
+              Rx invalid nwid:1836  Rx invalid crypt:0  Rx invalid frag:0
+              Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+            
+Ahora que tenemos la interfaz en modo Ad-Hoc, necesitamos configurar en qué red
+wifi vamos a estar. Por ejemplo, usaremos una cuyo ESSID es "meshias" y está
+en el canal 6:
 
-Bien, ya tenemos creada la interfaz de red que vamos usar  para la red mesh, y
+    iwconfig ath0 essid meshias ch 6
+  
+Podremos ver que está configurado correctamente si vemos que la salida de
+iwconfig algo parecido a esta:
+
+    
+    iwconfig ath0
+    ath0      IEEE 802.11g  ESSID:"meshias"  Nickname:""
+              Mode:Ad-Hoc  Frequency:2.437 GHz  Cell: DE:AD:BE:EF:DE:AD
+              Bit Rate:0 kb/s   Tx-Power:9 dBm   Sensitivity=1/1
+              Retry:off   RTS thr:off   Fragment thr:off
+              Encryption key:off
+              Power Management:off
+              Link Quality=81/70  Signal level=0 dBm  Noise level=-72 dBm
+              Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+              Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+
+Podemos comprobar que a diferencia de antes, tenemos essid, la frecuencia marca
+2.437Ghz (que coresponde al canal 6), y Cell ya no marca "Not-Associated".
+Además Link Quality no es cero. Todo esto es buena señal y significa que vamos
+bien.
+
+Entonces ya tenemos creada la interfaz de red que vamos usar  para la red mesh, y
 está en el modo correcto, pero ahora hace falta asignarnos una dirección ip
 y un rango de red. AODV no soporta el uso de servidores de DHCP ni routers que den
 acceso a internet, eso es algo que en Meshias una vez implementado el protocolo,
@@ -117,6 +152,8 @@ Finalmente necesitamos que meshias pueda capturar los paquetes que enviemos a
 esa red wifi a la que nos hemos conectado. Los comandos son los siguientes, y
 hay que ejecutarlo en orden:
 
+    iptables -t filter -A OUTPUT -o ath0 -p udp --dport 8765 -j DROP
+    iptables -t filter -A INPUT -i ath0 -p udp --dport 8765 -j DROP
     iptables -t filter -A OUTPUT -o ath0 -p udp --dport 654 -j ACCEPT
     iptables -t filter -A INPUT -i ath0 -p udp --dport 654 -j ACCEPT
     iptables -t filter -A OUTPUT -o ath0 -j NFQUEUE --queue-num 0
@@ -249,11 +286,16 @@ antes, depende del driver de nuestra tarjeta de red esto se hace de distintas
 maneras. Para tarjetas atheros:
 
     wlanconfig ath0 destroy
-    wlanconfig ath0 create wlandev wifi0 wlanmode Ad-Hoc
+    wlanconfig ath0 create wlandev wifi0 wlanmode Managed
     
 Para otras tarjetas, quizás nos sirva con hacer:
     
     iwconfig ath0 mode Managed
+    
+Finalmente, si estábamos usando Network Manager o algún otro demonio para
+configurar la red wifi, es hora de volver a iniciarlo:
+
+    /etc/init.d/NetworkManager start
     
 5. Meshias: Comunidad y repercusión
 -----------------------------------

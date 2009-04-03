@@ -260,23 +260,23 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     {
         // Input table
         case NF_IP_LOCAL_IN:
-            puts("capturing packet from INPUT iptables hook");
+            puts(": capturing packet from INPUT iptables hook");
             return manage_input_packet(qh,nfmsg,nfa);
             break;
         // Forward table
         case NF_IP_FORWARD:
-            puts("capturing packet from FORWARD iptables hook");
+            puts(": capturing packet from FORWARD iptables hook");
             return manage_forward_packet(qh,nfmsg,nfa);
             break;
         // Output table
         case NF_IP_LOCAL_OUT:
-            puts("capturing packet from OUTPUT iptables hook");
+            puts(": capturing packet from OUTPUT iptables hook");
             return manage_output_packet(qh,nfmsg,nfa);
             break;
         // Any other table: we shouldn't  be receiving packets from any other
         // hook. Accept the packet
         default:
-            puts("error: capturing packet from an iptables hook we shouldn't");
+            puts(": error: capturing packet from an iptables hook we shouldn't");
             return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
             break;
     }
@@ -337,8 +337,7 @@ static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
     
     printf ("packet for %s: ", inet_htoa(dest));
     
-    // If there's a route for the packet, or it's a broadcast or it's an AODV
-    // packet, let it go
+    // If it¡s a broadcast or it's an AODV packet let it go
     if(dest.s_addr == data.broadcast_addr.s_addr || nfqueue_packet_is_aodv(nfa))
     {
         puts("ACCEPT");

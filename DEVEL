@@ -101,3 +101,40 @@ common vars:
 This file is by any means not complete. If you want to read more information
 about the protocol you can READ RFC 3561,which can be found in this same
 directory with the name rfc3561.txt.
+
+4. Setting up the development environment
+-----------------------------------------
+
+4.1 Compiling with debug symbols
+--------------------------------
+
+If we want to be able to debug meshias with gdb, we need to compile meshias in
+debug mode. We can do that by telling it to cmake:
+
+    cmake -DCMAKE_BUILD_TYPE:STRING=debug .
+ 
+That's sort of equivalent to what a typical ./configure --enable-debug does. After
+executing that command, we need to rebuild meshias by executing:
+
+    make clean
+    make
+
+And now the new meshias executable is ready, so you can have fun debugging it!
+
+4.2 Keeping the network clean
+-----------------------------
+
+There are some daemons that send packets to the network, and when we are
+debugging meshias we most likely want to control all the packets send to the
+mesh network, so we have to stop those daemon that send undesired packets.
+One of them is avahi. If at some point you start seing a lot of "ultraseek-http"
+packets characterized by being a broadcast packets with a destination 8765,
+which you can see when you are capturing them with wireshark for example.
+Instead of finding who is the process culprit which sending those packets, we
+can do the lazy man' solution, which is as simple as just block those packets:
+
+    iptables -t filter -A OUTPUT -o ath0 -p udp --dport 8765 -j DROP
+    iptables -t filter -A INPUT -i ath0 -p udp --dport 8765 -j DROP
+
+Those two iptables rules should be the first ones you add to iptables, otherwise
+they won't have any effect.

@@ -98,6 +98,7 @@ void daemon_receive_packets()
     //Receive the packet
     numbytes = recvmsg(data.daemon_fd, &msg, 0);
 
+    printf("received %d bytes\n", numbytes);
     //FIXME numbytes = payload_len ??
     if(numbytes==-1)
     {

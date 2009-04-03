@@ -6,7 +6,6 @@
 #include <netinet/in.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
-#include <netlink/addr.h>
 #include "routing_table.h"
 #include "msh_data.h"
 #include "utils.h"
@@ -84,28 +83,32 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
 
     struct rtnl_route *nlroute = rtnl_route_alloc();
  
-    struct nl_addr *dst = in_addr2nl_addr(route->dst_ip,
-        msh_route_get_prefix_sz(route));
-    
-    
     uint8_t dst_len = msh_route_get_prefix_sz(route);
+    struct nl_addr *dst = in_addr2nl_addr(route->dst_ip, dst_len);
+    char buf[256];
+    
     struct in_addr next_hop_addr = msh_route_get_next_hop(route);
-    struct nl_addr *nexthop = in_addr2nl_addr(next_hop_addr, dst_len);
+    struct nl_addr *nexthop = in_addr2nl_addr(next_hop_addr, 0);
     
     rtnl_route_set_oif(nlroute, data.net_iface);
-    rtnl_route_set_family(nlroute, AF_INET);
-    rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
     rtnl_route_set_dst(nlroute, dst);
     // TODO: call to rtnl_route_set_ttl() ... or maybe not?
     
-    if(route->flags & RTFLAG_HAS_NEXTHOP)
-        rtnl_route_set_gateway(nlroute, nexthop);
-    else
-        puts("BUG: adding a route  without a next hop");
-    
-    if (rtnl_route_add(data.nl_handle, nlroute, 0) < 0)
+    // If the next hop is the destination, there's no need to set the gateway
+    if(route->dst_ip.s_addr != next_hop_addr.s_addr)
     {
-        fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
+        if(route->flags & RTFLAG_HAS_NEXTHOP)
+            rtnl_route_set_gateway(nlroute, nexthop);
+        else
+            puts("BUG: adding a route  without a next hop");
+    }
+    
+    int errno = 0;
+    // Errno = 17 means that route already exists so it's not problematic and
+    // we can ignore it
+    if ((errno=rtnl_route_add(data.nl_handle, nlroute, 0)) < 0 && errno != -17)
+    {
+        fprintf(stderr, "rtnl_route_add failed: errno=%d %s\n", errno, nl_geterror());
         return -1;
     }
     
