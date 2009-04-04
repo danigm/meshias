@@ -5,12 +5,13 @@ cmake_minimum_required (VERSION 2.6)
 project (MESHIAS_EXAMPLES)
 
 set (LIBNL_SRCS libnl-routes.c)
-set (ALARM_SRCS ../src/alarm/alarm.c ../src/alarm/rbtree.c alarm.c)
+set (ALARM_SRCS ./alarm.c ../alarm/alarm.c ../alarm/rbtree.c)
 set (RECVMSG_SRCS recvmsg.c)
 set (SENDMSG_SRCS sendmsg.c)
 set (LINUXLISTS_SRCS linuxlists.c)
 set (GETIP_SRCS getip.c)
 set (NFQUEUE_SRCS nfqueue.c)
+set (BROADCASTER_SRCS broadcaster.c)
 
 add_executable (libnl ${LIBNL_SRCS})
 add_executable (alarm ${ALARM_SRCS})
@@ -19,9 +20,10 @@ add_executable (sendmsg ${SENDMSG_SRCS})
 add_executable (linuxlists ${LINUXLISTS_SRCS})
 add_executable (getip ${GETIP_SRCS})
 add_executable (nfqueue ${NFQUEUE_SRCS})
+add_executable (broadcaster ${BROADCASTER_SRCS})
 
 # Link the executable to the needed library. 
 target_link_libraries (libnl nl)
 target_link_libraries (nfqueue netfilter_queue nfnetlink)
 
-install(TARGETS libnl alarm recvmsg sendmsg linuxlists getip nfqueue RUNTIME DESTINATION bin)
+install(TARGETS libnl alarm recvmsg sendmsg linuxlists getip nfqueue broadcaster RUNTIME DESTINATION bin)

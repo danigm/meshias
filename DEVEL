@@ -134,7 +134,7 @@ Instead of finding who is the process culprit which sending those packets, we
 can do the lazy man' solution, which is as simple as just block those packets:
 
     iptables -t filter -A OUTPUT -o ath0 -p udp --dport 8765 -j DROP
-    iptables -t filter -A INPUT -i ath0 -p udp --dport 8765 -j DROP
+    iptables -t filter -A INPUT -i ath0 -p udp --sport 8765 -j DROP
 
 Those two iptables rules should be the first ones you add to iptables, otherwise
 they won't have any effect. You still stop the avahi-daemon which sends those
@@ -142,3 +142,113 @@ packets though, just in case:
 
     /etc/init.d/avahi-daemon stop
 
+4.3 Testing meshias with only one machine
+-----------------------------------------
+
+4.3.1 Introduction
+------------------
+
+For testing meshias, you need at least two machines that act as nodes of the
+network. That's a problem if you want to be able to hack or test meshias when
+you are in some random place with your laptop as your only physical device.
+
+The solution is using virtual machines. I'll explain here how to use VirtualBox
+easily create a virtual network between your host machine and a Debian guest.
+There are other open source virtual machines available, but I chose VirtualBox
+because it doesn't need your processor to have VT-X extensions so it works in
+my Intel Atom, and because VirtualBox has a nice and easily configurable UI.
+At the moment of writting this tutorial, I was in a train trip hacking meshias
+using just my Acer Aspire One netbook.
+
+4.3.2 Setup
+-----------
+
+We need at least VirtualBox 2.2.0 [1]  (which is in Beta 2 at the moment of writting 
+this) because that version brings the new feature of "host-only" guest network
+virtual interfaces. There's a VirtualBox Debian Image [2] available for download 
+with everything already configured to be able to work as a virtual node.
+
+This guest is configured with two network interfaces: eth1 and eth2. eth1 is a
+host-only net interface which connects to a loopback interface that VirtualBox
+creates in the host called vboxnet0. The guest is configured with the IP address
+192.168.5.2, but you need to setup an ip address in your host, for example
+192.168.5.1:
+
+    ifconfig 192.168.5.1 vboxnet0 up
+    
+After this, when executing the guest, you will be able to ping it:
+
+    ping 192.168.5.2 -c 1
+    PING 192.168.5.2 (192.168.5.2) 56(84) bytes of data.
+    64 bytes from 192.168.5.2: icmp_seq=1 ttl=64 time=4.24 ms
+
+    --- 192.168.5.2 ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 4.245/4.245/4.245/0.000 ms
+
+Meshias will run in this virtual network between the host and the guest. This
+virtual network works as a normal wired network but wired internally inside
+your computer between your physical machine (the host)  and the virtual machine
+(the guest). As meshias works at IP level, it works in any kind of networks:
+wired, wireless, even virtual networks like this one.
+
+The other interface in the gest debian operative system is eth2. This interface
+is configured via NAT, which is the default configuration for network interfaces
+in VirtualBox. This way, if your host machine has internet access, the guest
+will have it too if needed. This network interface is also configured as a
+secure way to connect via ssh from the host to the guest, because the VirtualBox
+machine has been configured to do port forwading from the guest port 22 to the
+host port 2222. 
+
+The guest has a minimalistic Debian configuration; it has barely what you need to
+run meshias. It hasn't got a graphical interface installed, so it
+works in console mode. The virtual  machine is configured with 64MB of RAM, but
+when running it actually uses only about 10-20MB.
+
+The guest is configured so you don't actually need to work within
+VirtualBox, but always from your host operative system "remotely" using ssh as
+have been said previously. 
+
+
+You can connect to your guest this way:
+
+    ssh debian@localhost -p 2222
+
+The password for root is root, and the password for the user debian is.. debian.
+Inside debian's home, you've got the directory meshias/ where a more or less
+recent version of meshias bazaar branch resides and is already compiled, ready
+to be used.
+
+Here we can see the network scheme of the virtualbox configuration between
+the guest and the host:
+
+
+   -------------------------------------------------
+   .  Host                                         .
+   .                     ---------------------     .
+   .                     |   Guest           |     .
+   .                     |                   |     .
+   .  vboxnet0<-----MESH----->eth2           |     .
+   .  192.168.5.1        |    192.168.5.2    |     .
+   .                     |                   |     .
+ ---- >real ifaces<--NAT----->eth1           |     .
+   .                     |                   |     .
+   .                     ---------------------     .
+   .                                               .
+   -------------------------------------------------
+
+You might want to copy files from the host to the guest. The Virtual Machine
+comes with a shared directory configured so that you can see your host directory
+/home/edulix in the guest directory /home/debian/user. You probably want to
+change that share because chances are that you don't have such  a directory in
+your host, you can do that by using the options in the "Directories > Shared
+Directories..." menu in VirtualBox.
+
+Other than that, you can follow the instructions for a typical meshias setup to
+make meshias work in the guest. You can also add more guests, and connect them
+to the host-only network. The host and all the guests will be neighbours in this
+virtual network. To add a new guest you just need to duplicate the vdi debian
+image and rerun the python script which installed the guest.
+
+[1] http://download.virtualbox.org/virtualbox/2.2.0_BETA2/
+[2] ?

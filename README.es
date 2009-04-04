@@ -152,13 +152,13 @@ Finalmente necesitamos que meshias pueda capturar los paquetes que enviemos a
 esa red wifi a la que nos hemos conectado. Los comandos son los siguientes, y
 hay que ejecutarlo en orden:
 
-    iptables -t filter -A OUTPUT -o eth0 -p udp --dport 8765 -j DROP
-    iptables -t filter -A INPUT -i eth0 -p udp --dport 8765 -j DROP
-    iptables -t filter -A OUTPUT -o eth0 -p udp --sport 654 -j ACCEPT
-    iptables -t filter -A INPUT -i eth0 -p udp --dport 654 -j ACCEPT
-    iptables -t filter -A OUTPUT -o eth0 -j NFQUEUE --queue-num 0
-    iptables -t filter -A INPUT -i eth0 -j NFQUEUE --queue-num 0
-    iptables -t filter -A FORWARD -i eth0 -j NFQUEUE --queue-num 0
+    iptables -t filter -A OUTPUT -o eth1 -p udp --dport 8765 -j DROP
+    iptables -t filter -A INPUT -i eth1 -p udp --dport 8765 -j DROP
+    iptables -t filter -A OUTPUT -o eth1 -p udp --sport 654 -j ACCEPT
+    iptables -t filter -A INPUT -i eth1 -p udp --dport 654 -j ACCEPT
+    iptables -t filter -A OUTPUT -o eth1 -j NFQUEUE --queue-num 0
+    iptables -t filter -A INPUT -i eth1 -j NFQUEUE --queue-num 0
+    iptables -t filter -A FORWARD -i eth1 -j NFQUEUE --queue-num 0
 
 El resultado debería ser el siguiente:
 

@@ -21,3 +21,5 @@ meshias-tools
 .kdbgrc.meshias
 examples/broadcastupd/broadcaster
 nfqueue
+src/examples/libnl-routes
+src/examples/broadcastupd/broadcaster

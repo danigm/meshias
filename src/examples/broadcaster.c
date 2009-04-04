@@ -25,8 +25,8 @@ int main(int argc, char *argv[])
     int broadcast = 1;
     //char broadcast = '1'; // if that doesn't work, try this
 
-    if (argc != 3) {
-        fprintf(stderr,"usage: broadcaster hostname message\n");
+    if (argc != 2) {
+        fprintf(stderr,"usage: broadcaster hostname\n");
         exit(1);
     }
 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     }
 
     their_addr.sin_family = AF_INET;     // host byte order
-    their_addr.sin_port = htons(19999); // short, network byte order
+    their_addr.sin_port = htons(654); // short, network byte order
     their_addr.sin_addr.s_addr = INADDR_ANY;
     memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
     bind(sockfd,(struct sockaddr*)&their_addr,sizeof(struct sockaddr_in));
@@ -63,7 +63,14 @@ int main(int argc, char *argv[])
     their_addr.sin_port = htons(SERVERPORT); // short, network byte order
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
-    if ((numbytes=sendto(sockfd, argv[2], strlen(argv[2]), 0,
+    char data[20] =
+    {
+        0x02, 0x00, 0x00, 0x00, 0xc0, 0xa8,
+        0x05, 0x02, 0x00, 0x00, 0x00, 0x01, 0xc0, 0xa8,
+        0x05, 0x01, 0x00, 0x00, 0x17, 0x70
+    };
+    
+    if ((numbytes=sendto(sockfd, data, 20, 0,
              (struct sockaddr *)&their_addr, sizeof their_addr)) == -1) {
         perror("sendto");
         exit(1);
