@@ -137,4 +137,8 @@ can do the lazy man' solution, which is as simple as just block those packets:
     iptables -t filter -A INPUT -i ath0 -p udp --dport 8765 -j DROP
 
 Those two iptables rules should be the first ones you add to iptables, otherwise
-they won't have any effect.
+they won't have any effect. You still stop the avahi-daemon which sends those
+packets though, just in case:
+
+    /etc/init.d/avahi-daemon stop
+
