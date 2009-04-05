@@ -37,15 +37,14 @@ int main(int argc, char **argv)
     debug(1,"Initilization done");
     // Main loop
     // TODO: Here we should capture signals sent to the app
-    
-    fd_set readfds=data.fds->readfds;
 
     while(1)
     {
         puts("while1");
+        fd_set readfds = data.fds->readfds;
         //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
-        while( select(data.fds->maxfd+1,&readfds, NULL, NULL, next_run) > 0 )
+        while( select(data.fds->maxfd + 1, &readfds, NULL, NULL, next_run) > 0 )
         {
             puts("select");
             /* Check for new packets */

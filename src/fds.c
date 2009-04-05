@@ -28,6 +28,7 @@ struct fds *create_fds(void)
     if (fds == NULL)
         return NULL;
 
+    FD_ZERO(&fds->readfds);
     return fds;
 }
 

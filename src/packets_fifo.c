@@ -75,12 +75,16 @@ uint32_t packets_fifo_process_route(struct packets_fifo* queue,
     
     list_for_each_entry_safe(entry, tmp, &queue->list, list)
     {
+        puts("packets_fifo_process_route: accept?");
         msh_route_set_dst_ip(second, entry->dest);
         
         // Free the packets matched by this new route
         if(msh_route_compare(route, second,
-            RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING))
+            RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING) == 0)
+        {
+            puts("packets_fifo_process_route: ACCEPT!");
             packet_obj_accept(entry);
+        }
     }
     msh_route_destroy(second);
 }

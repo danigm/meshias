@@ -60,6 +60,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
 
 void aodv_process_rreq(struct aodv_pkt* pkt)
 {
+    puts("it's an RREQ");
     // (See page 16 of RFC 3561)
     // First create/update a route to the previous hop without a valid sequence
     // number
@@ -325,6 +326,7 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq, struct in_addr prev_hop,
 
 void aodv_process_rrep(struct aodv_pkt* pkt)
 {
+    puts("it's an RREP");
     struct aodv_rrep* rrep = (struct aodv_rrep*)aodv_pkt_get_payload(pkt);
 // 6.7. Receiving and Forwarding Route Replies
 // 
@@ -423,16 +425,25 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
             rrep->lifetime;
         msh_route_set_lifetime(route_to_dest, lifetime);
 
- 
 //    The current node can subsequently use this route to forward data
 //    packets to the destination.
-// 
+        if(data.ip_addr.s_addr == rrep->orig_ip_addr)
+        {
+            // The calls to routing_table_above should have already triggered
+            // a call to packets_fifo_process_route that should have accepted
+            // the waiting packets. All that is left to do is to remove the
+            // RREQ.
+            rreq_fifo_del(data.rreq_queue, data.rreq_id, dest_addr);
+            return;
+        }
+
 //    If the current node is not the node indicated by the Originator IP
 //    Address in the RREP message AND a forward route has been created or
 //    updated as described above, the node consults its route table entry
 //    for the originating node to determine the next hop for the RREP
 //    packet, and then forwards the RREP towards the originator using the
 //    information in that route table entry.
+        
         struct in_addr orig_addr = { rrep->orig_ip_addr };
         struct msh_route* route_to_orig =
             routing_table_find_by_ip(data.routing_table, orig_addr);
@@ -454,7 +465,8 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
 //    When any node transmits a RREP, the precursor list for the
 //    corresponding destination node is updated by adding to it the next
 //    hop node to which the RREP is forwarded.
-            msh_route_add_precursor(route_to_dest, next_hop);
+            if(dest_addr.s_addr != next_hop.s_addr)
+                msh_route_add_precursor(route_to_dest, next_hop);
 //    Also, at each node the
 //    (reverse) route used to forward a RREP has its lifetime changed to be
 //    the maximum of (existing-lifetime, (current time +

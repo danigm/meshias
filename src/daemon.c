@@ -22,13 +22,6 @@ int daemon_init()
         return ERR_INIT;
     }
 
-    //IPv4
-    address.sin_family = AF_INET;
-    // Set port
-    address.sin_port = htons(AODV_UDP_PORT);
-    // Listen from any ip
-    address.sin_addr.s_addr = INADDR_ANY;
-
     // This call is what allows broadcast packets to be sent
     if(setsockopt(data.daemon_fd,SOL_SOCKET,SO_BROADCAST,&option,
                 sizeof option) == -1)
@@ -44,6 +37,13 @@ int daemon_init()
         perror("Error changing socket options (IP_RECVTTL):");
         return ERR_INIT;
     }
+
+    //IPv4
+    address.sin_family = AF_INET;
+    // Set port
+    address.sin_port = htons(AODV_UDP_PORT);
+    // Listen from any ip
+    address.sin_addr.s_addr = INADDR_ANY;
 
     // Set the socket to listen
     if( bind(data.daemon_fd, (struct sockaddr *)&address,
@@ -109,6 +109,10 @@ void daemon_receive_packets()
     pkt=aodv_pkt_get(&msg);
 
     if(aodv_pkt_check(pkt)==0)
+        return;
+    
+    // Filter if we are the senders
+    if(aodv_pkt_get_address(pkt) == data.ip_addr.s_addr)
         return;
 
     //HERE STARTS THE AODV LOGIC

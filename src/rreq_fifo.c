@@ -162,7 +162,7 @@ void rreq_fifo_del(struct rreq_fifo* queue, uint32_t rreq_id,
     
     list_for_each_entry_safe(entry, tmp, &queue->list, list)
     {
-        if(entry->rreq_id == rreq_id && entry->dst.s_addr == dst.s_addr)
+        if(entry->rreq_id <= rreq_id && entry->dst.s_addr == dst.s_addr)
         {
             __rreq_fifo_entry_delete(entry);
             return;

@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 #include <sys/time.h>
-#include "../src/alarm/alarm.h"
+#include "../alarm/alarm.h"
 
 /**
  * Test of alarm_block to see how it works. We'll create
