@@ -249,9 +249,10 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     
     // AODV traffic is handled elsewhere already (by the daemon)
     uint32_t id=nfqueue_packet_get_id(nfa);
+    
     if(nfqueue_packet_is_aodv(nfa))
     {
-        printf("accepting AODV packet: id: %d\n", id);
+        puts("ACCEPT aodv packet");
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
         
@@ -301,7 +302,10 @@ static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
         puts("ACCEPT");
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
-    struct in_addr orig = { nfqueue_packet_get_orig(nfa).s_addr };
+    // The orig? it's either a packet from us (so we are the orig and we don't
+    // need to update it, or it's a packet we are forwarding and the orig has
+    // been updated already by manage_forward_packet()
+    struct in_addr orig = { 0 };
     
     if(routing_table_use_route(data.routing_table, dest, &invalid_route, orig))
     {

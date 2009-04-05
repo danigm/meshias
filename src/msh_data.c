@@ -127,7 +127,7 @@ int msh_data_init(int argc, char **argv)
     data.packets_queue = packets_fifo_alloc();
 
     init_alarm(&data.rreq_flush_alarm, 0, __msh_data_process_wait_queue_cb);
-//     add_alarm(&data.rreq_flush_alarm, 1, 0);
+    add_alarm(&data.rreq_flush_alarm, 1, 0);
     return 1;
 }
 

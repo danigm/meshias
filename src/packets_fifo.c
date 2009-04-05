@@ -30,6 +30,7 @@ void packets_fifo_delete(struct packets_fifo* queue)
 
 void packet_obj_accept(struct packets_fifo* packet_obj)
 {
+    printf("packet_obj_accept ID %d\n", packet_obj->id);
     nfq_set_verdict(data.queue, packet_obj->id, NF_ACCEPT, 0, NULL);
     free(packet_obj);
 }

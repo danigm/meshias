@@ -221,15 +221,19 @@ uint8_t routing_table_use_route(struct routing_table *table,
 
         // Update also the lifetime of the next_hop
         struct in_addr next_hop =  msh_route_get_next_hop(dst_route);
-        if((next_hop_route = routing_table_find_by_ip(table, next_hop)) != 0)
+        
+        if(next_hop.s_addr != dst_ip.s_addr)
         {
-            msh_route_set_lifetime(next_hop_route, ACTIVE_ROUTE_TIMEOUT());
+            if((next_hop_route = routing_table_find_by_ip(table, next_hop)) != 0)
+            {
+                msh_route_set_lifetime(next_hop_route, ACTIVE_ROUTE_TIMEOUT());
+            }
+            else
+                // not finding a route to the next_hop is a bug because if we have a
+                // route to the destination, we should have already found a route to
+                // the next_hop too.
+                puts("BUG: no route to next_hop found!");
         }
-        else
-            // not finding a route to the next_hop is a bug because if we have a
-            // route to the destination, we should have already found a route to
-            // the next_hop too.
-            puts("BUG: no route to next_hop found!");
     }
     
     // orig_ip is set to zero means we don't want to update that part of the route
@@ -244,12 +248,15 @@ uint8_t routing_table_use_route(struct routing_table *table,
         msh_route_set_lifetime(orig_route, ACTIVE_ROUTE_TIMEOUT());
         // Update also the lifetime of the next_hop
         struct in_addr prev_hop =  msh_route_get_next_hop(orig_route);
-        if((prev_hop_route = routing_table_find_by_ip(table, prev_hop)) != 0)
+        if(prev_hop.s_addr != orig_ip.s_addr)
         {
-            msh_route_set_lifetime(next_hop_route, ACTIVE_ROUTE_TIMEOUT());
+            if((prev_hop_route = routing_table_find_by_ip(table, prev_hop)) != 0)
+            {
+                msh_route_set_lifetime(prev_hop_route, ACTIVE_ROUTE_TIMEOUT());
+            }
+            else
+                puts("BUG: no route to prev_hop found!");
         }
-        else
-            puts("BUG: no route to prev_hop found!");
     }
     else
         puts("BUG: no route to orig found!");
