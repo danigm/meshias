@@ -30,7 +30,9 @@ struct statistics_t
     uint32_t ttl_not_found;
 
     // daemon.c
-    uint32_t error_recv;
+    uint32_t error_aodv_recv;
+    uint32_t error_nf_recv;
+    uint32_t error_unix_recv;
 
     // routing_table.c
     uint32_t route_not_found;

@@ -1,6 +1,7 @@
 #include "msh_data.h"
 #include "aodv_logic.h"
 #include "nfqueue.h"
+#include "statistics.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -83,11 +84,16 @@ void nfqueue_receive_packets()
     // Receive the data from the fd
     char buf[4096] __attribute__ ((aligned));
     int received;
-    if( (received = recv(data.nfqueue_fd, buf, sizeof(buf), 0)) >= 0 )
+    received = recv(data.nfqueue_fd, buf, sizeof(buf)-1, 0);
+    if(received==-1)
     {
-        // Call the handle
-        nfq_handle_packet(data.handle, buf, received);
+        stats.error_nf_recv++;
+        return;
     }
+
+    buf[received]='\0';
+    // Call the handle
+    nfq_handle_packet(data.handle, buf, received);
 }
 
 static uint32_t nfqueue_packet_print(struct nfq_data *packet)

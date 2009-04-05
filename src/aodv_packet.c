@@ -33,7 +33,7 @@ struct aodv_pkt *aodv_pkt_alloc()
     pkt->address.sin_addr.s_addr=data.broadcast_addr.s_addr;
 }
 
-struct aodv_pkt *aodv_pkt_get(struct msghdr* msg)
+struct aodv_pkt *aodv_pkt_get(struct msghdr* msg,int received)
 {
     struct aodv_pkt* pkt=(struct aodv_pkt*)calloc(1,sizeof(struct aodv_pkt));
     
@@ -48,9 +48,7 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msg)
     // If data has been received
     if(msg->msg_iovlen>0)
     {
-        //FIXME payload_len is set to 1024 always
-        // we won't always send 1K
-        pkt->payload_len=msg->msg_iov->iov_len;
+        pkt->payload_len=received;
         pkt->payload=(char*)calloc(1,pkt->payload_len);
         memcpy(pkt->payload,msg->msg_iov->iov_base,pkt->payload_len);
     }

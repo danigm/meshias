@@ -41,7 +41,13 @@ int main(int argc, char **argv)
     while(1)
     {
         puts("while1");
-        ;
+        if(next_run)
+            printf("antes del select %d %d\n",next_run->tv_sec,next_run->tv_usec);
+        else
+            puts("next_run NULL");
+        printf("sockets %d %d %d\n",data.nfqueue_fd,data.daemon_fd,data.fds->maxfd+1);
+        printf("fd_set %p\n",&data.fds->readfds);
+                    
         //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
         while( select(data.fds->maxfd + 1, &data.fds->readfds, NULL, NULL, next_run) > 0 )

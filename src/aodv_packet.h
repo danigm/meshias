@@ -8,7 +8,7 @@ struct aodv_pkt;
 
 struct aodv_pkt *aodv_pkt_alloc();
 
-struct aodv_pkt *aodv_pkt_get(struct msghdr* msgh);
+struct aodv_pkt *aodv_pkt_get(struct msghdr* msgh,int received);
 
 ssize_t aodv_pkt_send(struct aodv_pkt* pkt);
 

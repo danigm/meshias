@@ -33,7 +33,9 @@ void print_all_stats(struct statistics_t* stats)
 
     printf("ttl_not_found: %d\n", stats->ttl_not_found);
 
-    printf("error_recv: %d\n", stats->error_recv);
+    printf("error_aodv_recv: %d\n", stats->error_aodv_recv);
+    printf("error_nf_recv: %d\n", stats->error_nf_recv);
+    printf("error_unix_recv: %d\n", stats->error_unix_recv);
 
     printf("route_not_found: %d\n", stats->route_not_found);
     printf("invalid_route: %d\n", stats->invalid_route);
