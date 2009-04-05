@@ -17,7 +17,7 @@ int unix_interface_init()
 
     local_server_create(&data.local_server,&local_conf);
 
-    register_fd(data.local_server.fd,data.fds);
+    //register_fd(data.local_server.fd,data.fds);
 }
 
 void unix_interface_shutdown()

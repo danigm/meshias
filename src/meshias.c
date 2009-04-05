@@ -41,28 +41,30 @@ int main(int argc, char **argv)
     while(1)
     {
         puts("while1");
-        fd_set readfds = data.fds->readfds;
+        ;
         //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
-        while( select(data.fds->maxfd + 1, &readfds, NULL, NULL, next_run) > 0 )
+        while( select(data.fds->maxfd + 1, &data.fds->readfds, NULL, NULL, next_run) > 0 )
         {
             puts("select");
             /* Check for new packets */
-            if( FD_ISSET(data.nfqueue_fd, &readfds) )
+            if( FD_ISSET(data.nfqueue_fd, &data.fds->readfds) )
             {
                 printf("A packet was captured by the nfqueue");
                 nfqueue_receive_packets();
             }
-            if( FD_ISSET(data.daemon_fd, &readfds) )
+            if( FD_ISSET(data.daemon_fd, &data.fds->readfds) )
             {
                 debug(1,"An AODV packet was received by the daemon.");
                 daemon_receive_packets();
             }
-            if( FD_ISSET(data.local_server.fd, &readfds) )
+            /*
+            if( FD_ISSET(data.local_server.fd, &data.fds->readfds) )
             {
                 debug(1,"An AODV packet was received by the daemon.");
                 unix_interface_receive_packets();
             }
+            */
             /*
              * The code above has potentially added some new alarms which means
              * we need to recalculate which is the next alarm to be called
