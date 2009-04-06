@@ -28,4 +28,4 @@ add_executable (select ${SELECT_SRCS})
 target_link_libraries (libnl nl)
 target_link_libraries (nfqueue netfilter_queue nfnetlink)
 
-install(TARGETS libnl alarm recvmsg sendmsg linuxlists getip nfqueue broadcaster RUNTIME DESTINATION bin)
+install(TARGETS libnl alarm recvmsg sendmsg linuxlists getip nfqueue broadcaster select RUNTIME DESTINATION bin)

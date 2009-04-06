@@ -1,97 +1,44 @@
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+/*
+** select.c -- a select() demo
+*/
+
 #include <stdio.h>
-#include <string.h>
-#include <netinet/in.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+#define STDIN 0  // file descriptor for standard input
 
-#define PORT 9990
-#define NSOCKET 2
-#define SIZE 1024
-
-int main(int argc,char *argvp[])
+int main(void)
 {
-    int sockets[NSOCKET];
-    fd_set set;
-    struct sockaddr_in addr;
-    int i=0;
-    int max=0;
     struct timeval tv;
-    char buffer[SIZE];
+    fd_set readfds;
 
-    FD_ZERO(&set);
+    tv.tv_sec = 2;
+    tv.tv_usec = 500000;
 
-    for(i=0;i<NSOCKET;i++)
-    {
-        sockets[i]=socket(AF_INET,SOCK_DGRAM,0);
-        if(sockets[i] == -1 )
+    FD_ZERO(&readfds);
+    FD_SET(STDIN, &readfds);
+
+    // don't care about writefds and exceptfds:
+    while(1) {
+        tv.tv_sec = 2;
+        tv.tv_usec = 500000;
+        
+        select(STDIN+1, &readfds, NULL, NULL, &tv);
+
+        if (FD_ISSET(STDIN, &readfds))
         {
-            perror("socket");
-            goto end;
-        }
+            char buf[256];
+            scanf("%s", buf);
+            printf("A key was pressed!\n");
+        } else
+            printf("Timed out.\n");
+        
+        // if this is removed, shit happens
+        FD_SET(STDIN, &readfds);
     }
-
-    addr.sin_family=AF_INET;
-    addr.sin_addr.s_addr=INADDR_ANY;
-
-    for(i=0;i<NSOCKET;i++)
-    {
-        addr.sin_port=htons(PORT+i);
-        if(bind ( sockets[i],(struct sockaddr*)&addr,sizeof(addr))==-1)
-        {
-            perror("binding");
-            goto end;
-        }
-        FD_SET(sockets[i],&set);
-        if(sockets[i]>max)
-            max=sockets[i];
-    }
-
-    while(1)
-    {
-        select(max+1,&set,NULL,NULL,NULL);
-        for(i=0;i<NSOCKET;i++)
-        {
-            if(FD_ISSET(sockets[i],&set))
-            {
-                printf("Recibido socket %d\n",i);
-                memset(buffer,0,SIZE);
-                if(recv(sockets[i],buffer,SIZE,0)<0)
-                {
-                    perror("recv");
-                    goto end;
-                }
-                printf("%s\n",buffer);
-            }
-        }
-
-        tv.tv_sec=5;
-        if(select(max+1,&set,NULL,NULL,&tv)==0)
-        {
-            puts("Time Out");
-        }
-        else
-        {
-            for(i=0;i<NSOCKET;i++)
-            {
-                if(FD_ISSET(sockets[i],&set))
-                {
-                    printf("Recibido socket %d\n",i);
-                    memset(buffer,0,SIZE);
-                    if(recv(sockets[i],buffer,SIZE,0)<0)
-                    {
-                        perror("recv");
-                        goto end;
-                    }
-                    printf("%s\n",buffer);
-                }
-            }
-        }
-    }
-
-end:
-
-    for(i=0;i<NSOCKET;i++)
-        close(sockets[i]);
+    
+	return 0;
 }
+
