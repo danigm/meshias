@@ -1,4 +1,4 @@
-#include "../src/alarm/linux_list.h"
+#include "../alarm/linux_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 
