@@ -97,16 +97,14 @@ void daemon_receive_packets()
 
     //Receive the packet
     numbytes = recvmsg(data.daemon_fd, &msg, 0);
-
-    printf("received %d bytes\n", numbytes);
-    //FIXME numbytes = payload_len ??
-    if(numbytes==-1)
+    
+    if(numbytes == -1)
     {
-        stats.error_recv++;
+        stats.error_aodv_recv++;
         return;
     }
 
-    pkt=aodv_pkt_get(&msg);
+    pkt=aodv_pkt_get(&msg,numbytes);
 
     if(aodv_pkt_check(pkt)==0)
         return;
@@ -137,6 +135,7 @@ void daemon_receive_packets()
         default:
             break;
     }
+
     // We're done with this packet: now free the mallocs!
     aodv_pkt_destroy(pkt);
 }
