@@ -84,14 +84,12 @@ void nfqueue_receive_packets()
     // Receive the data from the fd
     char buf[4096] __attribute__ ((aligned));
     int received;
-    received = recv(data.nfqueue_fd, buf, sizeof(buf)-1, 0);
+    received = recv(data.nfqueue_fd, buf, sizeof(buf), 0);
     if(received==-1)
     {
         stats.error_nf_recv++;
         return;
     }
-
-    buf[received]='\0';
     // Call the handle
     nfq_handle_packet(data.handle, buf, received);
 }
