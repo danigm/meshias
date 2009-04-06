@@ -12,6 +12,7 @@ set (LINUXLISTS_SRCS linuxlists.c)
 set (GETIP_SRCS getip.c)
 set (NFQUEUE_SRCS nfqueue.c)
 set (BROADCASTER_SRCS broadcaster.c)
+set (SELECT_SRCS select.c)
 
 add_executable (libnl ${LIBNL_SRCS})
 add_executable (alarm ${ALARM_SRCS})
@@ -21,6 +22,7 @@ add_executable (linuxlists ${LINUXLISTS_SRCS})
 add_executable (getip ${GETIP_SRCS})
 add_executable (nfqueue ${NFQUEUE_SRCS})
 add_executable (broadcaster ${BROADCASTER_SRCS})
+add_executable (select ${SELECT_SRCS})
 
 # Link the executable to the needed library. 
 target_link_libraries (libnl nl)
