@@ -186,16 +186,6 @@ it and then execute it to install the VirtualBox image:
     tar zxf registerimage-1.0.4.tar.gz
     cd registerimage-1.0.4/
     python registerimage-1.0.4.tar.gz ../path/to/meshias.xml ../path/to/meshias.vdi
- 
-(In the future:
-This will create a Open Virtualization Format (OVF) file. Now all you need to do
-is to import that file with VirtualBox "File > Import.." menu. After that, you
-should configure the meshias virtual machine shared directories, creating the
-shared folder called "user" to point to the place in your host machine where
-you will have meshias trunk downloaded. In my machine, the "user"  share simply
-points to my home directory /home/edulix. This way you can work and do changes
-in one place, then compile it and directly use the same executable in both
-machines, which is very convenient.)
 
 This guest is configured with two network interfaces: eth1 and eth2. eth1 is a
 host-only net interface which connects to a loopback interface that VirtualBox
