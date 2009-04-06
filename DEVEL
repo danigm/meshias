@@ -153,12 +153,10 @@ network. That's a problem if you want to be able to hack or test meshias when
 you are in some random place with your laptop as your only physical device.
 
 The solution is using virtual machines. I'll explain here how to use VirtualBox
-easily create a virtual network between your host machine and a Debian guest.
+to easily create a virtual network between your host machine and a Debian guest.
 There are other open source virtual machines available, but I chose VirtualBox
-because it doesn't need your processor to have VT-X extensions so it works in
-my Intel Atom, and because VirtualBox has a nice and easily configurable UI.
-At the moment of writting this tutorial, I was in a train trip hacking meshias
-using just my Acer Aspire One netbook.
+because it doesn't need your processor to have VT-X extensions so it works even
+in an Intel Atom, and because VirtualBox has a nice and easily configurable UI.
 
 4.3.2 Setup
 -----------
@@ -167,6 +165,37 @@ We need at least VirtualBox 2.2.0 [1]  (which is in Beta 2 at the moment of writ
 this) because that version brings the new feature of "host-only" guest network
 virtual interfaces. There's a VirtualBox Debian Image [2] available for download 
 with everything already configured to be able to work as a virtual node.
+
+So the first thing you need is to download and install VirtualBox [1]. After that,
+you also need to download 7zip package suppport because that's the format in which
+the Debian image is compressed:
+
+    apt-get install p7zip-full
+
+Next step is to download the Debian image [2]. Now you can extract it with the 
+following command:
+
+    7z e meshias.7zip
+
+This will create two files, the meshias.vdi image (about 1.8Gb) which contains
+the virtual hard disk with debian installed, and meshias.xml which contains the
+configuration for the VirtualBox machine. To easily install those two we also
+need a helper program, register image [3]. Once downloaded, you can uncompress
+it and then execute it to install the VirtualBox image:
+
+    tar zxf registerimage-1.0.4.tar.gz
+    cd registerimage-1.0.4/
+    python registerimage-1.0.4.tar.gz ../path/to/meshias.xml ../path/to/meshias.vdi
+ 
+(In the future:
+This will create a Open Virtualization Format (OVF) file. Now all you need to do
+is to import that file with VirtualBox "File > Import.." menu. After that, you
+should configure the meshias virtual machine shared directories, creating the
+shared folder called "user" to point to the place in your host machine where
+you will have meshias trunk downloaded. In my machine, the "user"  share simply
+points to my home directory /home/edulix. This way you can work and do changes
+in one place, then compile it and directly use the same executable in both
+machines, which is very convenient.)
 
 This guest is configured with two network interfaces: eth1 and eth2. eth1 is a
 host-only net interface which connects to a loopback interface that VirtualBox
@@ -198,7 +227,7 @@ in VirtualBox. This way, if your host machine has internet access, the guest
 will have it too if needed. This network interface is also configured as a
 secure way to connect via ssh from the host to the guest, because the VirtualBox
 machine has been configured to do port forwading from the guest port 22 to the
-host port 2222. 
+host port 2222.
 
 The guest has a minimalistic Debian configuration; it has barely what you need to
 run meshias. It hasn't got a graphical interface installed, so it
@@ -208,7 +237,6 @@ when running it actually uses only about 10-20MB.
 The guest is configured so you don't actually need to work within
 VirtualBox, but always from your host operative system "remotely" using ssh as
 have been said previously. 
-
 
 You can connect to your guest this way:
 
@@ -221,7 +249,6 @@ to be used.
 
 Here we can see the network scheme of the virtualbox configuration between
 the guest and the host:
-
 
    -------------------------------------------------
    .  Host                                         .
@@ -251,4 +278,5 @@ virtual network. To add a new guest you just need to duplicate the vdi debian
 image and rerun the python script which installed the guest.
 
 [1] http://download.virtualbox.org/virtualbox/2.2.0_BETA2/
-[2] ?
+[2] http://sugus.eii.us.es/~edulix/meshias.7zip
+[3] http://download290.mediafire.com/lbm13hdyj2mg/tymm2hjnyej/registerimage-1.0.4.tar.gz

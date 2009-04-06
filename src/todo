@@ -35,8 +35,9 @@ BUG 3
 #####
 
 select() works correctly only the first time, after that most of the times it only
-works when an alarm times.
+works when an alarm timesout.
 
-******TO ASK********
-* acceder a internet. como?
-* mantener los enlaces activos con neighbour libnl
+TODO
+* create DEVEL.es
+* put all the knowledge in the wiki
+* maintain all the active neighbours with neighbour-libnl
