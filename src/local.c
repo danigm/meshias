@@ -62,6 +62,7 @@ int local_server_create(struct local_server *server, struct local_conf *conf)
         return -1;
     }
 
+    printf("%s\n",local.sun_path);
     server->fd = fd;
     strcpy(server->path, conf->path);
 
@@ -104,6 +105,7 @@ int local_client_create(struct local_conf *conf)
     strcpy(local.sun_path, conf->path);
     len = strlen(local.sun_path) + sizeof(local.sun_family);
 
+    printf("%s\n",local.sun_path);
     if (connect(fd, (struct sockaddr *) &local, len) == -1)
     {
         close(fd);
@@ -145,17 +147,22 @@ int local_do_request(int request, struct local_conf *conf,
 {
     int fd, ret;
 
+    puts("wi");
     fd = local_client_create(conf);
     if (fd == -1)
         return -1;
 
+    puts("wi");
     ret = send(fd, &request, sizeof(int), 0);
     if (ret == -1)
         return -1;
 
+    puts("wi");
     local_client_do_step(fd, step);
 
+    puts("wi");
     local_client_destroy(fd);
     
+    puts("wi");
     return 0;
 }
