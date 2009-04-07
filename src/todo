@@ -30,6 +30,9 @@ BUG 2
 
 packet_obj_accept() doesn't work, the packet doesn't get accepted
 
+NF_STOLEN and NF_DROP are the same thing in user space, the packet doesn't continuing.
+If you want to send a packet again you have to do "by hand".
+
 
 BUG 3
 #####
