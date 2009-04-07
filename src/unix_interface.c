@@ -12,7 +12,7 @@ int unix_interface_init()
     struct local_conf local_conf;
 
     local_conf.backlog=2;
-    local_conf.reuseaddr=1;
+    local_conf.reuseaddr=0;
     //sprintf(local_conf.path,"%s-%d","/tmp/meshias",getpid());
     sprintf(local_conf.path,"%s","socket");
 

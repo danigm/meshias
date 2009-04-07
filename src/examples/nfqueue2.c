@@ -1,7 +1,6 @@
 #include <sys/socket.h>
 #include <linux/types.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -10,28 +9,26 @@
 #include "../libnetfilter_queue/libnetfilter_queue_headers.c"
 #include <linux/netfilter.h>        /* for NF_ACCEPT */
 
-int oldid=-1;
 static int manage_packet(struct nfq_q_handle *qh,struct nfgenmsg *nfmsg,
         struct nfq_data *nfa, void *data2)
 {
     char *payload;
+    int id=-1;
     struct nfqnl_msg_packet_hdr *packetHeader;
-    char **puntero=(char**)(data2);
-
-    if(oldid!=-1)
-        nfq_set_verdict(qh,oldid,NF_STOLEN,0,NULL);
 
     if( (packetHeader = nfq_get_msg_packet_hdr(nfa)) != NULL )
-        oldid = ntohl(packetHeader->packet_id);
+        id = ntohl(packetHeader->packet_id);
 
     nfq_get_payload(nfa,&payload);
 
-    (*puntero)=payload+sizeof(struct nfq_iphdr)+sizeof(struct nfq_udphdr);
-    payload=(*puntero);
+    payload=payload+sizeof(struct nfq_iphdr)+sizeof(struct nfq_udphdr);
 
-    printf("manage_packet %p\n",(*puntero));
+    printf("stolen %d: %s\n",id,payload); 
+    nfq_set_verdict(qh,id,NF_STOLEN,0,NULL);
 
-    return 0;
+    printf("accept %d\n",id); 
+    nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
+    return id;
 }
 
 int main(int argc,char *argv[])
@@ -40,8 +37,6 @@ int main(int argc,char *argv[])
     struct nfq_q_handle *queue;
     struct nfnl_handle *netlink_handle;
     int nfqueue_fd;
-    char *puntero=NULL;
-    printf("init %p\n",puntero);
 
     // NF_QUEUE initializing
     handle = nfq_open();
@@ -58,11 +53,12 @@ int main(int argc,char *argv[])
     }
 
     if (nfq_bind_pf(handle, AF_INET) < 0)
-    { perror("Error: during nfq_bind_pf()");
+    {
+        perror("Error: during nfq_bind_pf()");
         goto end;
     }
 
-    queue = nfq_create_queue(handle, 0, &manage_packet, &puntero);
+    queue = nfq_create_queue(handle, 0, &manage_packet, NULL);
     if (!queue)
     {
         perror("Error: during nfq_create_queue()");
@@ -79,19 +75,17 @@ int main(int argc,char *argv[])
     nfqueue_fd = nfnl_fd(netlink_handle);
     // End of NF_QUEUE initializing
 
-    char buf[4096] __attribute__ ((aligned));
-    int received;
-    while(received=recv(nfqueue_fd, buf, sizeof(buf), 0))
+    while(1)
     {
-        if(puntero)
+        char buf[4096] __attribute__ ((aligned));
+        int received;
+        received = recv(nfqueue_fd, buf, sizeof(buf), 0);
+        if(received==-1)
         {
-            printf("antes: %d\n",puntero);
-            printf("pone: %s\n",puntero);
+            return;
         }
         // Call the handle
         nfq_handle_packet(handle, buf, received);
-        printf("dps: %p\n",puntero);
-        printf("pone dps: %s\n",puntero);
 
     }
 end:

@@ -87,8 +87,8 @@ int process_command()
     }while(to_send==0);
 
     struct local_conf conf;
-    conf.backlog=2;
-    conf.reuseaddr=1;
+    conf.backlog=1;
+    conf.reuseaddr=0;
     //sprintf(conf.path,"%s-%d","/tmp/meshias",getpid());
     sprintf(conf.path,"%s","socket");
     local_do_request(0,&conf,&local_step);
