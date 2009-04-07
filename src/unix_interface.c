@@ -11,9 +11,10 @@ int unix_interface_init()
 {
     struct local_conf local_conf;
 
-    local_conf.backlog=1;
+    local_conf.backlog=2;
     local_conf.reuseaddr=1;
-    sprintf(local_conf.path,"%s-%d","/tmp/meshias",getpid());
+    //sprintf(local_conf.path,"%s-%d","/tmp/meshias",getpid());
+    sprintf(local_conf.path,"%s","socket");
 
     local_server_create(&data.local_server,&local_conf);
 
@@ -27,6 +28,7 @@ void unix_interface_shutdown()
 
 void unix_interface_receive_packets()
 {
+    puts("heeeeeeeeee");
 }
 
 void unix_interface_run_command(enum commands_t command)

@@ -13,15 +13,7 @@
 int main(int argc, char **argv)
 {
     int fd;
-    struct local_conf conf;
-    int end;
-
-    /*
-    conf->backlog=1;
-    conf->reuseaddr=1;
-    sprintf(conf.path,"%s-%d","/tmp/meshias",getpid());
-    local_client_create();
-    */
+    int end=0;
 
     while(!end)
     {
@@ -93,6 +85,13 @@ int process_command()
 
         printf("command -> %s\n",command);
     }while(to_send==0);
+
+    struct local_conf conf;
+    conf.backlog=2;
+    conf.reuseaddr=1;
+    //sprintf(conf.path,"%s-%d","/tmp/meshias",getpid());
+    sprintf(conf.path,"%s","socket");
+    local_do_request(0,&conf,&local_step);
 
     return ret;
 }
