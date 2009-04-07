@@ -19,7 +19,7 @@ static int manage_packet(struct nfq_q_handle *qh,struct nfgenmsg *nfmsg,
     char **puntero=(char**)(data2);
 
     if(oldid!=-1)
-        nfq_set_verdict(qh,oldid,NF_STOLEN,0,NULL);
+        nfq_set_verdict(qh,oldid,NF_ACCEPT,0,NULL);
 
     if( (packetHeader = nfq_get_msg_packet_hdr(nfa)) != NULL )
         oldid = ntohl(packetHeader->packet_id);
@@ -85,7 +85,7 @@ int main(int argc,char *argv[])
     {
         if(puntero)
         {
-            printf("antes: %d\n",puntero);
+            printf("antes: %p\n",puntero);
             printf("pone: %s\n",puntero);
         }
         // Call the handle
