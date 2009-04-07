@@ -45,6 +45,7 @@ void msh_route_destroy(struct msh_route* route)
 {
     struct precursor_t  *entry, *tmp;
     
+    printf("msh_route_destroy %p\n", route);
     __msh_route_updated(route, RTACTION_DESTROY);
     del_alarm(&route->alarm);
     
@@ -53,7 +54,7 @@ void msh_route_destroy(struct msh_route* route)
         list_del(&entry->list);
         free(entry);
     }
-    
+
     free(route);
 }
 
@@ -193,9 +194,17 @@ struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route)
 }
 
 void msh_route_set_updated_callback(struct msh_route *route,
-    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *))
+    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *),
+    void *data)
 {
     route->updated_cb = updated_cb;
+    route->cb_data = data;
+}
+
+
+void *msh_route_get_updated_callback_data(struct msh_route *route)
+{
+    return route->cb_data;
 }
 
 void (*msh_route_get_updated_callback(struct msh_route *route))
@@ -260,12 +269,13 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
     // of the second route.
     if(attr_flags & RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)
     {
+        printf("compare: first %p second %p ", first, second);
         uint32_t mask = INADDR_BROADCAST << second->prefix_sz;
         uint32_t ip1masked = first->dst_ip.s_addr & mask;
         uint32_t ip2masked = second->dst_ip.s_addr & mask;
         struct in_addr ip1masked1 = { ip1masked }, ip2masked1 = { ip2masked },
             maskip = { mask };
-        printf("compare: ipmask1 %s ", inet_htoa(ip1masked1));
+        printf("ipmask1 %s ", inet_htoa(ip1masked1));
         printf("ipmask2 %s ", inet_htoa(ip2masked1));
         printf("mask %s\n", inet_htoa(maskip));
         diff |= (ip1masked != ip2masked);

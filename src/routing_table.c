@@ -24,7 +24,11 @@ void __routing_table_route_updated_cb(struct msh_route* route, uint32_t change_f
 {
     if(change_flag & RTACTION_DESTROY)
     {
+        printf("routing_table_destroyed %p\n", route);
+        list_del(&route->list);
+        
         struct rtnl_route *nlroute = msh_route_get_rtnl_route(route);
+        msh_route_set_rtnl_route(route, 0);
         
         if(!nlroute)
             return;
@@ -33,7 +37,6 @@ void __routing_table_route_updated_cb(struct msh_route* route, uint32_t change_f
         {
             fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
         }
-        msh_route_set_rtnl_route(route, 0);
         rtnl_route_put(nlroute);
     }
     else if(change_flag & RTACTION_CHANGE_NEXTHOP_IP)
@@ -118,11 +121,13 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     msh_route_set_lifetime(route, ACTIVE_ROUTE_TIMEOUT());
     // add a callback to the route for getting updates
     // route __routing_table_route_updated_cb;
+    msh_route_set_updated_callback(route, __routing_table_route_updated_cb, 0);
     
     list_add(&route->list, &table->route_list.list);
     
     nl_addr_destroy(nexthop);
 
+    printf("routing_table_added %p\n", route);
     printf("packets_fifo_process_route %s\n", inet_htoa(route->dst_ip));
     packets_fifo_process_route(data.packets_queue, route);
     return 0;

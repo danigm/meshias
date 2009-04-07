@@ -32,12 +32,14 @@ void packet_obj_accept(struct packets_fifo* packet_obj)
 {
     printf("packet_obj_accept ID %d\n", packet_obj->id);
     nfq_set_verdict(data.queue, packet_obj->id, NF_ACCEPT, 0, NULL);
+    list_del(&packet_obj->list);
     free(packet_obj);
 }
 
 void packet_obj_drop(struct packets_fifo* packet_obj)
 {
     nfq_set_verdict(data.queue, packet_obj->id, NF_DROP, 0, NULL);
+    list_del(&packet_obj->list);
     free(packet_obj);
 }
 
@@ -72,22 +74,22 @@ uint32_t packets_fifo_process_route(struct packets_fifo* queue,
     struct msh_route* route)
 {
     struct packets_fifo *entry, *tmp;
-    struct msh_route *second = msh_route_alloc();
+    struct msh_route *first = msh_route_alloc();
     
     list_for_each_entry_safe(entry, tmp, &queue->list, list)
     {
         puts("packets_fifo_process_route: accept?");
-        msh_route_set_dst_ip(second, entry->dest);
+        msh_route_set_dst_ip(first, entry->dest);
         
         // Free the packets matched by this new route
-        if(msh_route_compare(route, second,
+        if(msh_route_compare(first, route,
             RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING) == 0)
         {
             puts("packets_fifo_process_route: ACCEPT!");
             packet_obj_accept(entry);
         }
     }
-    msh_route_destroy(second);
+    msh_route_destroy(first);
 }
 
 uint8_t packets_fifo_is_empty(struct packets_fifo* queue)

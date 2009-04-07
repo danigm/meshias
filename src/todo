@@ -30,12 +30,15 @@ BUG 2
 
 packet_obj_accept() doesn't work, the packet doesn't get accepted
 
+FXED: simply do not call to nfq_set_veredict(STOLEN)
 
 BUG 3
 #####
 
 select() works correctly only the first time, after that most of the times it only
 works when an alarm timesout.
+
+FIXED: call to FD_SET evertime we call select
 
 TODO
 * create DEVEL.es

@@ -104,9 +104,10 @@ void msh_route_set_rtnl_route(struct msh_route *route, struct rtnl_route *nlrout
 struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route);
 
 void msh_route_set_updated_callback(struct msh_route *route,
-    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *));
+    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *), void *data);
 void (*msh_route_get_updated_callback(struct msh_route *route))
     (struct msh_route*, uint32_t, void *);
+void *msh_route_get_updated_callback_data(struct msh_route *route);
 
 void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip);
 void msh_route_del_precursor(struct msh_route *route, struct in_addr dst_ip);
@@ -115,7 +116,8 @@ void msh_route_foreach_precursor(struct msh_route *route,
 
 /**
  * Compare two msh_route's only by the attributes indicated by attr_flags. Returns
- * 0 if a match is found, or not-zero otherwise.
+ * 0 if a match is found, or not-zero otherwise. If doing longest prefix matching,
+ * it takes the mask from "second" var.
  */
 int msh_route_compare(struct msh_route *first, struct msh_route *second,
     int attr_flags);

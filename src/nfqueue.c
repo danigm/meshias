@@ -329,7 +329,8 @@ static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
         // sent by us)
         if(!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
             aodv_find_route(dest, invalid_route, 0);
-        return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
+//         return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
+        return 1;
     }
 }
 

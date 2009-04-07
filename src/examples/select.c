@@ -14,9 +14,6 @@ int main(void)
     struct timeval tv;
     fd_set readfds;
 
-    tv.tv_sec = 2;
-    tv.tv_usec = 500000;
-
     FD_ZERO(&readfds);
     FD_SET(STDIN, &readfds);
 
