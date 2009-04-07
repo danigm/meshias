@@ -1,44 +1,12 @@
 BUG 1
 #####
 
-__msh_data_process_wait_queue_cb called
-while1
-select
-[1] An AODV packet was received by the daemon.
-received 24 bytes
-it's an RREQ
-compare: ipmask1 192.168.0.0 ipmask2 184.2.0.0 mask 255.255.0.0
-diff: 1
+when removing a route, the nlroute is not being removed correctly:
 
-Program received signal SIGSEGV, Segmentation fault.
-0x0804f9dc in msh_route_compare (first=0x8ca9870, second=0xffffffa8, attr_flags=4096)
-    at /home/edulix/proyectos/meshias/meshias/src/route_obj.c:263
-263             uint32_t mask = INADDR_BROADCAST << second->prefix_sz;
-(gdb) bt
-#0  0x0804f9dc in msh_route_compare (first=0x8ca9870, second=0xffffffa8, attr_flags=4096)
-    at /home/edulix/proyectos/meshias/meshias/src/route_obj.c:263
-#1  0x0804f0e9 in routing_table_find (table=0x8ca97e0, route=0x8ca9870, attr_flags=4096)
-    at /home/edulix/proyectos/meshias/meshias/src/routing_table.c:166
-#2  0x0804f153 in routing_table_find_by_ip (table=0x8ca97e0, addr={s_addr = 3232236802})
-    at /home/edulix/proyectos/meshias/meshias/src/routing_table.c:179
-#3  0x0805106f in aodv_process_rreq (pkt=0x8ca8438) at /home/edulix/proyectos/meshias/meshias/src/aodv_logic.c:73
-#4  0x0804ea85 in daemon_receive_packets () at /home/edulix/proyectos/meshias/meshias/src/daemon.c:122
-#5  0x0804c4b3 in main (argc=2, argv=0xbf9b2ab4) at /home/edulix/proyectos/meshias/meshias/src/meshias.c:59
+    routing_table_destroyed 0x9e918d8
+    rtnl_route_del failed: Netlink Error (errno = No such process)
 
-BUG 2
-#####
 
-packet_obj_accept() doesn't work, the packet doesn't get accepted
-
-FXED: simply do not call to nfq_set_veredict(STOLEN)
-
-BUG 3
-#####
-
-select() works correctly only the first time, after that most of the times it only
-works when an alarm timesout.
-
-FIXED: call to FD_SET evertime we call select
 
 TODO
 * create DEVEL.es

@@ -24,3 +24,4 @@ nfqueue
 src/examples/libnl-routes
 src/examples/broadcastupd/broadcaster
 src/examples/broadcaster
+examples/select
