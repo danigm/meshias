@@ -9,7 +9,7 @@ set (MESHIAS_SRCS meshias.c msh_data.c alarm/alarm.c alarm/rbtree.c common.c
     packets_fifo.c aodv_packet.c aodv_logic.c fds.c statistics.c local.c
     unix_interface.c)
 
-set (MESHIAS_TOOLS_SRCS meshias-tools.c local.c)
+set  (MESHIAS_TOOLS_SRCS meshias-tools.c local.c)
 
 # Recurse into the "libnetfilter_queue" subdirectory. This does not actually 
 # cause another cmake executable to run. The same process will walk through 

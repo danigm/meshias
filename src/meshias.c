@@ -69,7 +69,7 @@ int main(int argc, char **argv)
             
             if( FD_ISSET(data.local_server.fd, &data.fds->readfds) )
             {
-                debug(1,"An AODV packet was received by the daemon.");
+                debug(1,"A command was received by the unix socket.");
                 unix_interface_receive_packets();
             }
             

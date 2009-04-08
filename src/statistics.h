@@ -41,10 +41,7 @@ struct statistics_t
 
 extern struct statistics_t stats;
 
-void init_stats();
-void reset_stats();
-// Stats is passed like argument because this functions
-// is used in meshias-tools
-void print_all_stats(struct statistics_t* stats);
+void stats_init();
+void stats_reset();
 
 #endif

@@ -62,7 +62,6 @@ int local_server_create(struct local_server *server, struct local_conf *conf)
         return -1;
     }
 
-    printf("%s\n",local.sun_path);
     server->fd = fd;
     strcpy(server->path, conf->path);
 
@@ -75,18 +74,24 @@ void local_server_destroy(struct local_server *server)
     close(server->fd);
 }
 
-int local_server_do_step(struct local_server *server, void *data, 
-    void (*process)(int fd, void *data))
+int local_server_do_step(struct local_server *server,void (*process)(int fd,void *data))
 {
     int rfd;
     struct sockaddr_un local;
     socklen_t sin_size = sizeof(struct sockaddr_un);
+    int numbytes;
+    char buf[MAX_MSG_LENGTH];
 
     rfd = accept(server->fd, (struct sockaddr *) &local, &sin_size);
     if (rfd == -1)
         return -1;
 
-    process(rfd, data);
+    if ((numbytes = recv(rfd, buf, sizeof(buf)-1, 0)) > 0)
+    {
+        buf[sizeof(buf)-1]='\0';
+        if(process)
+            process(rfd,buf);
+    }
     close(rfd);
 
     return 0;
@@ -120,10 +125,10 @@ void local_client_destroy(int fd)
     close(fd);
 }
 
-int local_client_do_step(int fd, void (*process)(char *buf))
+int local_client_do_step(int fd, void (*process)(void *buf))
 {
     int numbytes;
-    char buf[1024];
+    char buf[MAX_MSG_LENGTH];
 
     memset(buf, 0, sizeof(buf));
     while ((numbytes = recv(fd, buf, sizeof(buf)-1, 0)) > 0)
@@ -142,8 +147,8 @@ void local_step(char *buf)
     printf("%s", buf);
 }
 
-int local_do_request(int request, struct local_conf *conf,
-            void (*step)(char *buf))
+int local_do_request(char* request, struct local_conf *conf,
+            void (*step)(void *buf))
 {
     int fd, ret;
 
@@ -151,7 +156,7 @@ int local_do_request(int request, struct local_conf *conf,
     if (fd == -1)
         return -1;
 
-    ret = send(fd, &request, sizeof(int), 0);
+    ret = send(fd, request, strlen(request), 0);
     if (ret == -1)
         return -1;
 

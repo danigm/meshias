@@ -11,10 +11,9 @@ int unix_interface_init()
 {
     struct local_conf local_conf;
 
-    local_conf.backlog=2;
+    local_conf.backlog=1;
     local_conf.reuseaddr=0;
-    //sprintf(local_conf.path,"%s-%d","/tmp/meshias",getpid());
-    sprintf(local_conf.path,"%s","socket");
+    sprintf(local_conf.path,"%s","/tmp/meshias");
 
     local_server_create(&data.local_server,&local_conf);
 
@@ -26,25 +25,48 @@ void unix_interface_shutdown()
     local_server_destroy(&data.local_server);
 }
 
-void unix_interface_receive_packets()
+void unix_interface_process_command(int fd,void* v_command)
 {
-    puts("heeeeeeeeee");
+    char* command=v_command;
+    size_t size=strlen(command);
+    void* tosend=command;
+
+    if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0) 
+    {
+    }
+    else if(strncmp(command,MSG_RESTART,
+                strlen(MSG_RESTART))==0) 
+    {
+    }
+    else if(strncmp(command,MSG_SHOW_ROUTES,
+                strlen(MSG_SHOW_ROUTES))==0) 
+    {
+    }
+    else if(strncmp(command,MSG_SHOW_STATISTICS,
+                strlen(MSG_SHOW_STATISTICS))==0) 
+    {
+        tosend=&stats;
+        size=sizeof(stats);
+    }
+    else if(strncmp(command,MSG_CLEAN_STATISTICS,
+                strlen(MSG_CLEAN_STATISTICS))==0) 
+    {
+        stats_reset();
+        tosend=&stats;
+        size=sizeof(stats);
+    }
+    // Unknown command
+    else
+    {
+        puts("else");
+        return;
+    }
+
+    send(fd,tosend,size,0);
 }
 
-void unix_interface_run_command(enum commands_t command)
+void unix_interface_receive_packets()
 {
-    switch(command)
-    {
-        case KILL:
-            break;
-        case RESTART:
-            break;
-        case SHOW_ROUTES:
-            break;
-        case SHOW_STATISTICS:
-            break;
-        case CLEAN_STATISTICS:
-            reset_stats();
-            break;
-    }
+    local_server_do_step(&data.local_server,
+            &unix_interface_process_command);
 }

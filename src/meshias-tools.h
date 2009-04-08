@@ -2,8 +2,9 @@
 #define MESHIAS_TOOLS_H
 
 int main(int argc,char **argv);
-int init_fd();
 int process_command();
-void receive_response();
+
+void command_print(void *str);
+void command_show_statistics(void *stats);
 
 #endif

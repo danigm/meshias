@@ -72,6 +72,7 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     }
 
+    stats_init();
     if((data.fds=create_fds())==NULL)
     {
         perror("Error: fds");
@@ -116,7 +117,8 @@ int msh_data_init(int argc, char **argv)
     rtnl_addr_set_ifindex(filter, data.net_iface);
     rtnl_addr_set_family(filter, AF_INET);
     
-    nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, __init_addr, 0);
+    // FIXME PETA
+    //nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, __init_addr, 0);
     rtnl_addr_put(filter);
     
     nl_cache_free(addr_cache);

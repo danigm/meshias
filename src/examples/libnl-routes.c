@@ -38,7 +38,6 @@ void print_link(struct nl_object* obj, void *arg)
     nl_object_dump(obj, &dp);
 }
 
-
 void print_route(struct nl_object* obj, void *arg)
 {
     int *item = (int *)arg;
@@ -111,7 +110,7 @@ int main(int argc, char **argv)
     char *ifname = (argc > 1) ? argv[1] : ath0;
     int ifindex = rtnl_link_name2i(link_cache, ifname);
 
-     printf("net iface: %d: %s", ifindex, ifname);
+    printf("net iface: %d: %s\n", ifindex, ifname);
     // In a second step, we iterate the link interfaces and print its names.
     printf("Link cache (%d ifaces):\n", nl_cache_nitems(link_cache));
 //     int item = 0;
@@ -142,26 +141,27 @@ int main(int argc, char **argv)
 //     nl_cache_dump_filter(addr_cache, &dp, (struct nl_object*)needle);
     
     
-    
-    
-    
     struct rtnl_route *nlroute = rtnl_route_alloc();
     char buf[256];
-    sprintf(buf, "192.168.0.1/0");
+    sprintf(buf, "192.168.0.1/24");
     struct nl_addr *addr1 = nl_addr_parse(buf, AF_INET);
     sprintf(buf, "192.168.0.0/0");
     struct nl_addr *addr2 = nl_addr_parse(buf, AF_INET);
     
+    int errno;
     printf("addr1: dst: %s\n", nl_addr2str(addr1, buf, 256));
-    rtnl_route_set_oif(nlroute, ifindex);
-    rtnl_route_set_family(nlroute, AF_INET);
-    rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
-    rtnl_route_set_dst(nlroute, addr1);
+    printf("ifindex: %d\n", ifindex);
+    errno=rtnl_route_set_oif(nlroute, ifindex);
+    printf("set_oif %d\n",errno);
+    //rtnl_route_set_family(nlroute, AF_INET);
+    //rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
+    errno=rtnl_route_set_dst(nlroute, addr1);
+    printf("set_oif %d\n",errno);
 //     rtnl_route_set_gateway(nlroute, addr1);
     
-    if (rtnl_route_add(sock, nlroute, 0) < 0)
+    if ((errno=rtnl_route_add(sock, nlroute, 0)) < 0)
     {
-        printf("rtnl_route_add failed: %s\n", nl_geterror());
+        printf("rtnl_route_add failed (%d): %s\n",errno, nl_geterror());
     }
     
     // Free the mallocs
@@ -172,4 +172,3 @@ int main(int argc, char **argv)
     
     return 0;
 }
-
