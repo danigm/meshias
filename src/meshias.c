@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     // Main loop
     // TODO: Here we should capture signals sent to the app
 
-    while(1)
+    while(!data.end)
     {
         if(next_run)
             printf("wile(1) next_run %d %d\n",next_run->tv_sec,next_run->tv_usec);
@@ -52,7 +52,8 @@ int main(int argc, char **argv)
                     
         //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
-        while( select(data.fds->maxfd + 1, &data.fds->readfds, NULL, NULL, next_run) > 0 )
+        while(!data.end && select(data.fds->maxfd + 1,
+                    &data.fds->readfds, NULL, NULL, next_run) > 0 )
         {
             puts("select");
             /* Check for new packets */

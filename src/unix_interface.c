@@ -30,13 +30,19 @@ void unix_interface_process_command(int fd,void* v_command)
     char* command=v_command;
     size_t size=strlen(command);
     void* tosend=command;
+    char ack[]="ACK";
 
     if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0) 
     {
+        data.end=1;
+        tosend=ack;
+        size=sizeof(ack);
     }
     else if(strncmp(command,MSG_RESTART,
                 strlen(MSG_RESTART))==0) 
     {
+        tosend=ack;
+        size=sizeof(ack);
     }
     else if(strncmp(command,MSG_SHOW_ROUTES,
                 strlen(MSG_SHOW_ROUTES))==0) 

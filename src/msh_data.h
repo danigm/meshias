@@ -23,6 +23,7 @@
 
 struct msh_data_t
 {
+    int end;
     // unix socket
     struct local_server local_server;
 

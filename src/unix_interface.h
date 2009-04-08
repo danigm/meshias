@@ -1,6 +1,8 @@
 #ifndef UNIX_INTERFACE_H
 #define UNIX_INTERFACE_H
 
+#define MSG_HELP "help"
+#define MSG_QUIT "quit"
 #define MSG_KILL "kill"
 #define MSG_RESTART "restart"
 #define MSG_SHOW_ROUTES "showroutes"
