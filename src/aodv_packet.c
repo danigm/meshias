@@ -31,6 +31,8 @@ struct aodv_pkt *aodv_pkt_alloc()
     pkt->address.sin_family=AF_INET;
     pkt->address.sin_port=htons(AODV_UDP_PORT);
     pkt->address.sin_addr.s_addr=data.broadcast_addr.s_addr;
+
+    return pkt;
 }
 
 struct aodv_pkt *aodv_pkt_get(struct msghdr* msg,int received)
