@@ -6,6 +6,18 @@ when removing a route, the nlroute is not being removed correctly:
     routing_table_destroyed 0x9e918d8
     rtnl_route_del failed: Netlink Error (errno = No such process)
 
+BUG 2
+#####
+
+line 121 msh_data.c:     nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, __init_addr, 0);
+This function makes a segmentation fault, so it's commented right now.
+its backtrace is
+#0  0x00007ffff76b4f05 in memcpy () from /lib/libc.so.6
+#1  0x00000000004056cb in __init_addr ()
+#2  0x00007ffff79a3854 in nl_cache_foreach_filter () from /usr/lib/libnl.so.1
+#3  0x0000000000405908 in msh_data_init ()
+#4  0x000000000040522e in main ()
+
 
 
 TODO

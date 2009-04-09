@@ -151,8 +151,7 @@ int main(int argc, char **argv)
     int errno;
     printf("addr1: dst: %s\n", nl_addr2str(addr1, buf, 256));
     printf("ifindex: %d\n", ifindex);
-    errno=rtnl_route_set_oif(nlroute, ifindex);
-    printf("set_oif %d\n",errno);
+    rtnl_route_set_oif(nlroute, ifindex);
     //rtnl_route_set_family(nlroute, AF_INET);
     //rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
     errno=rtnl_route_set_dst(nlroute, addr1);

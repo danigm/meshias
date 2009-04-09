@@ -118,7 +118,7 @@ int msh_data_init(int argc, char **argv)
     rtnl_addr_set_family(filter, AF_INET);
     
     // FIXME PETA
-    //nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, __init_addr, 0);
+    nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, __init_addr, 0);
     rtnl_addr_put(filter);
     
     nl_cache_free(addr_cache);
