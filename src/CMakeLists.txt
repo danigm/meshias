@@ -9,7 +9,7 @@ set (MESHIAS_SRCS meshias.c msh_data.c alarm/alarm.c alarm/rbtree.c common.c
     packets_fifo.c aodv_packet.c aodv_logic.c fds.c statistics.c local.c
     unix_interface.c)
 
-set  (MESHIAS_TOOLS_SRCS meshias-tools.c local.c)
+set  (MESHIAS_TOOLS_SRCS meshias-tools.c local.c utils.c)
 
 # Recurse into the "libnetfilter_queue" subdirectory. This does not actually 
 # cause another cmake executable to run. The same process will walk through 
@@ -22,6 +22,7 @@ add_executable (meshias-tools ${MESHIAS_TOOLS_SRCS})
 
 # Link the executable to the needed library. 
 target_link_libraries (meshias netfilter_queue nfnetlink nl)
+target_link_libraries (meshias-tools nl)
 
 install(TARGETS meshias RUNTIME DESTINATION bin)
 install(TARGETS meshias-tools RUNTIME DESTINATION bin)

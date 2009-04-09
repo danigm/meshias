@@ -268,3 +268,14 @@ uint8_t routing_table_use_route(struct routing_table *table,
     
     return 1;
 }
+
+void routing_table_foreach(struct routing_table *table,
+    int (*callback_func)(struct msh_route *, void *), void *data)
+{
+    struct msh_route *entry;
+    
+    list_for_each_entry(entry, &table->route_list.list, list)
+    {
+        callback_func(entry,data);
+    }
+}

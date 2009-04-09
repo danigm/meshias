@@ -6,6 +6,8 @@
 #include "alarm/linux_list.h"
 #include "route_obj.h"
 #include "common.h"
+
+
 void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
 {
     if(route->updated_cb)

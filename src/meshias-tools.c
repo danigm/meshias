@@ -46,7 +46,7 @@ int get_command(char *command)
     {
         memset(command,0,command_SIZE);
 
-        printf("Write a valid command. If you don't know write help:\n> ");
+        printf("\nWrite a valid command. If you don't know write help:\n> ");
         scanf("%s",command);
 
     }while(!check_command(command));
@@ -156,4 +156,17 @@ void show_statistics_command(void *data)
 
     printf("route_not_found: %d\n", stats->route_not_found);
     printf("invalid_route: %d\n", stats->invalid_route);
+}
+
+void show_routes_command(void *data)
+{
+    struct route* route=data;
+
+    printf("dst_ip: %s\n",inet_htoa(route->dst_ip));
+    printf("prefix_sz: %d\n",route->prefix_sz);
+    printf("dest_seq_num: %d\n",route->dest_seq_num);
+    printf("flags: %d\n",route->flags);
+    printf("hop_count: %d\n",route->hop_count);
+    printf("next_hop: %s\n",inet_htoa(route->next_hop));
+    printf("net_iface: %d\n",route->net_iface);
 }

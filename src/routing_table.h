@@ -69,9 +69,9 @@ struct msh_route *routing_table_find_by_ip(struct routing_table *table,
 uint8_t routing_table_use_route(struct routing_table *table,
     struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip);
 
-// void routing_table_foreach(struct routing_table *table,
-//     int (*callback_func)(struct msh_route *, void *), void *data);
-//     
+void routing_table_foreach(struct routing_table *table,
+    int (*callback_func)(struct msh_route *, void *), void *data);
+  
 // void routing_table_foreach_filter(struct routing_table *table,
 //     int (*callback_func)(struct msh_route *, void *), void *data);
 

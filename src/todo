@@ -19,8 +19,10 @@ its backtrace is
 #4  0x000000000040522e in main ()
 
 
-
 TODO
 * create DEVEL.es
 * put all the knowledge in the wiki
 * maintain all the active neighbours with neighbour-libnl
+* struct msh_routes in OOP.
+* add ttl to the routes with libnl, and all posible information.
+* add -Wall option to Makefile
