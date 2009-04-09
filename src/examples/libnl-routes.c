@@ -101,6 +101,14 @@ int main(int argc, char **argv)
     // Connect to link netlink socket on kernel side
     nl_connect(sock, NETLINK_ROUTE);
     
+    if(argc < 3)
+    {
+        
+        printf("%s <iface> <dst> [gateway]\n", argv[0]);
+        printf("Example: %s ath0 192.168.2.1\n", argv[0]);
+        exit(1);
+    }
+    
     // The first step is to retrieve a list of all available interfaces within
     // the kernel and put them into a cache.
     struct nl_cache *link_cache = rtnl_link_alloc_cache(sock);
@@ -110,9 +118,9 @@ int main(int argc, char **argv)
     char *ifname = (argc > 1) ? argv[1] : ath0;
     int ifindex = rtnl_link_name2i(link_cache, ifname);
 
-    printf("net iface: %d: %s\n", ifindex, ifname);
+//     printf("net iface: %d: %s\n", ifindex, ifname);
     // In a second step, we iterate the link interfaces and print its names.
-    printf("Link cache (%d ifaces):\n", nl_cache_nitems(link_cache));
+//     printf("Link cache (%d ifaces):\n", nl_cache_nitems(link_cache));
 //     int item = 0;
 //     nl_cache_foreach(link_cache, print_link, (void *)&item);
 //     
@@ -126,15 +134,15 @@ int main(int argc, char **argv)
 //     {
 //         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
 //     }
+//     
+//     struct nl_cache* addr_cache = rtnl_addr_alloc_cache(sock);
+//     
+//     struct rtnl_addr* filter = rtnl_addr_alloc();
+//     rtnl_addr_set_ifindex(filter, ifindex);
+//     rtnl_addr_set_family(filter, AF_INET);
     
-    struct nl_cache* addr_cache = rtnl_addr_alloc_cache(sock);
-    
-    struct rtnl_addr* filter = rtnl_addr_alloc();
-    rtnl_addr_set_ifindex(filter, ifindex);
-    rtnl_addr_set_family(filter, AF_INET);
-    
-    nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, print_addr,
-        &ifindex);
+//     nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, print_addr,
+//         &ifindex);
     
 //     struct nl_object* obj = nl_cache_search(addr_cache, (struct nl_object*)needle);
 //     nl_object_dump(obj, &dp);
@@ -142,30 +150,21 @@ int main(int argc, char **argv)
     
     
     struct rtnl_route *nlroute = rtnl_route_alloc();
-    char buf[256];
-    sprintf(buf, "192.168.0.1/24");
-    struct nl_addr *addr1 = nl_addr_parse(buf, AF_INET);
-    sprintf(buf, "192.168.0.0/0");
-    struct nl_addr *addr2 = nl_addr_parse(buf, AF_INET);
-    
-    int errno;
-    printf("addr1: dst: %s\n", nl_addr2str(addr1, buf, 256));
-    printf("ifindex: %d\n", ifindex);
-    errno=rtnl_route_set_oif(nlroute, ifindex);
-    printf("set_oif %d\n",errno);
-    //rtnl_route_set_family(nlroute, AF_INET);
-    //rtnl_route_set_scope(nlroute, RT_SCOPE_LINK);
-    errno=rtnl_route_set_dst(nlroute, addr1);
-    printf("set_oif %d\n",errno);
-//     rtnl_route_set_gateway(nlroute, addr1);
-    
-    if ((errno=rtnl_route_add(sock, nlroute, 0)) < 0)
+    struct nl_addr *dst = nl_addr_parse(argv[2], AF_INET);
+    rtnl_route_set_oif(nlroute, ifindex);
+    rtnl_route_set_dst(nlroute, dst);
+    if(argc >= 4)
     {
-        printf("rtnl_route_add failed (%d): %s\n",errno, nl_geterror());
+        struct nl_addr *gateway = nl_addr_parse(argv[3], AF_INET);
+        rtnl_route_set_gateway(nlroute, dst);
+    }
+    if (rtnl_route_add(sock, nlroute, 0) < 0)
+    {
+        fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
     }
     
     // Free the mallocs
-    nl_cache_free(addr_cache);
+//     nl_cache_free(addr_cache);
     nl_cache_free(link_cache);
 //     nl_cache_free(route_cache);
     nl_handle_destroy(sock);
