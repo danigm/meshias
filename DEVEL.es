@@ -13,7 +13,7 @@ con el que queremos comunicarnos, por ello necesitamos crear una camino por
 nodos intermedios hasta llegar al objetivo.
 
 
-2. Librarias
+2. Librerias
 ------------
 
 Para empezar con este proyecto necesitamos conocer que estamos usando y por 

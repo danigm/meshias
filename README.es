@@ -20,7 +20,9 @@ netfilter o libnl por tanto sólo funcionará en este sistema operativo.
 Lo primero que debemos hacer es descargarnos el código del repositorio de 
 desarrollo. Usamos bazaar como sistema de control de versiones, debido a los 
 errores que tuvimos con la forja de RedIRIS, que aunque subimos el código no
-siempre será el más aactual. El siguiente comando hay que ejecutarlo con
+siempre será el más actual. No hace falta descargarse el código del repositorio
+subversión si estás usando una versión empaquetada. En ese caso puedes saltarte
+los dos siguientes comandos. El siguiente comando hay que ejecutarlo con
 permisos de superusuario para instalarlo:
 
     apt-get install bzr
@@ -96,11 +98,10 @@ en el canal 6:
   
 Podremos ver que está configurado correctamente si vemos que la salida de
 iwconfig algo parecido a esta:
-
     
     iwconfig ath0
     ath0      IEEE 802.11g  ESSID:"meshias"  Nickname:""
-              Mode:Ad-Hoc  Frequency:2.437 GHz  Cell: DE:AD:BE:EF:DE:AD
+              Mode:Ad-Hoc  Frequency:2.437 GHz  Cell: Not-Associated
               Bit Rate:0 kb/s   Tx-Power:9 dBm   Sensitivity=1/1
               Retry:off   RTS thr:off   Fragment thr:off
               Encryption key:off
