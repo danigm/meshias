@@ -327,7 +327,7 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq, struct in_addr prev_hop,
 
 void aodv_process_rrep(struct aodv_pkt* pkt)
 {
-    puts("it's an RREP");
+    puts("it's a RREP");
     struct aodv_rrep* rrep = (struct aodv_rrep*)aodv_pkt_get_payload(pkt);
 // 6.7. Receiving and Forwarding Route Replies
 //
@@ -348,11 +348,13 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
     // If found a route for the prev_hop, update it
     if(route_to_prev_hop)
     {
+        printf("updating route to prev hop %s\n", inet_htoa(prev_hop));
         // reset the lifetime and mark as valid
         msh_route_set_lifetime(route_to_prev_hop, ACTIVE_ROUTE_TIMEOUT());
     }
     else
     {
+        printf("adding route to prev hop %s\n", inet_htoa(prev_hop));
         // If route for prev_hop not found, create it
         route_to_prev_hop = msh_route_alloc();
         msh_route_set_dst_ip(route_to_prev_hop, prev_hop);
@@ -369,6 +371,8 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
     char route_to_dest_created = 0;
     if(!route_to_dest)
     {
+        printf("adding route to dest. prev_hop: %s rrep->dest_seq_num %d\n",
+               inet_htoa(prev_hop), rrep->dest_seq_num);
         //No route to dest so we create one
         route_to_dest = msh_route_alloc();
         msh_route_set_dst_ip(route_to_dest, dest_addr);
@@ -378,6 +382,7 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
         routing_table_add(data.routing_table, route_to_dest);
         route_to_dest_created = 1;
     }
+    puts("compare the Destination Sequence");
 //    Otherwise, the node compares the Destination Sequence
 //    Number in the message with its own stored destination sequence number
 //    for the Destination IP Address in the RREP message.  Upon comparison,
@@ -404,6 +409,7 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
             !(msh_route_get_flags(route_to_dest) & RTFLAG_VALID_ENTRY)) ||
         ((int32_t)rrep->hop_count == (int32_t)dest_hop_count))
     {
+      puts("the route table entry to the destination is created or updated");
 //    If the route table entry to the destination is created or updated,
 //    then the following actions occur:
 //    -  the destination sequence number is marked as valid,
