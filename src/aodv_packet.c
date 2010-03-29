@@ -267,6 +267,14 @@ void aodv_pkt_build_rrep(struct aodv_pkt* pkt,uint8_t flags,
     pkt->payload=(char*)rrep;
 }
 
+void aodv_pkt_prepare_rrep(struct aodv_rrep* rrep)
+{
+    rrep->dest_ip_addr = htonl(rrep->dest_ip_addr);
+    rrep->dest_seq_num = htonl(rrep->dest_seq_num);
+    rrep->orig_ip_addr = htonl(rrep->orig_ip_addr);
+    rrep->lifetime = htonl(rrep->lifetime);
+}
+
 void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags,
         uint8_t hop_count,uint32_t rreq_id,uint32_t dest_ip_addr,
         uint32_t dest_seq_num,uint32_t orig_ip_addr,uint32_t orig_seq_num)

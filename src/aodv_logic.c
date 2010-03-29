@@ -455,6 +455,7 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
             aodv_pkt_decrease_ttl(pkt);
 
             printf("forwarding a RREP: ");
+            aodv_pkt_prepare_rrep(rrep);
             aodv_pkt_send(pkt);
 
 //    //TODO: If a node forwards a RREP
