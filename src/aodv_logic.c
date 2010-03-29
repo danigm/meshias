@@ -49,6 +49,7 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
     // After gathering all the needed information, we can build our rreq
     aodv_pkt_build_rreq(pkt, flags, hop_count, data.rreq_id, dest.s_addr,
             dest_seq_num, data.ip_addr.s_addr, data.seq_num);
+    aodv_pkt_set_address(pkt, data.broadcast_addr.s_addr);
 
     // Finally we send the packet
     printf("sending broadcast RREQ requestion info for dest %s: ", inet_htoa(dest));
