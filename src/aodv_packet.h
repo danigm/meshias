@@ -47,6 +47,8 @@ void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags, uint8_t hop_count,
         uint32_t rreq_id,uint32_t dest_ip_addr,uint32_t dest_seq_num,
         uint32_t orig_ip_addr,uint32_t orig_seq_num);
 
+void aodv_pkt_prepare_rreq(struct aodv_rreq* rreq);
+
 void aodv_pkt_build_rerr(struct aodv_pkt* pkt,uint8_t flag, uint8_t dest_count,
     struct unrecheable_dest** dests);
 

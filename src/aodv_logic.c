@@ -162,7 +162,6 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
     {
         aodv_pkt_set_address(pkt, data.broadcast_addr.s_addr);
         aodv_pkt_decrease_ttl(pkt);
-        rreq->hop_count++;
 
         //TODO: redundant, this also done in aodv_answer_to_rreq()
         struct msh_route* route_to_dest =
@@ -183,6 +182,7 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
         }
         printf("forwarding a RREQ: ");
         data.num_rreq_sent++;
+        aodv_pkt_prepare_rreq(rreq);
         aodv_pkt_send(pkt);
     }
 }

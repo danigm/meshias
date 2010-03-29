@@ -289,6 +289,15 @@ void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags,
     pkt->payload=(char*)rreq;
 }
 
+void aodv_pkt_prepare_rreq(struct aodv_rreq* rreq)
+{
+    rreq->rreq_id = htonl(rreq->rreq_id);
+    rreq->dest_ip_addr = htonl(rreq->dest_ip_addr);
+    rreq->dest_seq_num = htonl(rreq->dest_seq_num);
+    rreq->orig_ip_addr = htonl(rreq->orig_ip_addr);
+    rreq->orig_seq_num = htonl(rreq->orig_seq_num);
+}
+
 void aodv_pkt_build_rerr(struct aodv_pkt* pkt,uint8_t flag,
         uint8_t dest_count,struct unrecheable_dest** dests)
 {
