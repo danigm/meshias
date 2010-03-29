@@ -13,17 +13,17 @@ static u_int32_t print_pkt (struct nfq_data *tb)
 {
 	int id = 0;
 	struct nfqnl_msg_packet_hdr *ph;
-	u_int32_t mark,ifi; 
+	u_int32_t mark,ifi;
 	int ret;
 	char *data;
-	
+
 	ph = nfq_get_msg_packet_hdr(tb);
 	if (ph){
 		id = ntohl(ph->packet_id);
 		printf("hw_protocol=0x%04x hook=%u id=%u ",
 			ntohs(ph->hw_protocol), ph->hook, id);
 	}
-	
+
 	mark = nfq_get_nfmark(tb);
 	if (mark)
 		printf("mark=%u ", mark);
@@ -44,7 +44,7 @@ static u_int32_t print_pkt (struct nfq_data *tb)
 
 	return id;
 }
-	
+
 
 static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 	      struct nfq_data *nfa, void *data)

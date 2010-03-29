@@ -1,4 +1,4 @@
-#include <stdio.h> 
+#include <stdio.h>
 #include <netinet/in.h>
 #include <netlink/addr.h>
 #include <sys/socket.h>
@@ -25,7 +25,7 @@ struct nl_addr* in_addr2nl_addr(struct in_addr addr, uint8_t prefix_sz)
       sprintf(buf, "%s/%d", inet_htoa(addr), prefix_sz);
     else
       sprintf(buf, "%s", inet_htoa(addr));
-    
+
     return nl_addr_parse(buf, AF_INET);
 }
 

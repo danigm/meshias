@@ -41,7 +41,7 @@ void item_t_add(int data, long sec, long usec)
 {
     struct item_t *item = malloc(sizeof(struct item_t));
     item->data = data;
-    
+
     init_alarm(&item->alarm, item, item_t_timeout);
     add_alarm(&item->alarm, sec, usec);
 }
@@ -57,7 +57,7 @@ void item_t_timeout(struct alarm_block *alarm, void *data)
 
 void process_my_alarms()
 {
-    static struct timeval next_alarm; 
+    static struct timeval next_alarm;
     static struct timeval *next = NULL;
 
     // This function works by getting inthe variable "next" how
@@ -65,14 +65,14 @@ void process_my_alarms()
     // if the alarm timedout, we call to do_alarm_run which in turn
     // calls the callback functions of all the alarms which have timedout.
     // Else, we update the next alarm for the time this function gets called.
-    
+
     if (next != NULL && !timerisset(next))
     {
         next = do_alarm_run(&next_alarm);
-    } else {    
+    } else {
         next = get_next_alarm_run(&next_alarm);
     }
-    
+
     if(next != NULL) {
         printf("next alarm times out in %ld s\t%ld us\n", next->tv_sec, next->tv_usec);
     }
@@ -82,14 +82,14 @@ int main(int argc, char **argv)
 {
     // Here we create a new item with data = 13 and which will time out in 1.5 seconds
     item_t_add(13, 0, 1500000);
-    
+
     // Here we create a new item with data = 2 and which will timeout = 10 seconds
     item_t_add(2, 10, 0);
 
     while(1)
     {
         process_my_alarms();
-        
+
         /* This a simple example, but in reality we will use select with a timeout
          * instead of calling to sleep.
          */

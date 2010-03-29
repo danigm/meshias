@@ -94,17 +94,17 @@ struct aodv_rreq
      * Type will always be 1 in a RREQ
      */
     uint32_t type:8,
-    
+
     /**
      * Flags have the format J R G D U. See above the possible flags
      */
     flags:5,
-    
+
     /**
      * Is always zero and ignored
      */
     reserved:11,
-    
+
     /**
      * Hop Count.
      * Number of hops from the originator ip Address to the node
@@ -120,34 +120,34 @@ struct aodv_rreq
 #else
 #error  "Adjust your <asm/byteorder.h> defines"
 #endif
-    
-    
+
+
     /**
      * RREQ ID.
      * A sequence number uniquely identifying the particular RREQ when taken
      * in conjuntion with the originating node's IP address.
      */
     uint32_t rreq_id;
-    
+
     /**
      * Destination IP Address.
      * The IP address of the destination for which a route is desired.
      */
     uint32_t dest_ip_addr;
-    
+
     /**
      * Destination Sequence Number.
      * The latest sequence number received in the past by the originator for
      * any route towards the destination.
      */
     uint32_t dest_seq_num;
-    
+
     /**
      * Originator IP Address.
      * The IP address of the node which originated the Route Request.
      */
     uint32_t orig_ip_addr;
-    
+
     /**
      * Originator Sequence Number.
      * The current sequence number to be used in the route entry pointing
@@ -208,12 +208,12 @@ struct aodv_rrep
      * Flags have the format is R A. See above the possible flags
      */
     flags:2,
-    
+
     /**
      * Is always zero and ignored
-     */    
+     */
     reserved:9,
-    
+
     /**
      * Prefix size.
      * If nonzero, the 5-bit Prefix Size specifies that the indicated next hop
@@ -238,26 +238,26 @@ struct aodv_rrep
 #else
 #error  "Adjust your <asm/byteorder.h> defines"
 #endif
-    
+
     /**
      * Destination IP Address.
      * The IP address of the destination for which a route is supplied.
      */
     uint32_t dest_ip_addr;
-    
+
     /**
      * Destination Sequence Number.
      * The destination sequence number associated to the route.
      */
     uint32_t dest_seq_num;
-    
+
     /**
      * Originator IP Address.
      * The IP address of the node which originated the RREQ for which the route
      * is supplied.
      */
     uint32_t orig_ip_addr;
-    
+
     /**
      * The time in miliseconds for which nodes receiving the RREP consider the
      * route to be valid.
@@ -300,12 +300,12 @@ struct aodv_rerr
      * The only flag is N. See above
      */
     flag:1,
-    
+
     /**
      * Is always zero and ignored
-     */    
+     */
     reserved:15,
-    
+
     /**
      * The number of unrecheable destinations included in the message; MUST at
      * least be 1.
@@ -317,11 +317,11 @@ struct aodv_rerr
     flag:1,
     reserved:8,
     dest_count:8;
-        
+
 #else
 #error  "Adjust your <asm/byteorder.h> defines"
 #endif
-    
+
 };
 
 /**
@@ -338,7 +338,7 @@ struct aodv_rerr
 /** @} */
 
 /**
- * This structure is used with aodv_rerr to send a complete error 
+ * This structure is used with aodv_rerr to send a complete error
  * message
  */
 struct unrecheable_dest
@@ -348,7 +348,7 @@ struct unrecheable_dest
     * The IP address of the destination for which a route is supplied.
     */
     uint32_t ip_addr;
-    
+
     /**
      * Destination Sequence Number.
      * The destination sequence number associated to the route.
@@ -366,7 +366,7 @@ struct aodv_rrep_ack
      * Type will always be 4 in a RREP-ACK
      */
     uint8_t type;
-    
+
     /**
      * Is always zero and ignored
      */

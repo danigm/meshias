@@ -9,7 +9,7 @@ int main(int argc, char **argv)
     struct ifaddrs *id;
     struct sockaddr_in *sin;
     int val = getifaddrs(&id);
-    
+
     while (NULL != id->ifa_next)
     {
         if (NULL != id->ifa_addr)
@@ -23,6 +23,6 @@ int main(int argc, char **argv)
         }
         id = id->ifa_next;
     }
-    
+
     return 0;
 }

@@ -97,7 +97,7 @@ void daemon_receive_packets()
 
     //Receive the packet
     numbytes = recvmsg(data.daemon_fd, &msg, 0);
-    
+
     if(numbytes == -1)
     {
         stats.error_aodv_recv++;
@@ -108,7 +108,7 @@ void daemon_receive_packets()
 
     if(aodv_pkt_check(pkt)==0)
         return;
-    
+
     // Filter if we are the senders
     if(aodv_pkt_get_address(pkt) == data.ip_addr.s_addr)
         return;
@@ -119,15 +119,15 @@ void daemon_receive_packets()
         case AODV_RREQ:
             aodv_process_rreq(pkt);
             break;
-            
+
         case AODV_RREP:
             aodv_process_rrep(pkt);
             break;
-            
+
         case AODV_RERR:
             aodv_process_rerr(pkt);
             break;
-            
+
         case AODV_RREP_ACK:
             aodv_process_rrep_ack(pkt);
             break;

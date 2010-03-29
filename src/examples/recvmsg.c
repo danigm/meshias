@@ -25,7 +25,7 @@ int aodv_get_ttl(struct msghdr* msgh)
                 && cmsg->cmsg_type == IP_TTL)
             ttl=*(int*)CMSG_DATA(cmsg);
     }
-    /* 
+    /*
      * FIXME TTL no encontrado
      */
     return ttl;

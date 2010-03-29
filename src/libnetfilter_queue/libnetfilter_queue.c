@@ -3,7 +3,7 @@
  * (C) 2005 by Harald Welte <laforge@gnumonks.org>
  *
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 
+ *  it under the terms of the GNU General Public License version 2
  *  as published by the Free Software Foundation
  *
  *  This program is distributed in the hope that it will be useful,
@@ -57,7 +57,7 @@ struct nfq_data {
 int nfq_errno;
 
 /***********************************************************************
- * low level stuff 
+ * low level stuff
  ***********************************************************************/
 
 static void del_qh(struct nfq_q_handle *qh)
@@ -179,7 +179,7 @@ struct nfq_handle *nfq_open_nfnl(struct nfnl_handle *nfnlh)
 	memset(h, 0, sizeof(*h));
 	h->nfnlh = nfnlh;
 
-	h->nfnlssh = nfnl_subsys_open(h->nfnlh, NFNL_SUBSYS_QUEUE, 
+	h->nfnlssh = nfnl_subsys_open(h->nfnlh, NFNL_SUBSYS_QUEUE,
 				      NFQNL_MSG_MAX, 0);
 	if (!h->nfnlssh) {
 		/* FIXME: nfq_errno */
@@ -204,7 +204,7 @@ out_free:
 int nfq_close(struct nfq_handle *h)
 {
 	int ret;
-	
+
 	nfnl_subsys_close(h->nfnlssh);
 	ret = nfnl_close(h->nfnlh);
 	if (ret == 0)
@@ -225,7 +225,7 @@ int nfq_unbind_pf(struct nfq_handle *h, u_int16_t pf)
 }
 
 /* bind this socket to a specific queue number */
-struct nfq_q_handle *nfq_create_queue(struct nfq_handle *h, 
+struct nfq_q_handle *nfq_create_queue(struct nfq_handle *h,
 		u_int16_t num,
 		nfq_callback *cb,
 		void *data)
@@ -364,11 +364,11 @@ static int __set_verdict(struct nfq_q_handle *qh, u_int32_t id,
 }
 
 int nfq_set_verdict(struct nfq_q_handle *qh, u_int32_t id,
-		u_int32_t verdict, u_int32_t data_len, 
+		u_int32_t verdict, u_int32_t data_len,
 		unsigned char *buf)
 {
 	return __set_verdict(qh, id, verdict, 0, 0, data_len, buf);
-}	
+}
 
 int nfq_set_verdict_mark(struct nfq_q_handle *qh, u_int32_t id,
 		u_int32_t verdict, u_int32_t mark,
@@ -378,7 +378,7 @@ int nfq_set_verdict_mark(struct nfq_q_handle *qh, u_int32_t id,
 }
 
 /*************************************************************
- * Message parsing functions 
+ * Message parsing functions
  *************************************************************/
 
 struct nfqnl_msg_packet_hdr *nfq_get_msg_packet_hdr(struct nfq_data *nfad)

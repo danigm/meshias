@@ -3,7 +3,7 @@
  *
  * (C) 2005 by Harald Welte <laforge@netfilter.org>
  *
- * Based on original libipq.c, 
+ * Based on original libipq.c,
  * Author: James Morris <jmorris@intercode.com.au>
  * 07-11-2001 Modified by Fernando Anton to add support for IPv6.
  * Copyright (c) 2000-2001 Netfilter Core Team
@@ -108,7 +108,7 @@ struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol)
 		ipq_errno = IPQ_ERR_HANDLE;
 		return NULL;
 	}
-	
+
 	memset(h, 0, sizeof(struct ipq_handle));
 
 	h->nfqnlh = nfq_open();
@@ -116,7 +116,7 @@ struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol)
 		ipq_errno = IPQ_ERR_SOCKET;
 		goto err_free;
 	}
-	
+
         if (protocol == PF_INET)
 		status = nfq_bind_pf(h->nfqnlh, PF_INET);
         else if (protocol == PF_INET6)
@@ -178,7 +178,7 @@ ssize_t ipq_read(const struct ipq_handle *h,
 	struct nfattr *nfa;
 
 	//return ipq_netlink_recvfrom(h, buf, len, timeout);
-	
+
 	/* This really sucks.  We have to copy the whole packet
 	 * in order to build a data structure that is compatible to
 	 * the old ipq interface... */
@@ -189,7 +189,7 @@ ssize_t ipq_read(const struct ipq_handle *h,
 
 	if (msg->nfgen_family != h->family)
 		return 0;
-	
+
 	nfnl_parse_attr(tb, NFQA_MAX, nfa, 0xffff);
 
 

@@ -43,7 +43,7 @@ int routing_table_del(struct routing_table *table, struct msh_route *route);
  * set in attr_flags of the route with all the routes inside the table. When
  * a match is found, it's returned. If attr_flags is zero, it compares by
  * memory addresses.
- * 
+ *
  * @see msh_route_compare()
  */
 struct msh_route *routing_table_find(struct routing_table *table,
@@ -53,7 +53,7 @@ struct msh_route *routing_table_find(struct routing_table *table,
  * Finds a route in the routing table by longest prefix matching for a given ip.
  * Internally it uses routing_table_find(). It's the most common way to search
  * a route.
- * 
+ *
  * @see routing_table_find()
  */
 struct msh_route *routing_table_find_by_ip(struct routing_table *table,
@@ -71,7 +71,7 @@ uint8_t routing_table_use_route(struct routing_table *table,
 
 void routing_table_foreach(struct routing_table *table,
     int (*callback_func)(struct msh_route *, void *), void *data);
-  
+
 // void routing_table_foreach_filter(struct routing_table *table,
 //     int (*callback_func)(struct msh_route *, void *), void *data);
 

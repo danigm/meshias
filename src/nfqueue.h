@@ -26,7 +26,7 @@ void nfqueue_receive_packets();
 
 /**
  * Prints all kind of information attached to a packet: mark,  timestamp,
- * data, indev, outdev. protocol, id, hook. 
+ * data, indev, outdev. protocol, id, hook.
  *
  * @returns packet id
  */

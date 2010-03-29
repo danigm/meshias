@@ -23,10 +23,10 @@ static int manage_packet(struct nfq_q_handle *qh,struct nfgenmsg *nfmsg,
 
     payload=payload+sizeof(struct nfq_iphdr)+sizeof(struct nfq_udphdr);
 
-    printf("stolen %d: %s\n",id,payload); 
+    printf("stolen %d: %s\n",id,payload);
     nfq_set_verdict(qh,id,NF_STOLEN,0,NULL);
 
-    printf("accept %d\n",id); 
+    printf("accept %d\n",id);
     nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
     return id;
 }

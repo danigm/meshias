@@ -18,13 +18,13 @@ void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
 {
     struct msh_route* route = (struct msh_route*)qdata;
     unsigned long sc, usc;
-    
+
     if(route->alarm_action == RTACTION_UNSET_VALID_ENTRY)
     {
         msh_route_unset_flag(route, RTFLAG_VALID_ENTRY);
         route->alarm_action = RTACTION_DESTROY;
-        
-        set_alarm_time(DELETE_PERIOD(), &sc, &usc);    
+
+        set_alarm_time(DELETE_PERIOD(), &sc, &usc);
         add_alarm(alarm, sc, usc);
 
     }
@@ -36,21 +36,21 @@ struct msh_route* msh_route_alloc()
 {
     struct msh_route* route = (struct msh_route*)
         calloc(1, sizeof(struct msh_route));
-    
+
     init_alarm(&route->alarm, route, __msh_route_alarm_cb);
     INIT_LIST_HEAD(&(route->precursors_list.list));
-    
+
     return route;
 }
 
 void msh_route_destroy(struct msh_route* route)
 {
     struct precursor_t  *entry, *tmp;
-    
+
     printf("msh_route_destroy %p\n", route);
     __msh_route_updated(route, RTACTION_DESTROY);
     del_alarm(&route->alarm);
-    
+
     list_for_each_entry_safe(entry, tmp, &route->precursors_list.list, list)
     {
         list_del(&entry->list);
@@ -81,7 +81,7 @@ uint8_t msh_route_get_prefix_sz(struct msh_route *route)
 }
 
 // FIXME por que se comprueba si es de un solo tipo, no puede ser varios??
-// si no pueden ser varios porque no se borra el flag y dps se 
+// si no pueden ser varios porque no se borra el flag y dps se
 // setea de nuevo?
 void msh_route_set_flag(struct msh_route *route, uint16_t flag)
 {
@@ -160,13 +160,13 @@ uint32_t msh_route_get_dest_seq_num(struct msh_route *route)
 void msh_route_set_lifetime(struct msh_route *route, uint32_t lifetime)
 {
     unsigned long sc, usc;
-    
+
     if(route->flags & RTFLAG_UNMANAGED)
         return;
-    
+
     msh_route_set_flag(route, RTFLAG_VALID_ENTRY);
     route->alarm_action = RTACTION_UNSET_VALID_ENTRY;
-    
+
     set_alarm_time(lifetime, &sc, &usc);
     add_alarm(&route->alarm, sc, usc);
 }
@@ -174,14 +174,14 @@ void msh_route_set_lifetime(struct msh_route *route, uint32_t lifetime)
 uint32_t msh_route_get_lifetime(struct msh_route *route)
 {
     struct timeval now;
-    
+
     gettimeofday(&now, NULL);
     if (!(route->flags & RTFLAG_VALID_ENTRY) ||
         !timercmp(&route->alarm.tv, &now, >))
         return 0;
-    
+
     timersub(&now, &route->alarm.tv, &now);
-    
+
     return get_alarm_time(now.tv_sec, now.tv_usec);
 }
 
@@ -220,13 +220,13 @@ void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip)
 {
     // Check the precursor is not already added
     struct precursor_t *entry;
-    
+
     list_for_each_entry(entry, &route->precursors_list.list, list)
     {
         if(entry->dst_ip.s_addr == dst_ip.s_addr)
             return;
     }
-    
+
     // Entry not found; adding it
     entry = (struct precursor_t *)calloc(1, sizeof(struct precursor_t));
     entry->dst_ip.s_addr = dst_ip.s_addr;
@@ -237,7 +237,7 @@ void msh_route_del_precursor(struct msh_route *route, struct in_addr dst_ip)
 {
     // Find the entry
     struct precursor_t *entry;
-    
+
     list_for_each_entry(entry, &route->precursors_list.list, list)
     {
         if(entry->dst_ip.s_addr == dst_ip.s_addr)
@@ -255,7 +255,7 @@ void msh_route_foreach_precursor(struct msh_route *route,
 {
     // Find the entry
     struct precursor_t *entry;
-    
+
     list_for_each_entry(entry, &route->precursors_list.list, list)
     {
         (*callback_func)(route, &entry->dst_ip, data);
@@ -266,7 +266,7 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
     int attr_flags)
 {
     uint32_t diff = 0;
-    
+
     // See if dest ip of first route is contained by the destination group
     // of the second route.
     if(attr_flags & RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)
@@ -285,34 +285,34 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
 
     if(attr_flags & RTATTR_DST_IP)
         diff |= (first->dst_ip.s_addr != second->dst_ip.s_addr);
-    
+
     if(attr_flags & RTATTR_PREFIX_SZ)
         diff |= (first->prefix_sz != second->prefix_sz);
-    
+
     if(attr_flags & RTATTR_DEST_SEQ_NUM)
         diff |= (first->dest_seq_num != second->dest_seq_num);
-    
+
     if(attr_flags & RTATTR_FLAGS)
         diff |= (first->flags != second->flags);
-    
+
     if(attr_flags & RTATTR_HOP_COUNT)
         diff |= (first->hop_count != second->hop_count);
-    
+
     if(attr_flags & RTATTR_NEXTHOP_IP)
         diff |= (first->next_hop.s_addr != second->next_hop.s_addr);
-    
+
     if(attr_flags & RTATTR_NET_IFACE)
         diff |= (first->net_iface != second->net_iface);
 
     if(attr_flags & RTATTR_LIFETIME)
         diff |= timercmp(&first->alarm.tv, &second->alarm.tv, !=);
-    
+
     if(attr_flags & RTATTR_UPDATED_CB)
         diff |= (first->updated_cb != second->updated_cb);
-    
+
     if(attr_flags & RTATTR_CB_DATA)
         diff |= (first->cb_data != second->cb_data);
-    
+
     printf("diff: %d\n", diff);
     return diff;
 }

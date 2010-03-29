@@ -13,7 +13,7 @@
  * @see msh_route_unset_flag
  * @see msh_route_get_flags
  */
-#define RTFLAG_VALID_DEST_SEQ_NUM               0x0001   
+#define RTFLAG_VALID_DEST_SEQ_NUM               0x0001
 #define RTFLAG_VALID_ENTRY                      0x0002
 #define RTFLAG_HAS_NEXTHOP                      0x0004
 #define RTFLAG_UNMANAGED                        0x0008
@@ -55,16 +55,16 @@ struct msh_route
     uint16_t flags;
     uint8_t hop_count;
     struct in_addr next_hop;
-    uint32_t net_iface;  
+    uint32_t net_iface;
     struct precursor_t precursors_list;
-    
+
     void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *);
     void *cb_data;
     struct rtnl_route *nlroute;
-    
+
     struct alarm_block alarm;
     uint32_t alarm_action;
-    
+
     struct list_head list;
 };
 

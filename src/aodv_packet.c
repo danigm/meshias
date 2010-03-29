@@ -38,7 +38,7 @@ struct aodv_pkt *aodv_pkt_alloc()
 struct aodv_pkt *aodv_pkt_get(struct msghdr* msg,int received)
 {
     struct aodv_pkt* pkt=(struct aodv_pkt*)calloc(1,sizeof(struct aodv_pkt));
-    
+
     // If address has been received
     if(msg->msg_namelen>0)
     {
@@ -163,7 +163,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
                 return 0;
             }
             break;
-            
+
         case AODV_RREP:
             if( sizeof(struct aodv_rrep) <= aodv_pkt_get_payload_len(pkt) )
             {
@@ -179,7 +179,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
                 return 0;
             }
             break;
-            
+
         case AODV_RERR:
             /* The size is variable so we have to be more careful
              * Buffer size must be at least header size +
@@ -215,7 +215,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
                 return 0;
             }
             break;
-            
+
         case AODV_RREP_ACK:
             //TODO: do the ntohl/ntohs things
             if( sizeof(struct aodv_rrep_ack) <= aodv_pkt_get_payload_len(pkt) )
@@ -228,7 +228,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
                 return 0;
             }
             break;
-            
+
         default:
             puts("error: unkown type of AODV packet found");
             return 0;
@@ -273,7 +273,7 @@ void aodv_pkt_build_rreq(struct aodv_pkt* pkt,uint8_t flags,
         uint32_t dest_seq_num,uint32_t orig_ip_addr,uint32_t orig_seq_num)
 {
     struct aodv_rreq* rreq;
-    
+
     /* Reserve memory for the structure */
     rreq=(struct aodv_rreq*)calloc(1,sizeof(struct aodv_rreq));
     pkt->payload_len=sizeof(struct aodv_rreq);
@@ -327,7 +327,7 @@ void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)
 
     /* Reserve memory for the structure */
     rrep_ack=(struct aodv_rrep_ack*)calloc(1,sizeof(struct aodv_rrep_ack));
-    
+
     rrep_ack->type = AODV_RREP_ACK;
 
     pkt->payload=(char*)rrep_ack;

@@ -17,7 +17,7 @@
     showroutes\n\
     showstatistics\n\
     cleanstatistics\n\n"
-    
+
 
 
 int main(int argc, char **argv)
@@ -79,19 +79,19 @@ void (*get_function_command(char* command))(void*)
 {
     void (*func)(void*)=NULL;
 
-    if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0) 
+    if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0)
         func=&print_command;
     else if(strncmp(command,MSG_RESTART,
-                strlen(MSG_RESTART))==0) 
+                strlen(MSG_RESTART))==0)
         func=&print_command;
     else if(strncmp(command,MSG_SHOW_ROUTES,
-                strlen(MSG_SHOW_ROUTES))==0) 
+                strlen(MSG_SHOW_ROUTES))==0)
         func=&print_command;
     else if(strncmp(command,MSG_SHOW_STATISTICS,
-                strlen(MSG_SHOW_STATISTICS))==0) 
+                strlen(MSG_SHOW_STATISTICS))==0)
         func=&show_statistics_command;
     else if(strncmp(command,MSG_CLEAN_STATISTICS,
-                strlen(MSG_CLEAN_STATISTICS))==0) 
+                strlen(MSG_CLEAN_STATISTICS))==0)
         func=&show_statistics_command;
 
     return func;

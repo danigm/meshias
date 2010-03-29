@@ -20,7 +20,7 @@ struct route
     uint16_t flags;
     uint8_t hop_count;
     struct in_addr next_hop;
-    uint32_t net_iface;  
+    uint32_t net_iface;
 };
 
 /** Create the unix socket */

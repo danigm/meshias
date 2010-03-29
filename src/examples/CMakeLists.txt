@@ -1,5 +1,5 @@
-# The name of our project is "MESHIAS". CMakeLists files in this project can 
-# refer to the root source directory of the project as ${MESHIAS_SOURCE_DIR} and 
+# The name of our project is "MESHIAS". CMakeLists files in this project can
+# refer to the root source directory of the project as ${MESHIAS_SOURCE_DIR} and
 # to the root binary directory of the project as ${MESHIAS_BINARY_DIR}.
 cmake_minimum_required (VERSION 2.6)
 project (MESHIAS_EXAMPLES)
@@ -24,7 +24,7 @@ add_executable (nfqueue ${NFQUEUE_SRCS})
 add_executable (broadcaster ${BROADCASTER_SRCS})
 add_executable (select ${SELECT_SRCS})
 
-# Link the executable to the needed library. 
+# Link the executable to the needed library.
 target_link_libraries (libnl nl)
 target_link_libraries (nfqueue netfilter_queue nfnetlink)
 

@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         0x05, 0x02, 0x00, 0x00, 0x00, 0x01, 0xc0, 0xa8,
         0x05, 0x01, 0x00, 0x00, 0x17, 0x70
     };
-    
+
     if ((numbytes=sendto(sockfd, data, 20, 0,
              (struct sockaddr *)&their_addr, sizeof their_addr)) == -1) {
         perror("sendto");

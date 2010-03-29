@@ -1,6 +1,6 @@
 /*
  * (C) 2006-2007 by Pablo Neira Ayuso <pablo@netfilter.org>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -35,7 +35,7 @@ int local_server_create(struct local_server *server, struct local_conf *conf)
     if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
         return -1;
 
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &conf->reuseaddr, 
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &conf->reuseaddr,
         sizeof(conf->reuseaddr)) == -1)
     {
         close(fd);
@@ -163,6 +163,6 @@ int local_do_request(char* request, struct local_conf *conf,
     local_client_do_step(fd, step);
 
     local_client_destroy(fd);
-    
+
     return 0;
 }

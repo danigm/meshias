@@ -31,16 +31,16 @@ struct msh_data_t
     struct nfq_handle *handle;
     struct nfq_q_handle *queue;
     struct nfnl_handle *netlink_handle;
-    
+
     // Needed for libnl
     struct nl_handle *nl_handle;
-    
+
     // Here we buffer the packets we don't have a route for
     struct packets_fifo* packets_queue;
-    
+
     // Here we buffer the RREQ in order to avoid loops
     struct rreq_fifo* rreq_queue;
-    
+
     // Route table. Plays a major role in AODV
     struct routing_table* routing_table;
 

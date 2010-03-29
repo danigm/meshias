@@ -26,14 +26,14 @@ int main(int argc, char **argv)
      */
     struct timeval next;
     struct timeval* next_run = NULL;
-    
+
     debug(1,"Initializing");
     // Initialize all needed data GET IP
     if((errno = msh_data_init(argc, argv)) < 0)
     {
         return errno;
     }
-    
+
     debug(1,"Initilization done");
     // Main loop
     // TODO: Here we should capture signals sent to the app
@@ -44,12 +44,12 @@ int main(int argc, char **argv)
             printf("wile(1) next_run %d %d\n",next_run->tv_sec,next_run->tv_usec);
         else
             puts("while1 NULL");
-            
+
         //This is needed because of yes
         FD_SET(data.nfqueue_fd, &data.fds->readfds);
         FD_SET(data.daemon_fd, &data.fds->readfds);
         FD_SET(data.local_server.fd, &data.fds->readfds);
-                    
+
         //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
         while(!data.end && select(data.fds->maxfd + 1,
@@ -67,13 +67,13 @@ int main(int argc, char **argv)
                 debug(1,"An AODV packet was received by the daemon.");
                 daemon_receive_packets();
             }
-            
+
             if( FD_ISSET(data.local_server.fd, &data.fds->readfds) )
             {
                 debug(1,"A command was received by the unix socket.");
                 unix_interface_receive_packets();
             }
-            
+
             /*
              * The code above has potentially added some new alarms which means
              * we need to recalculate which is the next alarm to be called
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
             if(next_run)
                 printf("next_run: %d\n", get_alarm_time(next_run->tv_sec,
                     next_run->tv_usec));
-            
+
             //This is needed because of yes
             FD_SET(data.nfqueue_fd, &data.fds->readfds);
             FD_SET(data.daemon_fd, &data.fds->readfds);
@@ -93,9 +93,9 @@ int main(int argc, char **argv)
     }
 
     debug(1,"Exiting from the mainloop");
-    
+
     // close everything safely
     msh_data_shutdown();
-    
+
     return 0;
 }

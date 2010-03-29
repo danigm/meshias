@@ -21,7 +21,7 @@ int main(void)
     while(1) {
         tv.tv_sec = 2;
         tv.tv_usec = 500000;
-        
+
         select(STDIN+1, &readfds, NULL, NULL, &tv);
 
         if (FD_ISSET(STDIN, &readfds))
@@ -31,11 +31,11 @@ int main(void)
             printf("A key was pressed!\n");
         } else
             printf("Timed out.\n");
-        
+
         // if this is removed, shit happens
         FD_SET(STDIN, &readfds);
     }
-    
+
 	return 0;
 }
 

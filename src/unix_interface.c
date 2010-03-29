@@ -32,30 +32,30 @@ void unix_interface_process_command(int fd,void* v_command)
     void* tosend=command;
     char ack[]="ACK";
 
-    if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0) 
+    if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0)
     {
         data.end=1;
         tosend=ack;
         size=sizeof(ack);
     }
     else if(strncmp(command,MSG_RESTART,
-                strlen(MSG_RESTART))==0) 
+                strlen(MSG_RESTART))==0)
     {
         tosend=ack;
         size=sizeof(ack);
     }
     else if(strncmp(command,MSG_SHOW_ROUTES,
-                strlen(MSG_SHOW_ROUTES))==0) 
+                strlen(MSG_SHOW_ROUTES))==0)
     {
     }
     else if(strncmp(command,MSG_SHOW_STATISTICS,
-                strlen(MSG_SHOW_STATISTICS))==0) 
+                strlen(MSG_SHOW_STATISTICS))==0)
     {
         tosend=&stats;
         size=sizeof(stats);
     }
     else if(strncmp(command,MSG_CLEAN_STATISTICS,
-                strlen(MSG_CLEAN_STATISTICS))==0) 
+                strlen(MSG_CLEAN_STATISTICS))==0)
     {
         stats_reset();
         tosend=&stats;

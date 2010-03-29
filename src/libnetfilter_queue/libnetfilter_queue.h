@@ -3,9 +3,9 @@
  * (C) 2005 by Harald Welte <laforge@gnumonks.org>
  *
  *
- * Changelog : 
+ * Changelog :
  * 	(2005/08/11)  added  parsing function (Eric Leblond <regit@inl.fr>)
- * 
+ *
  * This software may be used and distributed according to the terms
  * of the GNU General Public License, incorporated herein by reference.
  */
@@ -64,9 +64,9 @@ extern int nfq_set_verdict(struct nfq_q_handle *qh,
 			     u_int32_t data_len,
 			     unsigned char *buf);
 
-extern int nfq_set_verdict_mark(struct nfq_q_handle *qh, 
+extern int nfq_set_verdict_mark(struct nfq_q_handle *qh,
 				  u_int32_t id,
-			   	  u_int32_t verdict, 
+			   	  u_int32_t verdict,
 				  u_int32_t mark,
 			   	  u_int32_t datalen,
 				  unsigned char *buf);
