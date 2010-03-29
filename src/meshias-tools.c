@@ -10,14 +10,26 @@
 
 #define command_SIZE 128
 #define HELP_COMMAND "Usable commands: \n\
-    help\n\
-    quit\n\
-    kill\n\
-    restart\n\
-    showroutes\n\
-    showstatistics\n\
-    cleanstatistics\n\n"
+    0. help\n\
+    1. quit\n\
+    2. kill\n\
+    3. restart\n\
+    4. showroutes\n\
+    5. showstatistics\n\
+    6. cleanstatistics\n\n"
 
+#define N_ELEMENTS(arr) (sizeof (arr) / sizeof ((arr)[0]))
+
+
+char *COMMANDS[] = {
+    "0", MSG_HELP,
+    "1", MSG_QUIT,
+    "2", MSG_KILL,
+    "3", MSG_RESTART,
+    "4", MSG_SHOW_ROUTES,
+    "5", MSG_SHOW_STATISTICS,
+    "6", MSG_CLEAN_STATISTICS,
+};
 
 
 int main(int argc, char **argv)
@@ -54,19 +66,15 @@ int get_command(char *command)
 
 int check_command(char *command)
 {
-    if(strncmp(command,MSG_HELP,strlen(MSG_HELP))==0);
-    else if(strncmp(command,MSG_QUIT,strlen(MSG_QUIT))==0);
-    else if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0);
-    else if(strncmp(command,MSG_RESTART,
-                strlen(MSG_RESTART))==0);
-    else if(strncmp(command,MSG_SHOW_ROUTES,
-                strlen(MSG_SHOW_ROUTES))==0);
-    else if(strncmp(command,MSG_SHOW_STATISTICS,
-                strlen(MSG_SHOW_STATISTICS))==0);
-    else if(strncmp(command,MSG_CLEAN_STATISTICS,
-                strlen(MSG_CLEAN_STATISTICS))==0);
-    // Unknown command
-    else
+    int i, found=0;
+
+    for (i=0; i<N_ELEMENTS (COMMANDS); i++)
+    {
+        if (strncmp (command, COMMANDS[i], strlen (COMMANDS[i])) == 0)
+            found = 1;
+    }
+
+    if (!found)
     {
         puts("Command no valid.");
         return 0;
@@ -77,29 +85,36 @@ int check_command(char *command)
 
 void (*get_function_command(char* command))(void*)
 {
+    int i;
     void (*func)(void*)=NULL;
 
-    if(strncmp(command,MSG_KILL,strlen(MSG_KILL))==0)
-        func=&print_command;
-    else if(strncmp(command,MSG_RESTART,
-                strlen(MSG_RESTART))==0)
-        func=&print_command;
-    else if(strncmp(command,MSG_SHOW_ROUTES,
-                strlen(MSG_SHOW_ROUTES))==0)
-        func=&print_command;
-    else if(strncmp(command,MSG_SHOW_STATISTICS,
-                strlen(MSG_SHOW_STATISTICS))==0)
-        func=&show_statistics_command;
-    else if(strncmp(command,MSG_CLEAN_STATISTICS,
-                strlen(MSG_CLEAN_STATISTICS))==0)
-        func=&show_statistics_command;
+    struct cmd {
+        char *msg;
+        void (*func)(void*);
+    };
+
+    struct cmd commands[] = {
+        {MSG_KILL, print_command},
+        {MSG_RESTART, print_command},
+        {MSG_SHOW_ROUTES, show_routes_command},
+        {MSG_SHOW_STATISTICS, show_statistics_command},
+        {MSG_CLEAN_STATISTICS, show_statistics_command},
+    };
+
+
+    for (i=0; i<N_ELEMENTS (commands); i++)
+    {
+        if (strncmp (command, commands[i].msg, strlen (commands[i].msg)) == 0)
+            func=commands[i].func;
+    }
 
     return func;
 }
 
 int is_help_command(char *command)
 {
-    return strncmp(command,MSG_HELP,strlen(MSG_HELP))==0;
+    return strncmp(command,MSG_HELP,strlen(MSG_HELP))==0 ||
+        strncmp(command, "0", strlen("0")) == 0;
 }
 
 void help_command()
@@ -109,15 +124,26 @@ void help_command()
 
 int is_quit_command(char *command)
 {
-    return strncmp(command,MSG_QUIT,strlen(MSG_QUIT))==0;
+    return strncmp(command,MSG_QUIT,strlen(MSG_QUIT))==0 ||
+        strncmp(command, "1", strlen("1")) == 0;
 }
 
 int send_command(char* command)
 {
+    int i;
     struct local_conf conf;
     conf.backlog=1;
     conf.reuseaddr=0;
     sprintf(conf.path,"%s","/tmp/meshias");
+
+    for (i=0; i<N_ELEMENTS (COMMANDS); i+=2)
+    {
+        if (strncmp (command, COMMANDS[i], strlen (COMMANDS[i])) == 0)
+        {
+            snprintf(command, command_SIZE, "%s", COMMANDS[i+1]);
+            break;
+        }
+    }
 
     return local_do_request(command,&conf,get_function_command(command));
 }
