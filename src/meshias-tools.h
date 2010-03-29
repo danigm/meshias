@@ -11,5 +11,6 @@ int is_quit_command(char *command);
 int send_command(char* command);
 void print_command(void *str);
 void show_statistics_command(void *data);
+void show_routes_command(void *data);
 
 #endif
