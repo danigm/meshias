@@ -72,7 +72,6 @@ ssize_t aodv_pkt_send(struct aodv_pkt* pkt)
     // Set output ttl in socket option
     setsockopt(data.daemon_fd,SOL_IP,IP_TTL,&(pkt->ttl),sizeof(pkt->ttl));
 
-    pkt->address.sin_addr.s_addr = htonl(pkt->address.sin_addr.s_addr);
     // Sending the information
     int numbytes=sendto(data.daemon_fd, pkt->payload, pkt->payload_len, 0,
             (struct sockaddr*)&(pkt->address),sizeof(pkt->address));

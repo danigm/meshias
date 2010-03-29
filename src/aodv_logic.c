@@ -214,7 +214,7 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq, struct in_addr prev_hop,
         if(rreq->dest_seq_num == data.seq_num)
             data.seq_num++;
 
-        aodv_pkt_set_address(pkt, htonl(rreq->orig_ip_addr));
+        aodv_pkt_set_address(pkt, rreq->orig_ip_addr);
         aodv_pkt_build_rrep(pkt, 0, 0, 0, data.ip_addr.s_addr, data.seq_num,
             rreq->orig_ip_addr, MY_ROUTE_TIMEOUT());
 
