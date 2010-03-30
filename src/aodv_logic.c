@@ -133,8 +133,9 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
     struct in_addr dest_addr = { rreq->dest_ip_addr };
 
     if (rreq_fifo_contains(data.rreq_queue, rreq->rreq_id,
-                           dest_addr))
+                           dest_addr)) {
         return;
+    }
 
     // As this RREQ is new, we should add it to the queue
     rreq_fifo_push(data.rreq_queue, rreq->rreq_id, dest_addr);
@@ -163,11 +164,13 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
         msh_route_set_hop_count(route_to_orig, hop_count);
 
         //signed comparation as explained in RFC 3561 page 11
-        if ((int32_t)seq_num_old < (int32_t)seq_num_new)
+        if ((int32_t)seq_num_old < (int32_t)seq_num_new) {
             msh_route_set_dest_seq_num(route_to_orig, seq_num_new);
+        }
 
-        if (min_lifetime > lifetime_old)
+        if (min_lifetime > lifetime_old) {
             msh_route_set_lifetime(route_to_orig, min_lifetime);
+        }
     } else {
         // If route for orig ip not found, create it
         route_to_orig = msh_route_alloc();
@@ -213,8 +216,9 @@ void aodv_process_rreq(struct aodv_pkt* pkt)
             uint32_t dest_seq_num_old = msh_route_get_dest_seq_num(route_to_dest);
             uint32_t dest_seq_num_new = rreq->dest_seq_num;
 
-            if (dest_seq_num_old < dest_seq_num_new)
+            if (dest_seq_num_old < dest_seq_num_new) {
                 rreq->dest_seq_num = dest_seq_num_new;
+            }
 
         }
 
@@ -251,8 +255,9 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq, struct in_addr prev_hop,
 //    10).
         struct aodv_pkt* pkt = aodv_pkt_alloc();
 
-        if (rreq->dest_seq_num == data.seq_num)
+        if (rreq->dest_seq_num == data.seq_num) {
             data.seq_num++;
+        }
 
         aodv_pkt_set_address(pkt, prev_hop.s_addr);
         aodv_pkt_build_rrep(pkt, 0, 0, 0, data.ip_addr.s_addr, data.seq_num,
@@ -508,8 +513,9 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
 //    When any node transmits a RREP, the precursor list for the
 //    corresponding destination node is updated by adding to it the next
 //    hop node to which the RREP is forwarded.
-            if (dest_addr.s_addr != next_hop.s_addr)
+            if (dest_addr.s_addr != next_hop.s_addr) {
                 msh_route_add_precursor(route_to_dest, next_hop);
+            }
 
 //    Also, at each node the
 //    (reverse) route used to forward a RREP has its lifetime changed to be
@@ -523,11 +529,13 @@ void aodv_process_rrep(struct aodv_pkt* pkt)
                 uint32_t timeout = get_alarm_time(now.tv_sec, now.tv_usec) +
                                    ACTIVE_ROUTE_TIMEOUT();
 
-                if (lifetime < timeout)
+                if (lifetime < timeout) {
                     msh_route_set_lifetime(route_to_next_hop, lifetime);
+                }
 
-            } else
+            } else {
                 puts("BUG: no route towards next hop for RREP being forwaded");
+            }
 
 //    Finally, the precursor list for the next hop
 //    towards the destination is updated to contain the next hop towards

@@ -10,8 +10,9 @@
 
 void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
 {
-    if (route->updated_cb)
+    if (route->updated_cb) {
         (*route->updated_cb)(route, change_flag, route->cb_data);
+    }
 }
 
 void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
@@ -26,8 +27,9 @@ void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
         set_alarm_time(DELETE_PERIOD(), &sc, &usc);
         add_alarm(alarm, sc, usc);
 
-    } else if (route->alarm_action == RTACTION_DESTROY)
+    } else if (route->alarm_action == RTACTION_DESTROY) {
         msh_route_destroy(route);
+    }
 }
 
 struct msh_route* msh_route_alloc() {
@@ -80,27 +82,29 @@ uint8_t msh_route_get_prefix_sz(struct msh_route *route)
 // setea de nuevo?
 void msh_route_set_flag(struct msh_route *route, uint16_t flag)
 {
-    if (flag == RTFLAG_VALID_DEST_SEQ_NUM)
+    if (flag == RTFLAG_VALID_DEST_SEQ_NUM) {
         route->flags |= RTFLAG_VALID_DEST_SEQ_NUM;
-    else if (flag == RTFLAG_VALID_ENTRY)
+    } else if (flag == RTFLAG_VALID_ENTRY) {
         route->flags |= RTFLAG_VALID_ENTRY;
-    else if (flag == RTFLAG_HAS_NEXTHOP)
+    } else if (flag == RTFLAG_HAS_NEXTHOP) {
         route->flags |= RTFLAG_HAS_NEXTHOP;
-    else if (flag == RTFLAG_UNMANAGED)
+    } else if (flag == RTFLAG_UNMANAGED) {
         route->flags |= RTFLAG_UNMANAGED;
+    }
 }
 
 // FIXME lo mismo que arriba
 void msh_route_unset_flag(struct msh_route *route, uint16_t flag)
 {
-    if (flag == RTFLAG_VALID_DEST_SEQ_NUM)
+    if (flag == RTFLAG_VALID_DEST_SEQ_NUM) {
         route->flags &= ~RTFLAG_VALID_DEST_SEQ_NUM;
-    else if (flag == RTFLAG_VALID_ENTRY)
+    } else if (flag == RTFLAG_VALID_ENTRY) {
         route->flags &= ~RTFLAG_VALID_ENTRY;
-    else if (flag == RTFLAG_HAS_NEXTHOP)
+    } else if (flag == RTFLAG_HAS_NEXTHOP) {
         route->flags &= ~RTFLAG_HAS_NEXTHOP;
-    else if (flag == RTFLAG_UNMANAGED)
+    } else if (flag == RTFLAG_UNMANAGED) {
         route->flags &= ~RTFLAG_UNMANAGED;
+    }
 }
 
 uint16_t msh_route_get_flags(struct msh_route *route)
@@ -126,8 +130,9 @@ void msh_route_set_next_hop(struct msh_route *route, struct in_addr next_hop)
 }
 
 struct in_addr msh_route_get_next_hop(struct msh_route *route) {
-    if (!(route->flags & RTFLAG_HAS_NEXTHOP))
+    if (!(route->flags & RTFLAG_HAS_NEXTHOP)) {
         puts("accessing to the next hop of a route without one set");
+    }
 
     return route->next_hop;
 }
@@ -156,8 +161,9 @@ void msh_route_set_lifetime(struct msh_route *route, uint32_t lifetime)
 {
     unsigned long sc, usc;
 
-    if (route->flags & RTFLAG_UNMANAGED)
+    if (route->flags & RTFLAG_UNMANAGED) {
         return;
+    }
 
     msh_route_set_flag(route, RTFLAG_VALID_ENTRY);
     route->alarm_action = RTACTION_UNSET_VALID_ENTRY;
@@ -173,8 +179,9 @@ uint32_t msh_route_get_lifetime(struct msh_route *route)
     gettimeofday(&now, NULL);
 
     if (!(route->flags & RTFLAG_VALID_ENTRY) ||
-            !timercmp(&route->alarm.tv, &now, > ))
+            !timercmp(&route->alarm.tv, &now, > )) {
         return 0;
+    }
 
     timersub(&now, &route->alarm.tv, &now);
 
@@ -217,8 +224,9 @@ void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip)
     struct precursor_t *entry;
 
     list_for_each_entry(entry, &route->precursors_list.list, list) {
-        if (entry->dst_ip.s_addr == dst_ip.s_addr)
+        if (entry->dst_ip.s_addr == dst_ip.s_addr) {
             return;
+        }
     }
 
     // Entry not found; adding it
@@ -273,35 +281,45 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
         diff |= (ip1masked != ip2masked);
     }
 
-    if (attr_flags & RTATTR_DST_IP)
+    if (attr_flags & RTATTR_DST_IP) {
         diff |= (first->dst_ip.s_addr != second->dst_ip.s_addr);
+    }
 
-    if (attr_flags & RTATTR_PREFIX_SZ)
+    if (attr_flags & RTATTR_PREFIX_SZ) {
         diff |= (first->prefix_sz != second->prefix_sz);
+    }
 
-    if (attr_flags & RTATTR_DEST_SEQ_NUM)
+    if (attr_flags & RTATTR_DEST_SEQ_NUM) {
         diff |= (first->dest_seq_num != second->dest_seq_num);
+    }
 
-    if (attr_flags & RTATTR_FLAGS)
+    if (attr_flags & RTATTR_FLAGS) {
         diff |= (first->flags != second->flags);
+    }
 
-    if (attr_flags & RTATTR_HOP_COUNT)
+    if (attr_flags & RTATTR_HOP_COUNT) {
         diff |= (first->hop_count != second->hop_count);
+    }
 
-    if (attr_flags & RTATTR_NEXTHOP_IP)
+    if (attr_flags & RTATTR_NEXTHOP_IP) {
         diff |= (first->next_hop.s_addr != second->next_hop.s_addr);
+    }
 
-    if (attr_flags & RTATTR_NET_IFACE)
+    if (attr_flags & RTATTR_NET_IFACE) {
         diff |= (first->net_iface != second->net_iface);
+    }
 
-    if (attr_flags & RTATTR_LIFETIME)
+    if (attr_flags & RTATTR_LIFETIME) {
         diff |= timercmp(&first->alarm.tv, &second->alarm.tv, != );
+    }
 
-    if (attr_flags & RTATTR_UPDATED_CB)
+    if (attr_flags & RTATTR_UPDATED_CB) {
         diff |= (first->updated_cb != second->updated_cb);
+    }
 
-    if (attr_flags & RTATTR_CB_DATA)
+    if (attr_flags & RTATTR_CB_DATA) {
         diff |= (first->cb_data != second->cb_data);
+    }
 
     printf("diff: %d\n", diff);
     return diff;

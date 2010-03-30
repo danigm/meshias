@@ -115,36 +115,41 @@ static uint32_t nfqueue_packet_print(struct nfq_data *packet)
 
     macAddress = nfq_get_packet_hw(packet);
 
-    if (macAddress)
+    if (macAddress) {
         printf("mac len %d address\n", ntohs(macAddress->hw_addrlen));
-    else
+    } else {
         puts("no MAC adress");
+    }
 
     if (!nfq_get_timestamp(packet, &timeVal)) {
         printf("timestamp %ld.%ld", timeVal.tv_sec, timeVal.tv_usec);
-    } else
+    } else {
         puts("no timestamp");
+    }
 
     mark = nfq_get_nfmark(packet);
 
-    if (mark)
+    if (mark) {
         printf("mark=%u\n", mark);
-    else
+    } else {
         puts("no mark");
+    }
 
     device = nfq_get_indev(packet);
 
-    if (device)
+    if (device) {
         printf("indev=%u\n", device);
-    else
+    } else {
         puts("no indev");
+    }
 
     device = nfq_get_outdev(packet);
 
-    if (device)
+    if (device) {
         printf("outdev=%u\n", device);
-    else
+    } else {
         puts("no outdev");
+    }
 
     length = nfq_get_payload(packet, &pckt_data);
 
@@ -152,10 +157,11 @@ static uint32_t nfqueue_packet_print(struct nfq_data *packet)
         printf("pckt_data[%d]:{", length);
 
         for (i = 0; i < length; i++) {
-            if (isprint(pckt_data[i]))
+            if (isprint(pckt_data[i])) {
                 fputc(pckt_data[i], stdout);
-            else
+            } else {
                 fputc(' ', stdout);
+            }
         }
     }
 
@@ -184,8 +190,9 @@ static uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
     uint32_t id = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
 
-    if ((packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL)
+    if ((packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL) {
         id = ntohl(packetHeader->packet_id);
+    }
 
     return id;
 }
@@ -195,8 +202,9 @@ static uint32_t nfqueue_packet_get_hook(struct nfq_data *packet)
     uint32_t hook = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
 
-    if ((packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL)
+    if ((packetHeader = nfq_get_msg_packet_hdr(packet)) != NULL) {
         hook = packetHeader->hook;
+    }
 
     return hook;
 }
@@ -230,12 +238,14 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet)
     struct nfq_udphdr* udp_header;
 
     if ((ip_header = nfq_get_iphdr(packet)) != NULL) {
-        if (nfq_get_ip_protocol(ip_header) != IPPROTO_UDP) // 17 is UDP
+        if (nfq_get_ip_protocol(ip_header) != IPPROTO_UDP) { // 17 is UDP
             return 0;
+        }
 
         // Now we know it's udp; is it AODV traffic?
-        if ((udp_header = nfq_get_udphdr(packet)) == NULL)
+        if ((udp_header = nfq_get_udphdr(packet)) == NULL) {
             return 0;
+        }
 
         return nfq_get_udp_dest(udp_header) == AODV_UDP_PORT;
     }
@@ -319,8 +329,9 @@ static int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
         // Will only try to find a route if we are not already trying to find
         // one (i.e. when are not waiting response from a RREQ for that route
         // sent by us)
-        if (!rreq_fifo_waiting_response_for(data.rreq_queue, dest))
+        if (!rreq_fifo_waiting_response_for(data.rreq_queue, dest)) {
             aodv_find_route(dest, invalid_route, 0);
+        }
 
 //         return nfq_set_verdict(qh, id, NF_STOLEN, 0, NULL);
         return 1;
@@ -354,8 +365,9 @@ static int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
 
         // Finally accept the packet
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
-    } else
+    } else {
         puts("BUG: we are receiving a packet directed to us, routing_table_use_route() should by definition work");
+    }
 }
 
 static int manage_forward_packet(struct nfq_q_handle *qh, struct nfgenmsg

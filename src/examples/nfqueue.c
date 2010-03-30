@@ -18,11 +18,13 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     struct nfqnl_msg_packet_hdr *packetHeader;
     char **puntero = (char**)(data2);
 
-    if (oldid != -1)
+    if (oldid != -1) {
         nfq_set_verdict(qh, oldid, NF_ACCEPT, 0, NULL);
+    }
 
-    if ((packetHeader = nfq_get_msg_packet_hdr(nfa)) != NULL)
+    if ((packetHeader = nfq_get_msg_packet_hdr(nfa)) != NULL) {
         oldid = ntohl(packetHeader->packet_id);
+    }
 
     nfq_get_payload(nfa, &payload);
 

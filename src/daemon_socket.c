@@ -96,7 +96,6 @@ void daemon_socket_receive_packet()
 
     if (numbytes == -1) {
         stats.error_aodv_recv++;
-        return;
     } else {
         aodv_process_packet(&msg, numbytes);
     }

@@ -126,8 +126,9 @@ uint32_t binary_exponential_backoff_time(int8_t prev_tries)
 
 uint32_t expanding_ring_search_ttl(uint8_t hop_count, int8_t prev_tries)
 {
-    if (prev_tries == 0)
+    if (prev_tries == 0) {
         return hop_count + TTL_START();
+    }
 
     uint32_t ret = hop_count + TTL_START() + prev_tries * TTL_INCREMENT();
 

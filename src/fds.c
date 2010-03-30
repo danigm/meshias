@@ -25,8 +25,9 @@ struct fds *create_fds(void) {
 
     fds = (struct fds *) calloc(sizeof(struct fds), 1);
 
-    if (fds == NULL)
+    if (fds == NULL) {
         return NULL;
+    }
 
     FD_ZERO(&fds->readfds);
     return fds;
@@ -41,8 +42,9 @@ int register_fd(int fd, struct fds *fds)
 {
     FD_SET(fd, &fds->readfds);
 
-    if (fd > fds->maxfd)
+    if (fd > fds->maxfd) {
         fds->maxfd = fd;
+    }
 
     return 0;
 }

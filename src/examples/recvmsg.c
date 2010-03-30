@@ -22,8 +22,9 @@ int aodv_get_ttl(struct msghdr* msgh)
         printf("len: %d, level: %d, type: %d\n", cmsg->cmsg_len, cmsg->cmsg_level, cmsg->cmsg_type);
 
         if (cmsg->cmsg_level == SOL_IP
-                && cmsg->cmsg_type == IP_TTL)
+                && cmsg->cmsg_type == IP_TTL) {
             ttl = *(int*)CMSG_DATA(cmsg);
+        }
     }
 
     /*
@@ -39,8 +40,9 @@ struct in_pktinfo* get_pkt(struct msghdr* msgh) {
     for (cmsg = CMSG_FIRSTHDR(msgh); cmsg != NULL;
             cmsg = CMSG_NXTHDR(msgh, cmsg)) {
         if (cmsg->cmsg_level == SOL_IP
-                && cmsg->cmsg_type == IP_PKTINFO)
+                && cmsg->cmsg_type == IP_PKTINFO) {
             return (struct in_pktinfo*)CMSG_DATA(cmsg);
+        }
     }
 
     return NULL;
@@ -139,8 +141,9 @@ int main(int argc, char *argv[])
 
         printf("recibido: %d\n", numbytes);
 
-        if (msgh.msg_name == NULL)
+        if (msgh.msg_name == NULL) {
             puts("puta");
+        }
 
         printf("name:%d, iov:%d, control:%d, flags:%d another:%d\n",
                msgh.msg_namelen, msgh.msg_iovlen,

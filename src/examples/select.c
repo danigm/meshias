@@ -28,8 +28,9 @@ int main(void)
             char buf[256];
             scanf("%s", buf);
             printf("A key was pressed!\n");
-        } else
+        } else {
             printf("Timed out.\n");
+        }
 
         // if this is removed, shit happens
         FD_SET(STDIN, &readfds);

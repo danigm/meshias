@@ -64,10 +64,11 @@ static void del_qh(struct nfq_q_handle *qh)
 
     for (cur_qh = qh->h->qh_list; cur_qh; cur_qh = cur_qh->next) {
         if (cur_qh == qh) {
-            if (prev_qh)
+            if (prev_qh) {
                 prev_qh->next = qh->next;
-            else
+            } else {
                 qh->h->qh_list = qh->next;
+            }
 
             return;
         }
@@ -86,8 +87,9 @@ static struct nfq_q_handle *find_qh(struct nfq_handle *h, u_int16_t id) {
     struct nfq_q_handle *qh;
 
     for (qh = h->qh_list; qh; qh = qh->next) {
-        if (qh->id == id)
+        if (qh->id == id) {
             return qh;
+        }
     }
 
     return NULL;
@@ -124,11 +126,13 @@ static int __nfq_rcv_pkt(struct nlmsghdr *nlh, struct nfattr *nfa[],
     struct nfq_q_handle *qh = find_qh(h, queue_num);
     struct nfq_data nfqa;
 
-    if (!qh)
+    if (!qh) {
         return -ENODEV;
+    }
 
-    if (!qh->cb)
+    if (!qh->cb) {
         return -ENODEV;
+    }
 
     nfqa.data = nfa;
 
@@ -155,13 +159,15 @@ struct nfq_handle *nfq_open(void) {
     struct nfnl_handle *nfnlh = nfnl_open();
     struct nfq_handle *qh;
 
-    if (!nfnlh)
+    if (!nfnlh) {
         return NULL;
+    }
 
     qh = nfq_open_nfnl(nfnlh);
 
-    if (!qh)
+    if (!qh) {
         nfnl_close(nfnlh);
+    }
 
     return qh;
 }
@@ -172,8 +178,9 @@ struct nfq_handle *nfq_open_nfnl(struct nfnl_handle *nfnlh) {
 
     h = malloc(sizeof(*h));
 
-    if (!h)
+    if (!h) {
         return NULL;
+    }
 
     memset(h, 0, sizeof(*h));
     h->nfnlh = nfnlh;
@@ -209,8 +216,9 @@ int nfq_close(struct nfq_handle *h)
     nfnl_subsys_close(h->nfnlssh);
     ret = nfnl_close(h->nfnlh);
 
-    if (ret == 0)
+    if (ret == 0) {
         free(h);
+    }
 
     return ret;
 }
@@ -235,8 +243,9 @@ struct nfq_q_handle *nfq_create_queue(struct nfq_handle *h,
     int ret;
     struct nfq_q_handle *qh;
 
-    if (find_qh(h, num))
+    if (find_qh(h, num)) {
         return NULL;
+    }
 
     qh = malloc(sizeof(*qh));
 
@@ -346,8 +355,9 @@ static int __set_verdict(struct nfq_q_handle *qh, u_int32_t id,
     /* add verdict header */
     nfnl_addattr_l(&u.nmh, sizeof(u), NFQA_VERDICT_HDR, &vh, sizeof(vh));
 
-    if (set_mark)
+    if (set_mark) {
         nfnl_addattr32(&u.nmh, sizeof(u), NFQA_MARK, mark);
+    }
 
     iov[0].iov_base = &u.nmh;
     iov[0].iov_len = NLMSG_TAIL(&u.nmh) - (void *)&u.nmh;
@@ -401,8 +411,9 @@ int nfq_get_timestamp(struct nfq_data *nfad, struct timeval *tv)
     qpt = nfnl_get_pointer_to_data(nfad->data, NFQA_TIMESTAMP,
                                    struct nfqnl_msg_packet_timestamp);
 
-    if (!qpt)
+    if (!qpt) {
         return -1;
+    }
 
     tv->tv_sec = __be64_to_cpu(qpt->sec);
     tv->tv_usec = __be64_to_cpu(qpt->usec);
@@ -469,8 +480,9 @@ int nfq_get_payload(struct nfq_data *nfad, char **data)
 {
     *data = nfnl_get_pointer_to_data(nfad->data, NFQA_PAYLOAD, char);
 
-    if (*data)
+    if (*data) {
         return NFA_PAYLOAD(nfad->data[NFQA_PAYLOAD-1]);
+    }
 
     return -1;
 }

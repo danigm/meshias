@@ -39,22 +39,25 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msg, int received) {
     // If address has been received
     if (msg->msg_namelen > 0) {
         pkt->address = *(struct sockaddr_in*)msg->msg_name;
-    } else
+    } else {
         stats.no_address_received++;
+    }
 
     // If data has been received
     if (msg->msg_iovlen > 0) {
         pkt->payload_len = received;
         pkt->payload = (char*)calloc(1, pkt->payload_len);
         memcpy(pkt->payload, msg->msg_iov->iov_base, pkt->payload_len);
-    } else
+    } else {
         stats.no_payload_received++;
+    }
 
     // If control data has been received
-    if (msg->msg_controllen > 0)
+    if (msg->msg_controllen > 0) {
         pkt->ttl = aodv_pkt_receive_ttl(msg);
-    else
+    } else {
         stats.no_control_received++;
+    }
 
     //FIXME dont check errors
     return pkt;
@@ -341,8 +344,9 @@ static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
     for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL;
             cmsg = CMSG_NXTHDR(msg, cmsg)) {
         if (cmsg->cmsg_level == SOL_IP
-                && cmsg->cmsg_type == IP_TTL)
+                && cmsg->cmsg_type == IP_TTL) {
             return *(uint8_t*)CMSG_DATA(cmsg);
+        }
     }
 
     stats.ttl_not_found++;

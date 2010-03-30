@@ -42,8 +42,9 @@ int main(int argc, char **argv)
         if (is_help_command(command)) {
             help_command();
             continue;
-        } else if (is_quit_command(command))
+        } else if (is_quit_command(command)) {
             break;
+        }
 
         send_command(command);
     };
@@ -67,8 +68,9 @@ int check_command(char *command)
     int i, found = 0;
 
     for (i = 0; i < N_ELEMENTS(COMMANDS); i++) {
-        if (strncmp(command, COMMANDS[i], strlen(COMMANDS[i])) == 0)
+        if (strncmp(command, COMMANDS[i], strlen(COMMANDS[i])) == 0) {
             found = 1;
+        }
     }
 
     if (!found) {
@@ -99,8 +101,9 @@ void (*get_function_command(char* command))(void*)
 
 
     for (i = 0; i < N_ELEMENTS(commands); i++) {
-        if (strncmp(command, commands[i].msg, strlen(commands[i].msg)) == 0)
+        if (strncmp(command, commands[i].msg, strlen(commands[i].msg)) == 0) {
             func = commands[i].func;
+        }
     }
 
     return func;

@@ -106,8 +106,9 @@ int aodv_get_ttl(struct msghdr* msgh)
         puts("megabucl3");
 
         if (cmsg->cmsg_level == SOL_IP
-                && cmsg->cmsg_type == IP_TTL)
+                && cmsg->cmsg_type == IP_TTL) {
             return (int)CMSG_DATA(cmsg);
+        }
     }
 
     /*
