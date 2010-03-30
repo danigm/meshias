@@ -32,11 +32,26 @@ char *COMMANDS[] = {
     "6", MSG_CLEAN_STATISTICS,
 };
 
+void show_command_help(int argc, char **argv)
+{
+    printf(
+            "usage: %s <server>\n"
+            "\n"
+            "example:\n"
+            "\t%1$s localhost\n"
+          , argv[0]);
+}
+
 struct hostent *HE;
 
 int main(int argc, char **argv)
 {
     char command[command_SIZE];
+
+    if (argc != 2) {
+        show_command_help(argc, argv);
+        exit(-1);
+    }
 
     if ((HE = gethostbyname(argv[1])) == NULL) {
         printf("gethostbyname() error\n");
@@ -61,10 +76,13 @@ int main(int argc, char **argv)
 
 int get_command(char *command)
 {
+    char input;
+    char log[255][255];
     do {
         memset(command, 0, command_SIZE);
 
         printf("\nWrite a valid command. If you don't know write help:\n> ");
+        input = getchar();
         scanf("%s", command);
 
     } while (!check_command(command));
@@ -122,26 +140,28 @@ int send_command(char* command)
     int fd;
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(12345);
+    addr.sin_port = htons(MESH_PORT);
     addr.sin_addr = *((struct in_addr *)HE->h_addr);
     bzero(&(addr.sin_zero), 8);
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        printf("socket() error\n");
-        exit(-1);
+        printf("I can't connect to Meshias daemon\n");
+        return -1;
     }
 
     if (connect(fd, (struct sockaddr *)&addr,
                 sizeof(struct sockaddr)) == -1) {
-        printf("connect() error\n");
-        exit(-1);
+        printf("Meshias is not running or I can't find it\n");
+        close (fd);
+        return -1;
     }
 
     snprintf (buf, bufsize, command);
 
     if (send(fd, buf, strlen(buf), 0) < 0) {
-        printf("Error en send() \n");
-        exit(-1);
+        printf("I can't send that command to Meshias daemon\n");
+        close (fd);
+        return -1;
     }
 
     while ((numbytes = recv(fd, buf, bufsize, 0)) > 0) {

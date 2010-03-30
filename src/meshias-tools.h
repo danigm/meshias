@@ -9,4 +9,6 @@ void help_command();
 int is_quit_command(char *command);
 int send_command(char* command);
 
+#define MESH_PORT 2654
+
 #endif

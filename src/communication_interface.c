@@ -2,6 +2,7 @@
 #include "msh_data.h"
 #include "statistics.h"
 #include "routing_table.h"
+#include "meshias-tools.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -13,6 +14,17 @@
 
 void get_statistics(char *buf, int bufsize);
 void get_routes(char *buf, int bufsize);
+void send_msg(int sock, char *buf, int size);
+
+void send_msg(int sock, char *buf, int size)
+{
+    int bufsize = 1024;
+    int sended = 0;
+    while (sended < size) {
+        send(sock, buf + sended, bufsize, 0);
+        sended += bufsize;
+    }
+}
 
 int comm_interface_init()
 {
@@ -32,7 +44,7 @@ int comm_interface_init()
     }
 
     local.sin_family = AF_INET;
-    local.sin_port = htons(12345);
+    local.sin_port = htons(MESH_PORT);
     local.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(fd, (struct sockaddr *) &local, sizeof(local)) == -1) {
@@ -60,6 +72,7 @@ void comm_interface_process_command(int fd, char* v_command)
     size_t size = strlen(command);
     void* tosend = command;
     char ack[] = "ACK";
+    memset(stats_buf, 0, stats_size);
 
     if (strncmp(command, MSG_KILL, strlen(MSG_KILL)) == 0) {
         data.end = 1;
@@ -73,7 +86,6 @@ void comm_interface_process_command(int fd, char* v_command)
                        strlen(MSG_SHOW_ROUTES)) == 0) {
         get_routes (stats_buf, stats_size);
         tosend = stats_buf;
-        printf ("%d\n", strlen(stats_buf));
         size = strlen(stats_buf);
     } else if (strncmp(command, MSG_SHOW_STATISTICS,
                        strlen(MSG_SHOW_STATISTICS)) == 0) {
@@ -83,16 +95,15 @@ void comm_interface_process_command(int fd, char* v_command)
     } else if (strncmp(command, MSG_CLEAN_STATISTICS,
                        strlen(MSG_CLEAN_STATISTICS)) == 0) {
         stats_reset();
-        tosend = &stats;
-        size = sizeof(stats);
+        get_statistics (stats_buf, stats_size);
+        tosend = stats_buf;
+        size = strlen(stats_buf);
     }
-    // Unknown command
     else {
-        puts("else");
         return;
     }
 
-    send(fd, tosend, size, 0);
+    send_msg(fd, tosend, size);
 }
 
 void comm_interface_receive_packets()
@@ -153,7 +164,6 @@ void get_statistics(char *buf, int bufsize)
 
 void add_route(struct msh_route *route, char *buf, int bufsize)
 {
-    puts("asdfas");
     snprintf (buf, bufsize, "dst_ip: %s\n"
               "prefix_sz: %d\n"
               "dest_seq_num: %d\n"
