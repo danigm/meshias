@@ -23,76 +23,6 @@ struct nl_addr* in_addr2nl_addr(struct in_addr *addr, uint8_t prefix_sz)
     return nl_addr_parse(buf, AF_INET);
 }
 
-void print_link(struct nl_object* obj, void *arg)
-{
-    int *item = (int *)arg;
-    struct rtnl_link* link = (struct rtnl_link*)obj;
-    printf("Link %d name: %s\n", (*item)++, rtnl_link_get_name(link));
-
-    struct nl_dump_params dp = {
-        .dp_type = NL_DUMP_FULL,
-        .dp_fd = stdout,
-        .dp_dump_msgtype = 1,
-    };
-
-    nl_object_dump(obj, &dp);
-}
-
-void print_route(struct nl_object* obj, void *arg)
-{
-    int *item = (int *)arg;
-    struct rtnl_route* route = (struct rtnl_route*)obj;
-    char buf[128];
-
-    struct nl_addr *addr = rtnl_route_get_dst(route);
-
-    if(addr != NULL && rtnl_route_get_family(route) == 2)
-    {
-        struct in_addr *inaddr = (struct in_addr*)malloc(sizeof(struct in_addr));
-        inaddr = nl_addr_get_binary_addr(addr);
-        printf("1: Route %s\n", inet_ntoa(*inaddr));
-
-        printf("2: Route %d \ttable %d\tdst %s\t\tdst len %d family %d\n",
-            *item,
-            rtnl_route_get_table(route),
-            nl_addr2str(addr, buf, sizeof(buf)),
-            rtnl_route_get_dst_len(route),
-            rtnl_route_get_family(route));
-        struct nl_addr *my_nl_addr = in_addr2nl_addr(inaddr, rtnl_route_get_dst_len(route));
-
-        printf("3: Route dst %s\t\tdst len %d\n",
-            nl_addr2str(my_nl_addr, buf, sizeof(buf)),
-            nl_addr_get_prefixlen(my_nl_addr));
-    } else
-        printf("Route %d\n", *item);
-
-    (*item)++;
-
-//     struct nl_dump_params dp = {
-//         .dp_type = NL_DUMP_FULL,
-//         .dp_fd = stdout,
-//         .dp_dump_msgtype = 1,
-//     };
-//
-//     if(rtnl_route_get_table(route) == 254)
-//     	nl_object_dump(obj, &dp);
-//
-//     route_dump_full(route, &params);
-}
-
-void print_addr(struct nl_object* obj, void *arg)
-{
-    int ifindex = *(int*)arg;
-    struct rtnl_addr* addr = (struct rtnl_addr*)obj;
-    struct nl_dump_params dp = {
-        .dp_type = NL_DUMP_FULL,
-        .dp_fd = stdout,
-        .dp_dump_msgtype = 1,
-    };
-
-    nl_object_dump(obj, &dp);
-}
-
 int main(int argc, char **argv)
 {
     struct nl_handle *sock;
@@ -101,10 +31,9 @@ int main(int argc, char **argv)
     // Connect to link netlink socket on kernel side
     nl_connect(sock, NETLINK_ROUTE);
 
-    if(argc < 3)
+    if(argc < 4)
     {
-
-        printf("%s <iface> <dst> [gateway]\n", argv[0]);
+        printf("%s <iface> <dst> gateway\n", argv[0]);
         printf("Example: %s ath0 192.168.2.1\n", argv[0]);
         exit(1);
     }
@@ -114,51 +43,24 @@ int main(int argc, char **argv)
     struct nl_cache *link_cache = rtnl_link_alloc_cache(sock);
     nl_cache_mngt_provide(link_cache);
 
-    char ath0[] = "ath0";
-    char *ifname = (argc > 1) ? argv[1] : ath0;
+    char *ifname = argv[1];
     int ifindex = rtnl_link_name2i(link_cache, ifname);
-
-//     printf("net iface: %d: %s\n", ifindex, ifname);
-    // In a second step, we iterate the link interfaces and print its names.
-//     printf("Link cache (%d ifaces):\n", nl_cache_nitems(link_cache));
-//     int item = 0;
-//     nl_cache_foreach(link_cache, print_link, (void *)&item);
-//
-//     struct nl_cache *route_cache = rtnl_route_alloc_cache(sock);
-//
-//     printf("Route cache (%d routes):\n", nl_cache_nitems(route_cache));
-//     item = 0;
-//     nl_cache_foreach(route_cache, print_route, (void *)&item);
-//     rtnl_route_set_gateway(nlroute, nl_addr_parse("127.0.0.1", AF_INET));
-//     if (rtnl_route_del(sock, nlroute, 0) < 0)
-//     {
-//         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
-//     }
-//
-//     struct nl_cache* addr_cache = rtnl_addr_alloc_cache(sock);
-//
-//     struct rtnl_addr* filter = rtnl_addr_alloc();
-//     rtnl_addr_set_ifindex(filter, ifindex);
-//     rtnl_addr_set_family(filter, AF_INET);
-
-//     nl_cache_foreach_filter(addr_cache, (struct nl_object *)filter, print_addr,
-//         &ifindex);
-
-//     struct nl_object* obj = nl_cache_search(addr_cache, (struct nl_object*)needle);
-//     nl_object_dump(obj, &dp);
-//     nl_cache_dump_filter(addr_cache, &dp, (struct nl_object*)needle);
-
 
     struct rtnl_route *nlroute = rtnl_route_alloc();
     struct nl_addr *dst = nl_addr_parse(argv[2], AF_INET);
     rtnl_route_set_oif(nlroute, ifindex);
     rtnl_route_set_dst(nlroute, dst);
-    if(argc >= 4)
-    {
-        struct nl_addr *gateway = nl_addr_parse(argv[3], AF_INET);
-        rtnl_route_set_gateway(nlroute, dst);
-    }
-    if (rtnl_route_add(sock, nlroute, 0) < 0)
+    struct nl_addr *gateway = nl_addr_parse(argv[3], AF_INET);
+    char buf[200];
+    printf("addr: %s\n", nl_addr2str(gateway, buf, sizeof(buf)));
+    rtnl_route_set_family(nlroute, AF_INET);
+    rtnl_route_set_table (nlroute, RT_TABLE_MAIN);
+    rtnl_route_set_gateway(nlroute, dst);
+    nl_addr_put(gateway);
+//     struct rtnl_nexthop * route_nexthop = rtnl_route_nh_alloc();
+//     rtnl_route_nh_set_gateway(route_nexthop, dst);
+//     rtnl_route_add_nexthop(nlroute, route_nexthop);
+    if (rtnl_route_add(sock, nlroute, NLM_F_CREATE) < 0)
     {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
     }
