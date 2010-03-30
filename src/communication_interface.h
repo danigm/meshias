@@ -12,8 +12,7 @@
 #define MSG_SHOW_STATISTICS "showstatistics"
 #define MSG_CLEAN_STATISTICS "cleanstatistics"
 
-struct route
-{
+struct route {
     struct in_addr dst_ip;
     uint8_t prefix_sz;
     uint32_t dest_seq_num;

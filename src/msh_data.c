@@ -79,9 +79,7 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     } else if (daemon_init()) {
         return ERR_INIT;
-    }
-    else if(comm_interface_init())
-    {
+    } else if (comm_interface_init()) {
         return ERR_INIT;
     }
 

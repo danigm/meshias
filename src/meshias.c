@@ -67,9 +67,8 @@ int main(int argc, char **argv)
                 daemon_receive_packets();
             }
 
-            if( FD_ISSET(data.comm_fd, &data.fds->readfds) )
-            {
-                debug(1,"A command was received by the comm socket.");
+            if ( FD_ISSET(data.comm_fd, &data.fds->readfds) ) {
+                debug(1, "A command was received by the comm socket.");
                 comm_interface_receive_packets();
             }
 

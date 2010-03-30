@@ -38,12 +38,12 @@ int main(int argc, char **argv)
 {
     char command[command_SIZE];
 
-   if ((HE=gethostbyname(argv[1]))==NULL){
-      printf("gethostbyname() error\n");
-      exit(-1);
-   }
+    if ((HE = gethostbyname(argv[1])) == NULL) {
+        printf("gethostbyname() error\n");
+        exit(-1);
+    }
 
-    while(1) {
+    while (1) {
         get_command(command);
 
         if (is_help_command(command)) {
@@ -108,10 +108,9 @@ int is_quit_command(char *command)
 int send_command(char* command)
 {
     int i;
-    for (i=0; i<N_ELEMENTS (COMMANDS); i+=2)
-    {
-        if (strncmp (command, COMMANDS[i], strlen (COMMANDS[i])) == 0)
-        {
+
+    for (i = 0; i < N_ELEMENTS (COMMANDS); i += 2) {
+        if (strncmp (command, COMMANDS[i], strlen (COMMANDS[i])) == 0) {
             snprintf(command, command_SIZE, "%s", COMMANDS[i+1]);
             break;
         }
@@ -125,28 +124,27 @@ int send_command(char* command)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(12345);
     addr.sin_addr = *((struct in_addr *)HE->h_addr);
-    bzero(&(addr.sin_zero),8);
+    bzero(&(addr.sin_zero), 8);
 
-    if ((fd=socket(AF_INET, SOCK_STREAM, 0)) == -1){
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         printf("socket() error\n");
         exit(-1);
     }
 
-    if(connect(fd, (struct sockaddr *)&addr,
-      sizeof(struct sockaddr))==-1)
-    {
+    if (connect(fd, (struct sockaddr *)&addr,
+                sizeof(struct sockaddr)) == -1) {
         printf("connect() error\n");
         exit(-1);
     }
 
     snprintf (buf, bufsize, command);
-    if (send(fd, buf, strlen(buf), 0) < 0)
-    {
+
+    if (send(fd, buf, strlen(buf), 0) < 0) {
         printf("Error en send() \n");
         exit(-1);
     }
 
-    while ((numbytes=recv(fd, buf, bufsize, 0)) > 0){
+    while ((numbytes = recv(fd, buf, bufsize, 0)) > 0) {
         buf[numbytes] = 0;
         printf ("%s", buf);
     }
