@@ -16,7 +16,7 @@
  * Sends a Route Request AODV message.
  */
 void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
-    uint8_t prev_tries);
+                     uint8_t prev_tries);
 
 /* Funtions to process incoming packets */
 void aodv_process_rreq(struct aodv_pkt* pkt);
@@ -30,7 +30,7 @@ void aodv_process_rrep_ack(struct aodv_pkt* pkt);
  * a non-zero value. Otherwise, it returns 0.
  */
 uint8_t aodv_answer_to_rreq(struct aodv_rreq* pkt_rreq, struct in_addr prev_hop,
-    struct msh_route* route_to_orig);
+                            struct msh_route* route_to_orig);
 
 
 #endif

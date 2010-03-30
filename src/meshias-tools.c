@@ -17,7 +17,7 @@
     3. restart\n\
     4. showroutes\n\
     5. showstatistics\n\
-    6. cleanstatistics\n\n"
+6. cleanstatistics\n\n"
 
 #define N_ELEMENTS(arr) (sizeof (arr) / sizeof ((arr)[0]))
 
@@ -43,16 +43,15 @@ int main(int argc, char **argv)
       exit(-1);
    }
 
-    while(1)
-    {
+    while(1) {
         get_command(command);
-        if(is_help_command(command))
-        {
+
+        if (is_help_command(command)) {
             help_command();
             continue;
-        }
-        else if(is_quit_command(command))
+        } else if (is_quit_command(command)) {
             break;
+        }
 
         send_command(command);
     };
@@ -62,28 +61,26 @@ int main(int argc, char **argv)
 
 int get_command(char *command)
 {
-    do
-    {
-        memset(command,0,command_SIZE);
+    do {
+        memset(command, 0, command_SIZE);
 
         printf("\nWrite a valid command. If you don't know write help:\n> ");
-        scanf("%s",command);
+        scanf("%s", command);
 
-    }while(!check_command(command));
+    } while (!check_command(command));
 }
 
 int check_command(char *command)
 {
-    int i, found=0;
+    int i, found = 0;
 
-    for (i=0; i<N_ELEMENTS (COMMANDS); i++)
-    {
-        if (strncmp (command, COMMANDS[i], strlen (COMMANDS[i])) == 0)
+    for (i = 0; i < N_ELEMENTS(COMMANDS); i++) {
+        if (strncmp(command, COMMANDS[i], strlen(COMMANDS[i])) == 0) {
             found = 1;
+        }
     }
 
-    if (!found)
-    {
+    if (!found) {
         puts("Command no valid.");
         return 0;
     }
@@ -93,19 +90,19 @@ int check_command(char *command)
 
 int is_help_command(char *command)
 {
-    return strncmp(command,MSG_HELP,strlen(MSG_HELP))==0 ||
-        strncmp(command, "0", strlen("0")) == 0;
+    return strncmp(command, MSG_HELP, strlen(MSG_HELP)) == 0 ||
+           strncmp(command, "0", strlen("0")) == 0;
 }
 
 void help_command()
 {
-    printf("%s",HELP_COMMAND);
+    printf("%s", HELP_COMMAND);
 }
 
 int is_quit_command(char *command)
 {
-    return strncmp(command,MSG_QUIT,strlen(MSG_QUIT))==0 ||
-        strncmp(command, "1", strlen("1")) == 0;
+    return strncmp(command, MSG_QUIT, strlen(MSG_QUIT)) == 0 ||
+           strncmp(command, "1", strlen("1")) == 0;
 }
 
 int send_command(char* command)

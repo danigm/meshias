@@ -23,20 +23,17 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
 
     // If the RREQ was not send  by us (i.e. if prev_tries < 0), we just delete
     // the entry.
-    if(entry->prev_tries < 0)
-    {
+    if (entry->prev_tries < 0) {
         __rreq_fifo_entry_delete(entry);
     }
     // If the RREQ was sent by ourselves it means that no RREP
     // has been received and thus we shall send a new RREQ
-    else
-    {
+    else {
         unsigned long  sc, usc;
         // Try one more time
         entry->prev_tries++;
 
-        if(entry->prev_tries > RREQ_RETRIES())
-        {
+        if (entry->prev_tries > RREQ_RETRIES()) {
             __rreq_fifo_entry_delete(entry);
             // Route to the dest definitely not found: drop packets
             packets_fifo_drop_packets(data.packets_queue, entry->dst);
@@ -53,8 +50,10 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
 
         // An optional parameter set to zero
         struct in_addr orig = { 0 };
-        if(routing_table_use_route(data.routing_table, dst, &expired_route, orig))
+
+        if (routing_table_use_route(data.routing_table, dst, &expired_route, orig)) {
             fprintf(stderr, "Error: Found an unexpected route when a waiting RREQ expired\n");
+        }
 
         set_alarm_time(binary_exponential_backoff_time(entry->prev_tries), &sc, &usc);
         add_alarm(&entry->alarm, sc, usc);
@@ -67,10 +66,9 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
     }
 }
 
-struct rreq_fifo* rreq_fifo_alloc()
-{
+struct rreq_fifo* rreq_fifo_alloc() {
     struct rreq_fifo* queue = (struct rreq_fifo*)
-        calloc(1, sizeof(struct rreq_fifo));
+                              calloc(1, sizeof(struct rreq_fifo));
 
     init_alarm(&queue->alarm, queue, __rreq_fifo_alarm_cb);
     INIT_LIST_HEAD(&(queue->list));
@@ -82,18 +80,17 @@ void rreq_fifo_delete(struct rreq_fifo* queue)
 {
     struct rreq_fifo *entry, *tmp;
 
-    list_for_each_entry_safe(entry, tmp, &queue->list, list)
-    {
+    list_for_each_entry_safe(entry, tmp, &queue->list, list) {
         __rreq_fifo_entry_delete(entry);
     }
     free(queue);
 }
 
 void rreq_fifo_push(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst)
+                    struct in_addr dst)
 {
     struct rreq_fifo* entry = (struct rreq_fifo*)
-        calloc(1, sizeof(struct rreq_fifo));
+                              calloc(1, sizeof(struct rreq_fifo));
     unsigned long  sc, usc;
 
     entry->rreq_id = rreq_id;
@@ -107,10 +104,10 @@ void rreq_fifo_push(struct rreq_fifo* queue, uint32_t rreq_id,
 }
 
 void rreq_fifo_push_owned(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst, int8_t prev_tries)
+                          struct in_addr dst, int8_t prev_tries)
 {
     struct rreq_fifo* entry = (struct rreq_fifo*)
-        calloc(1, sizeof(struct rreq_fifo));
+                              calloc(1, sizeof(struct rreq_fifo));
     unsigned long  sc, usc;
 
     entry->rreq_id = rreq_id;
@@ -128,42 +125,40 @@ void rreq_fifo_push_owned(struct rreq_fifo* queue, uint32_t rreq_id,
 }
 
 uint8_t rreq_fifo_contains(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst)
+                           struct in_addr dst)
 {
     struct rreq_fifo *entry;
 
-    list_for_each_entry(entry, &queue->list, list)
-    {
-        if(entry->rreq_id == rreq_id && entry->dst.s_addr == dst.s_addr)
+    list_for_each_entry(entry, &queue->list, list) {
+        if (entry->rreq_id == rreq_id && entry->dst.s_addr == dst.s_addr) {
             return 1;
+        }
     }
     return 0;
 }
 
 uint8_t rreq_fifo_waiting_response_for(struct rreq_fifo* queue,
-    struct in_addr dst)
+                                       struct in_addr dst)
 {
     struct rreq_fifo *entry;
 
-    list_for_each_entry(entry, &queue->list, list)
-    {
+    list_for_each_entry(entry, &queue->list, list) {
         // We check that prev_tries non-zero because the packed must be owned"
         // i.e. must have been sent by us
-        if(entry->prev_tries >= 0 && entry->dst.s_addr == dst.s_addr)
+        if (entry->prev_tries >= 0 && entry->dst.s_addr == dst.s_addr) {
             return 1;
+        }
     }
     return 0;
 }
 
 void rreq_fifo_del(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst)
+                   struct in_addr dst)
 {
     struct rreq_fifo *entry, *tmp;
 
-    list_for_each_entry_safe(entry, tmp, &queue->list, list)
-    {
-        if(entry->rreq_id <= rreq_id && entry->dst.s_addr == dst.s_addr)
-        {
+    list_for_each_entry_safe(entry, tmp, &queue->list, list) {
+        if (entry->rreq_id <= rreq_id && entry->dst.s_addr == dst.s_addr) {
             __rreq_fifo_entry_delete(entry);
             return;
         }

@@ -6,8 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-struct fds
-{
+struct fds {
     int maxfd;
     fd_set readfds;
 };

@@ -5,10 +5,10 @@
 
 void stats_init()
 {
-    memset(&stats,0,sizeof(stats));
+    memset(&stats, 0, sizeof(stats));
 }
 
 void stats_reset()
 {
-    memset(&stats,0,sizeof(stats));
+    memset(&stats, 0, sizeof(stats));
 }

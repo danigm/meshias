@@ -20,59 +20,76 @@
 #include "packets_fifo.h"
 #include "fds.h"
 
-struct msh_data_t
-{
+/**
+ * This struct contains all the global data necesary for program execution.
+ */
+struct msh_data_t {
+    /** Bool to finish the program execution. */
     int end;
     // comm socket
     uint32_t comm_fd;
 
-    // needed for libnetfilter_queue
+    /** Struct needed to handle nfq. */
     struct nfq_handle *handle;
+    /** Struct needed to handle nfq.
+     * It represents the queue where we capture all the packets.  */
     struct nfq_q_handle *queue;
+    /** Struct needed to hanle nfq. */
     struct nfnl_handle *netlink_handle;
+    /** Netfilter_queue socket */
+    uint32_t nfqueue_fd;
 
-    // Needed for libnl
+    /** Struct needed to handle libnl. */
     struct nl_handle *nl_handle;
+    /** This integer represent the interface managed by meshias in libnl. */
+    uint32_t net_iface;
 
     // Here we buffer the packets we don't have a route for
     struct packets_fifo* packets_queue;
 
-    // Here we buffer the RREQ in order to avoid loops
+    /** Here we buffer the RREQ in order to avoid loops. */
     struct rreq_fifo* rreq_queue;
 
-    // Route table. Plays a major role in AODV
+    /** Route table. Plays a major role in AODV. */
     struct routing_table* routing_table;
 
-    // Sockets
-    uint32_t nfqueue_fd;
-    // This is the socket 654 UDP. It's listening to new packet of the
-    // aodv protocol. It also used to send packet of aodv protocol.
+    /** This is the socket 654 UDP. It's listening to new packet of the
+     * aodv protocol. It also used to send packet of aodv protocol.
+     */
     uint32_t daemon_fd;
+
+    /** The set of sockets to manage when data comes to any socket */
     struct fds *fds;
 
-    uint32_t net_iface;
+    /** This is the IP of the interface managed by meshias. */
     struct in_addr ip_addr;
+    /** This is the broadcast address */
     struct in_addr broadcast_addr;
 
-    // Our own sequence number;
+    /** Our sequence number. Plays  major role in AODV. */
     uint32_t seq_num;
 
-    // The ID of the last RREQ we have sent
+    /** The ID of the last RREQ we have sent. */
     uint32_t rreq_id;
 
-    // There's a maximum number of RREQs that can be sent per second
+    /** There's a maximum number of RREQs that can be sent per second. */
     uint32_t num_rreq_sent;
 
-    // This alarm will be used to reset the field num_rreq_sent to zero every
-    // second, and to send the RREQs waiting for being sent.
+    /** This alarm will be used to reset the field num_rreq_sent to zero every
+     * second, and to send the RREQs waiting for being sent.*/
     struct alarm_block rreq_flush_alarm;
+
     //TODO
     //struct rreq_wait_fifo *rreq_wait_queue;
 };
 
+/** The global struct. */
 extern struct msh_data_t data;
 
+/** Create the initialize the struct with the initial content. */
 int msh_data_init(int argc, char **argv);
+
+/** Free the mallocs. */
 void msh_data_shutdown();
 
 #endif

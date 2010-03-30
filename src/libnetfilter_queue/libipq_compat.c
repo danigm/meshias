@@ -37,56 +37,58 @@
  ****************************************************************************/
 
 enum {
-	IPQ_ERR_NONE = 0,
-	IPQ_ERR_IMPL,
-	IPQ_ERR_HANDLE,
-	IPQ_ERR_SOCKET,
-	IPQ_ERR_BIND,
-	IPQ_ERR_BUFFER,
-	IPQ_ERR_RECV,
-	IPQ_ERR_NLEOF,
-	IPQ_ERR_ADDRLEN,
-	IPQ_ERR_STRUNC,
-	IPQ_ERR_RTRUNC,
-	IPQ_ERR_NLRECV,
-	IPQ_ERR_SEND,
-	IPQ_ERR_SUPP,
-	IPQ_ERR_RECVBUF,
-	IPQ_ERR_TIMEOUT,
-        IPQ_ERR_PROTOCOL
+    IPQ_ERR_NONE = 0,
+    IPQ_ERR_IMPL,
+    IPQ_ERR_HANDLE,
+    IPQ_ERR_SOCKET,
+    IPQ_ERR_BIND,
+    IPQ_ERR_BUFFER,
+    IPQ_ERR_RECV,
+    IPQ_ERR_NLEOF,
+    IPQ_ERR_ADDRLEN,
+    IPQ_ERR_STRUNC,
+    IPQ_ERR_RTRUNC,
+    IPQ_ERR_NLRECV,
+    IPQ_ERR_SEND,
+    IPQ_ERR_SUPP,
+    IPQ_ERR_RECVBUF,
+    IPQ_ERR_TIMEOUT,
+    IPQ_ERR_PROTOCOL
 };
 #define IPQ_MAXERR IPQ_ERR_PROTOCOL
 
 struct ipq_errmap_t {
-	int errcode;
-	char *message;
+    int errcode;
+    char *message;
 } ipq_errmap[] = {
-	{ IPQ_ERR_NONE, "Unknown error" },
-	{ IPQ_ERR_IMPL, "Implementation error" },
-	{ IPQ_ERR_HANDLE, "Unable to create netlink handle" },
-	{ IPQ_ERR_SOCKET, "Unable to create netlink socket" },
-	{ IPQ_ERR_BIND, "Unable to bind netlink socket" },
-	{ IPQ_ERR_BUFFER, "Unable to allocate buffer" },
-	{ IPQ_ERR_RECV, "Failed to receive netlink message" },
-	{ IPQ_ERR_NLEOF, "Received EOF on netlink socket" },
-	{ IPQ_ERR_ADDRLEN, "Invalid peer address length" },
-	{ IPQ_ERR_STRUNC, "Sent message truncated" },
-	{ IPQ_ERR_RTRUNC, "Received message truncated" },
-	{ IPQ_ERR_NLRECV, "Received error from netlink" },
-	{ IPQ_ERR_SEND, "Failed to send netlink message" },
-	{ IPQ_ERR_SUPP, "Operation not supported" },
-	{ IPQ_ERR_RECVBUF, "Receive buffer size invalid" },
-	{ IPQ_ERR_TIMEOUT, "Timeout"},
-	{ IPQ_ERR_PROTOCOL, "Invalid protocol specified" }
+    { IPQ_ERR_NONE, "Unknown error" },
+    { IPQ_ERR_IMPL, "Implementation error" },
+    { IPQ_ERR_HANDLE, "Unable to create netlink handle" },
+    { IPQ_ERR_SOCKET, "Unable to create netlink socket" },
+    { IPQ_ERR_BIND, "Unable to bind netlink socket" },
+    { IPQ_ERR_BUFFER, "Unable to allocate buffer" },
+    { IPQ_ERR_RECV, "Failed to receive netlink message" },
+    { IPQ_ERR_NLEOF, "Received EOF on netlink socket" },
+    { IPQ_ERR_ADDRLEN, "Invalid peer address length" },
+    { IPQ_ERR_STRUNC, "Sent message truncated" },
+    { IPQ_ERR_RTRUNC, "Received message truncated" },
+    { IPQ_ERR_NLRECV, "Received error from netlink" },
+    { IPQ_ERR_SEND, "Failed to send netlink message" },
+    { IPQ_ERR_SUPP, "Operation not supported" },
+    { IPQ_ERR_RECVBUF, "Receive buffer size invalid" },
+    { IPQ_ERR_TIMEOUT, "Timeout"},
+    { IPQ_ERR_PROTOCOL, "Invalid protocol specified" }
 };
 
 static int ipq_errno = IPQ_ERR_NONE;
 
 static char *ipq_strerror(int errcode)
 {
-	if (errcode < 0 || errcode > IPQ_MAXERR)
-		errcode = IPQ_ERR_IMPL;
-	return ipq_errmap[errcode].message;
+    if (errcode < 0 || errcode > IPQ_MAXERR) {
+        errcode = IPQ_ERR_IMPL;
+    }
+
+    return ipq_errmap[errcode].message;
 }
 
 /****************************************************************************
@@ -98,52 +100,56 @@ static char *ipq_strerror(int errcode)
 /*
  * Create and initialise an ipq handle.
  */
-struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol)
-{
-	int status;
-	struct ipq_handle *h;
+struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol) {
+    int status;
+    struct ipq_handle *h;
 
-	h = (struct ipq_handle *)malloc(sizeof(struct ipq_handle));
-	if (h == NULL) {
-		ipq_errno = IPQ_ERR_HANDLE;
-		return NULL;
-	}
+    h = (struct ipq_handle *)malloc(sizeof(struct ipq_handle));
 
-	memset(h, 0, sizeof(struct ipq_handle));
+    if (h == NULL) {
+        ipq_errno = IPQ_ERR_HANDLE;
+        return NULL;
+    }
 
-	h->nfqnlh = nfq_open();
-	if (!h->nfqnlh) {
-		ipq_errno = IPQ_ERR_SOCKET;
-		goto err_free;
-	}
+    memset(h, 0, sizeof(struct ipq_handle));
 
-        if (protocol == PF_INET)
-		status = nfq_bind_pf(h->nfqnlh, PF_INET);
-        else if (protocol == PF_INET6)
-		status = nfq_bind_pf(h->nfqnlh, PF_INET6);
-        else {
-		ipq_errno = IPQ_ERR_PROTOCOL;
-		goto err_close;
-        }
-	h->family = protocol;
-	if (status < 0) {
-		ipq_errno = IPQ_ERR_BIND;
-		goto err_close;
-	}
+    h->nfqnlh = nfq_open();
 
-	h->qh = nfq_create_queue(h->nfqnlh, 0, NULL, NULL);
-	if (!h->qh) {
-		ipq_errno = IPQ_ERR_BIND;
-		goto err_close;
-	}
+    if (!h->nfqnlh) {
+        ipq_errno = IPQ_ERR_SOCKET;
+        goto err_free;
+    }
 
-	return h;
+    if (protocol == PF_INET) {
+        status = nfq_bind_pf(h->nfqnlh, PF_INET);
+    } else if (protocol == PF_INET6) {
+        status = nfq_bind_pf(h->nfqnlh, PF_INET6);
+    } else {
+        ipq_errno = IPQ_ERR_PROTOCOL;
+        goto err_close;
+    }
+
+    h->family = protocol;
+
+    if (status < 0) {
+        ipq_errno = IPQ_ERR_BIND;
+        goto err_close;
+    }
+
+    h->qh = nfq_create_queue(h->nfqnlh, 0, NULL, NULL);
+
+    if (!h->qh) {
+        ipq_errno = IPQ_ERR_BIND;
+        goto err_close;
+    }
+
+    return h;
 
 err_close:
-	nfq_close(h->nfqnlh);
+    nfq_close(h->nfqnlh);
 err_free:
-	free(h);
-	return NULL;
+    free(h);
+    return NULL;
 }
 
 /*
@@ -152,17 +158,18 @@ err_free:
  */
 int ipq_destroy_handle(struct ipq_handle *h)
 {
-	if (h) {
-		nfq_close(h->nfqnlh);
-		free(h);
-	}
-	return 0;
+    if (h) {
+        nfq_close(h->nfqnlh);
+        free(h);
+    }
+
+    return 0;
 }
 
 int ipq_set_mode(const struct ipq_handle *h,
                  u_int8_t mode, size_t range)
 {
-	return nfq_set_mode(h->qh, mode, range);
+    return nfq_set_mode(h->qh, mode, range);
 }
 
 /*
@@ -172,45 +179,48 @@ int ipq_set_mode(const struct ipq_handle *h,
 ssize_t ipq_read(const struct ipq_handle *h,
                  unsigned char *buf, size_t len, int timeout)
 {
-	struct nfattr *tb[NFQA_MAX];
-	struct nlmsghdr *nlh = (struct nlmsghdr *)buf;
-	struct nfgenmsg *msg = NULL;
-	struct nfattr *nfa;
+    struct nfattr *tb[NFQA_MAX];
+    struct nlmsghdr *nlh = (struct nlmsghdr *)buf;
+    struct nfgenmsg *msg = NULL;
+    struct nfattr *nfa;
 
-	//return ipq_netlink_recvfrom(h, buf, len, timeout);
+    //return ipq_netlink_recvfrom(h, buf, len, timeout);
 
-	/* This really sucks.  We have to copy the whole packet
-	 * in order to build a data structure that is compatible to
-	 * the old ipq interface... */
+    /* This really sucks.  We have to copy the whole packet
+     * in order to build a data structure that is compatible to
+     * the old ipq interface... */
 
-	nfa = nfnl_parse_hdr(nfq_nfnlh(h->nfqnlh), nlh, &msg);
-	if (!msg || !nfa)
-		return 0;
+    nfa = nfnl_parse_hdr(nfq_nfnlh(h->nfqnlh), nlh, &msg);
 
-	if (msg->nfgen_family != h->family)
-		return 0;
+    if (!msg || !nfa) {
+        return 0;
+    }
 
-	nfnl_parse_attr(tb, NFQA_MAX, nfa, 0xffff);
+    if (msg->nfgen_family != h->family) {
+        return 0;
+    }
+
+    nfnl_parse_attr(tb, NFQA_MAX, nfa, 0xffff);
 
 
-	return 0;
+    return 0;
 }
 
 int ipq_message_type(const unsigned char *buf)
 {
-	return ((struct nlmsghdr*)buf)->nlmsg_type;
+    return ((struct nlmsghdr*)buf)->nlmsg_type;
 }
 
 int ipq_get_msgerr(const unsigned char *buf)
 {
-	struct nlmsghdr *h = (struct nlmsghdr *)buf;
-	struct nlmsgerr *err = (struct nlmsgerr*)NLMSG_DATA(h);
-	return -err->error;
+    struct nlmsghdr *h = (struct nlmsghdr *)buf;
+    struct nlmsgerr *err = (struct nlmsgerr*)NLMSG_DATA(h);
+    return -err->error;
 }
 
 ipq_packet_msg_t *ipq_get_packet(const unsigned char *buf)
 {
-	return NLMSG_DATA((struct nlmsghdr *)(buf));
+    return NLMSG_DATA((struct nlmsghdr *)(buf));
 }
 
 int ipq_set_verdict(const struct ipq_handle *h,
@@ -219,29 +229,35 @@ int ipq_set_verdict(const struct ipq_handle *h,
                     size_t data_len,
                     unsigned char *buf)
 {
-	return nfq_set_verdict(h->qh, id, verdict, data_len, buf);
+    return nfq_set_verdict(h->qh, id, verdict, data_len, buf);
 }
 
 /* Not implemented yet */
 int ipq_ctl(const struct ipq_handle *h, int request, ...)
 {
-	return 1;
+    return 1;
 }
 
 char *ipq_errstr(void)
 {
-	return ipq_strerror(ipq_errno);
+    return ipq_strerror(ipq_errno);
 }
 
 void ipq_perror(const char *s)
 {
-	if (s)
-		fputs(s, stderr);
-	else
-		fputs("ERROR", stderr);
-	if (ipq_errno)
-		fprintf(stderr, ": %s", ipq_errstr());
-	if (errno)
-		fprintf(stderr, ": %s", strerror(errno));
-	fputc('\n', stderr);
+    if (s) {
+        fputs(s, stderr);
+    } else {
+        fputs("ERROR", stderr);
+    }
+
+    if (ipq_errno) {
+        fprintf(stderr, ": %s", ipq_errstr());
+    }
+
+    if (errno) {
+        fprintf(stderr, ": %s", strerror(errno));
+    }
+
+    fputc('\n', stderr);
 }

@@ -49,41 +49,35 @@ void __init_addr(struct nl_object* obj, void *arg)
     memcpy(&data.broadcast_addr, nl_addr_get_binary_addr(broadcast), sizeof(uint32_t));
     data.broadcast_addr.s_addr = ntohl(data.broadcast_addr.s_addr);
 
-    printf("local %s\n", inet_htoa (data.ip_addr));
-    printf("broadcast %s\n", inet_htoa (data.broadcast_addr));
+    printf("local %s\n", inet_htoa(data.ip_addr));
+    printf("broadcast %s\n", inet_htoa(data.broadcast_addr));
 }
 
 int msh_data_init(int argc, char **argv)
 {
-    memset(&data,0,sizeof(data));
+    memset(&data, 0, sizeof(data));
 
     // Parse args
-    if(argc < 2)
-    {
+    if (argc < 2) {
         printf("Usage: %s <network interface>\n", argv[0]);
         printf("Example: %s ath0\n", argv[0]);
         exit(1);
     }
 
     // You must be root
-    if(getuid() != 0)
-    {
+    if (getuid() != 0) {
         perror("You must be root.\n");
         return ERR_INIT;
     }
 
     stats_init();
-    if((data.fds=create_fds())==NULL)
-    {
+
+    if ((data.fds = create_fds()) == NULL) {
         perror("Error: fds");
         return ERR_INIT;
-    }
-    else if(nfqueue_init())
-    {
+    } else if (nfqueue_init()) {
         return ERR_INIT;
-    }
-    else if(daemon_init())
-    {
+    } else if (daemon_init()) {
         return ERR_INIT;
     }
     else if(comm_interface_init())
@@ -100,13 +94,12 @@ int msh_data_init(int argc, char **argv)
     struct nl_cache *link_cache = rtnl_link_alloc_cache(data.nl_handle);
     struct rtnl_link *link = rtnl_link_get_by_name(link_cache, argv[1]);
 
-    if(!link)
-    {
+    if (!link) {
         fprintf(stderr, "Error: Couldn't access the interface named %s\n", argv[1]);
         return ERR_INIT;
     }
 
-    data.net_iface = rtnl_link_name2i(link_cache,rtnl_link_get_name(link));
+    data.net_iface = rtnl_link_name2i(link_cache, rtnl_link_get_name(link));
 
 //     rtnl_link_put(link);
     nl_cache_free(link_cache);
@@ -143,6 +136,6 @@ void msh_data_shutdown()
     destroy_fds(data.fds);
     nfqueue_shutdown();
     daemon_shutdown();
-    comm_interface_shutdown();
-    debug(1,"Freed all memory");
+    unix_interface_shutdown();
+    debug(1, "Freed all memory");
 }

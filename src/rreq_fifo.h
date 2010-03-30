@@ -6,8 +6,7 @@
 #include "alarm/linux_list.h"
 #include "alarm/alarm.h"
 
-struct rreq_fifo
-{
+struct rreq_fifo {
     uint32_t rreq_id;
     // TODO: shouldn't we buffer the orig too? and check the orig instead
     struct in_addr dst;
@@ -35,7 +34,7 @@ void rreq_fifo_delete(struct rreq_fifo* queue);
  * Add a new external RREQ (not send by ourselves) id to the queue.
  */
 void rreq_fifo_push(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst);
+                    struct in_addr dst);
 
 /**
  * Add a new RREQ that was sent by ourselves to the queue.
@@ -43,25 +42,25 @@ void rreq_fifo_push(struct rreq_fifo* queue, uint32_t rreq_id,
  *              success before.
  */
 void rreq_fifo_push_owned(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst, int8_t prev_tries);
+                          struct in_addr dst, int8_t prev_tries);
 
 /**
  * Returns 1 if the RREQ is buffered, otherwise returns 0.
  */
 uint8_t rreq_fifo_contains(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst);
+                           struct in_addr dst);
 
 /**
  * Returns 1 if there is a owned RREQ buffered with the given dest.
  */
 uint8_t rreq_fifo_waiting_response_for(struct rreq_fifo* queue,
-    struct in_addr dst);
+                                       struct in_addr dst);
 
 /**
  * Locates the rreq_fifo entry with the given rreq_id and dst if found in the buffer,
  * removing the entry from the buffer if found.
  */
 void rreq_fifo_del(struct rreq_fifo* queue, uint32_t rreq_id,
-    struct in_addr dst);
+                   struct in_addr dst);
 
 #endif
