@@ -1,35 +1,33 @@
 #ifndef LOG_H_
 #define LOG_H_
 
-
-#define DEBUG 3
+#include <stdio.h>
+#include <string.h>
 
 #ifdef DEBUG
-
-void debug_real(int x, char* str);
-
-#define debug(x, y) debug_##x(y)
+#define debug(x, ...) debug_##x(__VA_ARGS__)
+#define debug_real(_fmt, ...) fprintf(stderr, "\033[31m%s:%d \033[0m\033[34m%s()\033[0m: "_fmt"\n", strrchr(__FILE__, '/'), __LINE__, __FUNCTION__, ##__VA_ARGS__)
+#else
+#define debug_real(_fmt, ...)
+#define debug(x, ...)
+#endif
 
 #if DEBUG >= 1
-#define debug_1(y) debug_real(1, y)
+#define debug_1(_fmt, ...) debug_real(_fmt, ##__VA_ARGS__)
 #else
-#define debug_1(y)
-#endif // 1
+#define debug_1(_fmt, ...)
+#endif
 
 #if DEBUG >= 2
-#define debug_2(y) debug_real(2, y)
+#define debug_2(_fmt, ...) debug_real(_fmt, ##__VA_ARGS__)
 #else
-#define debug_2(y)
-#endif // 2
+#define debug_2(_fmt, ...)
+#endif
 
 #if DEBUG >= 3
-#define debug_3(y) debug_real(3, y)
+#define debug_3(_fmt, ...) debug_real(_fmt, ##__VA_ARGS__)
 #else
-#define debug_3(y)
-#endif // 3
-
-#else
-#define debug(...)
+#define debug_3(_fmt, ...)
 #endif
 
 #endif //LOG_H_
