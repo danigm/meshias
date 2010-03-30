@@ -20,11 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct fds *create_fds(void)
-{
+struct fds *create_fds(void) {
     struct fds *fds;
 
     fds = (struct fds *) calloc(sizeof(struct fds), 1);
+
     if (fds == NULL)
         return NULL;
 

@@ -26,11 +26,11 @@ int main(int argc, char *argv[])
     //char broadcast = '1'; // if that doesn't work, try this
 
     if (argc != 2) {
-        fprintf(stderr,"usage: broadcaster hostname\n");
+        fprintf(stderr, "usage: broadcaster hostname\n");
         exit(1);
     }
 
-    if ((he=gethostbyname(argv[1])) == NULL) {  // get the host info
+    if ((he = gethostbyname(argv[1])) == NULL) { // get the host info
         perror("gethostbyname");
         exit(1);
     }
@@ -42,14 +42,15 @@ int main(int argc, char *argv[])
 
     // this call is what allows broadcast packets to be sent:
     if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast,
-        sizeof broadcast) == -1) {
+                   sizeof broadcast) == -1) {
         perror("setsockopt (SO_BROADCAST)");
         exit(1);
     }
 
-    broadcast=64;
+    broadcast = 64;
+
     if (setsockopt(sockfd, SOL_IP, IP_TTL, &broadcast,
-        sizeof broadcast) == -1) {
+                   sizeof broadcast) == -1) {
         perror("setsockopt (SO_BROADCAST)");
         exit(1);
     }
@@ -58,26 +59,25 @@ int main(int argc, char *argv[])
     their_addr.sin_port = htons(654); // short, network byte order
     their_addr.sin_addr.s_addr = INADDR_ANY;
     memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
-    bind(sockfd,(struct sockaddr*)&their_addr,sizeof(struct sockaddr_in));
+    bind(sockfd, (struct sockaddr*)&their_addr, sizeof(struct sockaddr_in));
 
     their_addr.sin_port = htons(SERVERPORT); // short, network byte order
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
-    char data[20] =
-    {
+    char data[20] = {
         0x02, 0x00, 0x00, 0x00, 0xc0, 0xa8,
         0x05, 0x02, 0x00, 0x00, 0x00, 0x01, 0xc0, 0xa8,
         0x05, 0x01, 0x00, 0x00, 0x17, 0x70
     };
 
-    if ((numbytes=sendto(sockfd, data, 20, 0,
-             (struct sockaddr *)&their_addr, sizeof their_addr)) == -1) {
+    if ((numbytes = sendto(sockfd, data, 20, 0,
+                           (struct sockaddr *)&their_addr, sizeof their_addr)) == -1) {
         perror("sendto");
         exit(1);
     }
 
     printf("sent %d bytes to %s\n", numbytes,
-        inet_ntoa(their_addr.sin_addr));
+           inet_ntoa(their_addr.sin_addr));
 
     close(sockfd);
 

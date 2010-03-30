@@ -16,7 +16,7 @@
     3. restart\n\
     4. showroutes\n\
     5. showstatistics\n\
-    6. cleanstatistics\n\n"
+6. cleanstatistics\n\n"
 
 #define N_ELEMENTS(arr) (sizeof (arr) / sizeof ((arr)[0]))
 
@@ -35,15 +35,14 @@ char *COMMANDS[] = {
 int main(int argc, char **argv)
 {
     char command[command_SIZE];
-    while(1)
-    {
+
+    while (1) {
         get_command(command);
-        if(is_help_command(command))
-        {
+
+        if (is_help_command(command)) {
             help_command();
             continue;
-        }
-        else if(is_quit_command(command))
+        } else if (is_quit_command(command))
             break;
 
         send_command(command);
@@ -54,28 +53,25 @@ int main(int argc, char **argv)
 
 int get_command(char *command)
 {
-    do
-    {
-        memset(command,0,command_SIZE);
+    do {
+        memset(command, 0, command_SIZE);
 
         printf("\nWrite a valid command. If you don't know write help:\n> ");
-        scanf("%s",command);
+        scanf("%s", command);
 
-    }while(!check_command(command));
+    } while (!check_command(command));
 }
 
 int check_command(char *command)
 {
-    int i, found=0;
+    int i, found = 0;
 
-    for (i=0; i<N_ELEMENTS (COMMANDS); i++)
-    {
-        if (strncmp (command, COMMANDS[i], strlen (COMMANDS[i])) == 0)
+    for (i = 0; i < N_ELEMENTS(COMMANDS); i++) {
+        if (strncmp(command, COMMANDS[i], strlen(COMMANDS[i])) == 0)
             found = 1;
     }
 
-    if (!found)
-    {
+    if (!found) {
         puts("Command no valid.");
         return 0;
     }
@@ -86,7 +82,7 @@ int check_command(char *command)
 void (*get_function_command(char* command))(void*)
 {
     int i;
-    void (*func)(void*)=NULL;
+    void (*func)(void*) = NULL;
 
     struct cmd {
         char *msg;
@@ -102,10 +98,9 @@ void (*get_function_command(char* command))(void*)
     };
 
 
-    for (i=0; i<N_ELEMENTS (commands); i++)
-    {
-        if (strncmp (command, commands[i].msg, strlen (commands[i].msg)) == 0)
-            func=commands[i].func;
+    for (i = 0; i < N_ELEMENTS(commands); i++) {
+        if (strncmp(command, commands[i].msg, strlen(commands[i].msg)) == 0)
+            func = commands[i].func;
     }
 
     return func;
@@ -113,50 +108,48 @@ void (*get_function_command(char* command))(void*)
 
 int is_help_command(char *command)
 {
-    return strncmp(command,MSG_HELP,strlen(MSG_HELP))==0 ||
-        strncmp(command, "0", strlen("0")) == 0;
+    return strncmp(command, MSG_HELP, strlen(MSG_HELP)) == 0 ||
+           strncmp(command, "0", strlen("0")) == 0;
 }
 
 void help_command()
 {
-    printf("%s",HELP_COMMAND);
+    printf("%s", HELP_COMMAND);
 }
 
 int is_quit_command(char *command)
 {
-    return strncmp(command,MSG_QUIT,strlen(MSG_QUIT))==0 ||
-        strncmp(command, "1", strlen("1")) == 0;
+    return strncmp(command, MSG_QUIT, strlen(MSG_QUIT)) == 0 ||
+           strncmp(command, "1", strlen("1")) == 0;
 }
 
 int send_command(char* command)
 {
     int i;
     struct local_conf conf;
-    conf.backlog=1;
-    conf.reuseaddr=0;
-    sprintf(conf.path,"%s","/tmp/meshias");
+    conf.backlog = 1;
+    conf.reuseaddr = 0;
+    sprintf(conf.path, "%s", "/tmp/meshias");
 
-    for (i=0; i<N_ELEMENTS (COMMANDS); i+=2)
-    {
-        if (strncmp (command, COMMANDS[i], strlen (COMMANDS[i])) == 0)
-        {
+    for (i = 0; i < N_ELEMENTS(COMMANDS); i += 2) {
+        if (strncmp(command, COMMANDS[i], strlen(COMMANDS[i])) == 0) {
             snprintf(command, command_SIZE, "%s", COMMANDS[i+1]);
             break;
         }
     }
 
-    return local_do_request(command,&conf,get_function_command(command));
+    return local_do_request(command, &conf, get_function_command(command));
 }
 
 void print_command(void *str)
 {
-    char* aux=str;
-    printf("received: %s\n",aux);
+    char* aux = str;
+    printf("received: %s\n", aux);
 }
 
 void show_statistics_command(void *data)
 {
-    struct statistics_t* stats=data;
+    struct statistics_t* stats = data;
 
     printf("packets_dropped: %d\n", stats->packets_dropped);
 
@@ -186,13 +179,13 @@ void show_statistics_command(void *data)
 
 void show_routes_command(void *data)
 {
-    struct route* route=data;
+    struct route* route = data;
 
-    printf("dst_ip: %s\n",inet_htoa(route->dst_ip));
-    printf("prefix_sz: %d\n",route->prefix_sz);
-    printf("dest_seq_num: %d\n",route->dest_seq_num);
-    printf("flags: %d\n",route->flags);
-    printf("hop_count: %d\n",route->hop_count);
-    printf("next_hop: %s\n",inet_htoa(route->next_hop));
-    printf("net_iface: %d\n",route->net_iface);
+    printf("dst_ip: %s\n", inet_htoa(route->dst_ip));
+    printf("prefix_sz: %d\n", route->prefix_sz);
+    printf("dest_seq_num: %d\n", route->dest_seq_num);
+    printf("flags: %d\n", route->flags);
+    printf("hop_count: %d\n", route->hop_count);
+    printf("next_hop: %s\n", inet_htoa(route->next_hop));
+    printf("net_iface: %d\n", route->net_iface);
 }

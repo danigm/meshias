@@ -27,21 +27,20 @@ int main(int argc, char **argv)
     struct timeval next;
     struct timeval* next_run = NULL;
 
-    debug(1,"Initializing");
+    debug(1, "Initializing");
+
     // Initialize all needed data GET IP
-    if((errno = msh_data_init(argc, argv)) < 0)
-    {
+    if ((errno = msh_data_init(argc, argv)) < 0) {
         return errno;
     }
 
-    debug(1,"Initilization done");
+    debug(1, "Initilization done");
     // Main loop
     // TODO: Here we should capture signals sent to the app
 
-    while(!data.end)
-    {
-        if(next_run)
-            printf("wile(1) next_run %d %d\n",next_run->tv_sec,next_run->tv_usec);
+    while (!data.end) {
+        if (next_run)
+            printf("wile(1) next_run %d %d\n", next_run->tv_sec, next_run->tv_usec);
         else
             puts("while1 NULL");
 
@@ -52,25 +51,23 @@ int main(int argc, char **argv)
 
         //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
-        while(!data.end && select(data.fds->maxfd + 1,
-                    &data.fds->readfds, NULL, NULL, next_run) > 0 )
-        {
+        while (!data.end && select(data.fds->maxfd + 1,
+                                   &data.fds->readfds, NULL, NULL, next_run) > 0) {
             puts("select");
+
             /* Check for new packets */
-            if( FD_ISSET(data.nfqueue_fd, &data.fds->readfds) )
-            {
+            if (FD_ISSET(data.nfqueue_fd, &data.fds->readfds)) {
                 printf("A packet was captured by the nfqueue");
                 nfqueue_receive_packets();
             }
-            if( FD_ISSET(data.daemon_fd, &data.fds->readfds) )
-            {
-                debug(1,"An AODV packet was received by the daemon.");
+
+            if (FD_ISSET(data.daemon_fd, &data.fds->readfds)) {
+                debug(1, "An AODV packet was received by the daemon.");
                 daemon_receive_packets();
             }
 
-            if( FD_ISSET(data.local_server.fd, &data.fds->readfds) )
-            {
-                debug(1,"A command was received by the unix socket.");
+            if (FD_ISSET(data.local_server.fd, &data.fds->readfds)) {
+                debug(1, "A command was received by the unix socket.");
                 unix_interface_receive_packets();
             }
 
@@ -79,20 +76,22 @@ int main(int argc, char **argv)
              * we need to recalculate which is the next alarm to be called
              */
             next_run = get_next_alarm_run(&next);
-            if(next_run)
+
+            if (next_run)
                 printf("next_run: %d\n", get_alarm_time(next_run->tv_sec,
-                    next_run->tv_usec));
+                                                        next_run->tv_usec));
 
             //This is needed because of yes
             FD_SET(data.nfqueue_fd, &data.fds->readfds);
             FD_SET(data.daemon_fd, &data.fds->readfds);
             FD_SET(data.local_server.fd, &data.fds->readfds);
         }
+
         next_run = get_next_alarm_run(&next);
         process_alarms(&next);
     }
 
-    debug(1,"Exiting from the mainloop");
+    debug(1, "Exiting from the mainloop");
 
     // close everything safely
     msh_data_shutdown();

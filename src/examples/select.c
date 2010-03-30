@@ -18,14 +18,13 @@ int main(void)
     FD_SET(STDIN, &readfds);
 
     // don't care about writefds and exceptfds:
-    while(1) {
+    while (1) {
         tv.tv_sec = 2;
         tv.tv_usec = 500000;
 
-        select(STDIN+1, &readfds, NULL, NULL, &tv);
+        select(STDIN + 1, &readfds, NULL, NULL, &tv);
 
-        if (FD_ISSET(STDIN, &readfds))
-        {
+        if (FD_ISSET(STDIN, &readfds)) {
             char buf[256];
             scanf("%s", buf);
             printf("A key was pressed!\n");
@@ -36,6 +35,6 @@ int main(void)
         FD_SET(STDIN, &readfds);
     }
 
-	return 0;
+    return 0;
 }
 

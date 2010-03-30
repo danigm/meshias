@@ -7,8 +7,7 @@
 
 struct msh_route;
 
-struct packets_fifo
-{
+struct packets_fifo {
     uint32_t id;
     struct in_addr dest;
     struct list_head list;
@@ -40,7 +39,7 @@ void packet_obj_drop(struct packets_fifo* entry);
  * Add a new packet id to the queue.
  */
 void packets_fifo_push(struct packets_fifo* queue, uint32_t id,
-    struct in_addr dest);
+                       struct in_addr dest);
 
 /**
  * If a route discovery has been attempted RREQ_RETRIES times at the maximum
@@ -58,7 +57,7 @@ void packets_fifo_drop_packets(struct packets_fifo* queue, struct in_addr dest);
  * Called when a new route is added to accept all the packets related to it.
  */
 uint32_t packets_fifo_process_route(struct packets_fifo* queue,
-    struct msh_route* route);
+                                    struct msh_route* route);
 
 /**
  * Returns a non-zero number if the queue is empty or 0 otherwise.

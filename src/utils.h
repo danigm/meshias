@@ -10,7 +10,7 @@
  * seconds and microseconds in @ref sc and @ref usc vars.
  */
 void set_alarm_time(uint32_t miliseconds, unsigned long* sc,
-    unsigned long* usc);
+                    unsigned long* usc);
 
 /**
  * Given an amount of time in seconds and microseconds, it returns the

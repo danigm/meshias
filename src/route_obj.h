@@ -41,14 +41,12 @@
 #define RTACTION_DESTROY                        0x0010
 #define RTACTION_CHANGE_NEXTHOP_IP              0x0020
 
-struct precursor_t
-{
+struct precursor_t {
     struct in_addr dst_ip;
     struct list_head list;
 };
 
-struct msh_route
-{
+struct msh_route {
     struct in_addr dst_ip;
     uint8_t prefix_sz;
     uint32_t dest_seq_num;
@@ -104,15 +102,15 @@ void msh_route_set_rtnl_route(struct msh_route *route, struct rtnl_route *nlrout
 struct rtnl_route *msh_route_get_rtnl_route(struct msh_route *route);
 
 void msh_route_set_updated_callback(struct msh_route *route,
-    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *), void *data);
+                                    void (*updated_cb)(struct msh_route*, uint32_t change_flag, void *), void *data);
 void (*msh_route_get_updated_callback(struct msh_route *route))
-    (struct msh_route*, uint32_t, void *);
+(struct msh_route*, uint32_t, void *);
 void *msh_route_get_updated_callback_data(struct msh_route *route);
 
 void msh_route_add_precursor(struct msh_route *route, struct in_addr dst_ip);
 void msh_route_del_precursor(struct msh_route *route, struct in_addr dst_ip);
 void msh_route_foreach_precursor(struct msh_route *route,
-    int (*callback_func)(struct msh_route *, struct in_addr *, void *), void *data);
+                                 int (*callback_func)(struct msh_route *, struct in_addr *, void *), void *data);
 
 /**
  * Compare two msh_route's only by the attributes indicated by attr_flags. Returns
@@ -120,6 +118,6 @@ void msh_route_foreach_precursor(struct msh_route *route,
  * it takes the mask from "second" var.
  */
 int msh_route_compare(struct msh_route *first, struct msh_route *second,
-    int attr_flags);
+                      int attr_flags);
 
 #endif

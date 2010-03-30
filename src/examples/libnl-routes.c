@@ -15,8 +15,7 @@
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 
-struct nl_addr* in_addr2nl_addr(struct in_addr *addr, uint8_t prefix_sz)
-{
+struct nl_addr* in_addr2nl_addr(struct in_addr *addr, uint8_t prefix_sz) {
     char buf[256];
     sprintf(buf, "%s/%d", (char *)inet_ntoa(*addr), (int)prefix_sz);
 
@@ -31,8 +30,7 @@ int main(int argc, char **argv)
     // Connect to link netlink socket on kernel side
     nl_connect(sock, NETLINK_ROUTE);
 
-    if(argc < 4)
-    {
+    if (argc < 4) {
         printf("%s <iface> <dst> gateway\n", argv[0]);
         printf("Example: %s ath0 192.168.2.1\n", argv[0]);
         exit(1);
@@ -70,8 +68,7 @@ int main(int argc, char **argv)
 //     struct rtnl_nexthop * route_nexthop = rtnl_route_nh_alloc();
 //     rtnl_route_nh_set_gateway(route_nexthop, dst);
 //     rtnl_route_add_nexthop(nlroute, route_nexthop);
-    if (rtnl_route_add(sock, nlroute, 0) < 0)
-    {
+    if (rtnl_route_add(sock, nlroute, 0) < 0) {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
     }
 

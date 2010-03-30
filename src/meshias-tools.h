@@ -1,7 +1,7 @@
 #ifndef MESHIAS_TOOLS_H
 #define MESHIAS_TOOLS_H
 
-int main(int argc,char **argv);
+int main(int argc, char **argv);
 int get_command(char *command);
 int check_command(char *command);
 void (*get_function_command(char* command))(void*);

@@ -36,8 +36,7 @@ int local_server_create(struct local_server *server, struct local_conf *conf)
         return -1;
 
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &conf->reuseaddr,
-        sizeof(conf->reuseaddr)) == -1)
-    {
+                   sizeof(conf->reuseaddr)) == -1) {
         close(fd);
         unlink(conf->path);
         return -1;
@@ -48,15 +47,13 @@ int local_server_create(struct local_server *server, struct local_conf *conf)
     len = strlen(local.sun_path) + sizeof(local.sun_family);
     unlink(conf->path);
 
-    if (bind(fd, (struct sockaddr *) &local, len) == -1)
-    {
+    if (bind(fd, (struct sockaddr *) &local, len) == -1) {
         close(fd);
         unlink(conf->path);
         return -1;
     }
 
-    if (listen(fd, conf->backlog) == -1)
-    {
+    if (listen(fd, conf->backlog) == -1) {
         close(fd);
         unlink(conf->path);
         return -1;
@@ -74,7 +71,7 @@ void local_server_destroy(struct local_server *server)
     close(server->fd);
 }
 
-int local_server_do_step(struct local_server *server,void (*process)(int fd,void *data))
+int local_server_do_step(struct local_server *server, void (*process)(int fd, void *data))
 {
     int rfd;
     struct sockaddr_un local;
@@ -83,15 +80,17 @@ int local_server_do_step(struct local_server *server,void (*process)(int fd,void
     char buf[MAX_MSG_LENGTH];
 
     rfd = accept(server->fd, (struct sockaddr *) &local, &sin_size);
+
     if (rfd == -1)
         return -1;
 
-    if ((numbytes = recv(rfd, buf, sizeof(buf)-1, 0)) > 0)
-    {
-        buf[sizeof(buf)-1]='\0';
-        if(process)
-            process(rfd,buf);
+    if ((numbytes = recv(rfd, buf, sizeof(buf) - 1, 0)) > 0) {
+        buf[sizeof(buf)-1] = '\0';
+
+        if (process)
+            process(rfd, buf);
     }
+
     close(rfd);
 
     return 0;
@@ -110,8 +109,7 @@ int local_client_create(struct local_conf *conf)
     strcpy(local.sun_path, conf->path);
     len = strlen(local.sun_path) + sizeof(local.sun_family);
 
-    if (connect(fd, (struct sockaddr *) &local, len) == -1)
-    {
+    if (connect(fd, (struct sockaddr *) &local, len) == -1) {
         perror("connect: ");
         close(fd);
         return -1;
@@ -131,11 +129,13 @@ int local_client_do_step(int fd, void (*process)(void *buf))
     char buf[MAX_MSG_LENGTH];
 
     memset(buf, 0, sizeof(buf));
-    while ((numbytes = recv(fd, buf, sizeof(buf)-1, 0)) > 0)
-    {
+
+    while ((numbytes = recv(fd, buf, sizeof(buf) - 1, 0)) > 0) {
         buf[sizeof(buf)-1] = '\0';
+
         if (process)
             process(buf);
+
         memset(buf, 0, sizeof(buf));
     }
 
@@ -148,15 +148,17 @@ void local_step(char *buf)
 }
 
 int local_do_request(char* request, struct local_conf *conf,
-            void (*step)(void *buf))
+                     void (*step)(void *buf))
 {
     int fd, ret;
 
     fd = local_client_create(conf);
+
     if (fd == -1)
         return -1;
 
     ret = send(fd, request, strlen(request), 0);
+
     if (ret == -1)
         return -1;
 

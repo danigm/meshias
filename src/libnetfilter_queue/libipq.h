@@ -43,7 +43,7 @@ typedef unsigned long ipq_id_t;
 #define LDEBUG(x...) fprintf(stderr, ## x)
 #else
 #define LDEBUG(x...)
-#endif	/* DEBUG_LIBIPQ */
+#endif  /* DEBUG_LIBIPQ */
 
 /* FIXME: glibc sucks */
 #ifndef MSG_TRUNC
@@ -54,43 +54,42 @@ typedef unsigned long ipq_id_t;
 extern "C" {
 #endif
 
-struct ipq_handle
-{
-	struct nfq_handle *nfqnlh;
-	struct nfq_q_handle *qh;
-	u_int8_t family;
-	u_int8_t blocking;
-};
+    struct ipq_handle {
+        struct nfq_handle *nfqnlh;
+        struct nfq_q_handle *qh;
+        u_int8_t family;
+        u_int8_t blocking;
+    };
 
-struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol);
+    struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol);
 
-int ipq_destroy_handle(struct ipq_handle *h);
+    int ipq_destroy_handle(struct ipq_handle *h);
 
-ssize_t ipq_read(const struct ipq_handle *h,
-                unsigned char *buf, size_t len, int timeout);
+    ssize_t ipq_read(const struct ipq_handle *h,
+                     unsigned char *buf, size_t len, int timeout);
 
-int ipq_set_mode(const struct ipq_handle *h, u_int8_t mode, size_t len);
+    int ipq_set_mode(const struct ipq_handle *h, u_int8_t mode, size_t len);
 
-ipq_packet_msg_t *ipq_get_packet(const unsigned char *buf);
+    ipq_packet_msg_t *ipq_get_packet(const unsigned char *buf);
 
-int ipq_message_type(const unsigned char *buf);
+    int ipq_message_type(const unsigned char *buf);
 
-int ipq_get_msgerr(const unsigned char *buf);
+    int ipq_get_msgerr(const unsigned char *buf);
 
-int ipq_set_verdict(const struct ipq_handle *h,
-                    ipq_id_t id,
-                    unsigned int verdict,
-                    size_t data_len,
-                    unsigned char *buf);
+    int ipq_set_verdict(const struct ipq_handle *h,
+                        ipq_id_t id,
+                        unsigned int verdict,
+                        size_t data_len,
+                        unsigned char *buf);
 
-int ipq_ctl(const struct ipq_handle *h, int request, ...);
+    int ipq_ctl(const struct ipq_handle *h, int request, ...);
 
-char *ipq_errstr(void);
-void ipq_perror(const char *s);
+    char *ipq_errstr(void);
+    void ipq_perror(const char *s);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif	/* _LIBIPQ_H */
+#endif  /* _LIBIPQ_H */
 

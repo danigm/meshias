@@ -47,7 +47,7 @@ int routing_table_del(struct routing_table *table, struct msh_route *route);
  * @see msh_route_compare()
  */
 struct msh_route *routing_table_find(struct routing_table *table,
-    struct msh_route *route, int attr_flags);
+                                     struct msh_route *route, int attr_flags);
 
 /**
  * Finds a route in the routing table by longest prefix matching for a given ip.
@@ -57,7 +57,7 @@ struct msh_route *routing_table_find(struct routing_table *table,
  * @see routing_table_find()
  */
 struct msh_route *routing_table_find_by_ip(struct routing_table *table,
-    struct in_addr addr);
+        struct in_addr addr);
 
 /**
  * Returns a non-zero number if there is an active route for the given dest in
@@ -67,10 +67,10 @@ struct msh_route *routing_table_find_by_ip(struct routing_table *table,
  * If orig_ip.s_addr = 0 then we won't update the route back to orig ip.
  */
 uint8_t routing_table_use_route(struct routing_table *table,
-    struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip);
+                                struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip);
 
 void routing_table_foreach(struct routing_table *table,
-    int (*callback_func)(struct msh_route *, void *), void *data);
+                           int (*callback_func)(struct msh_route *, void *), void *data);
 
 // void routing_table_foreach_filter(struct routing_table *table,
 //     int (*callback_func)(struct msh_route *, void *), void *data);

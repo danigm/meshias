@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 
-struct statistics_t
-{
+struct statistics_t {
     // aodv_logic.c
     uint32_t packets_dropped;
 

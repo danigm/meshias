@@ -66,14 +66,13 @@ void process_my_alarms()
     // calls the callback functions of all the alarms which have timedout.
     // Else, we update the next alarm for the time this function gets called.
 
-    if (next != NULL && !timerisset(next))
-    {
+    if (next != NULL && !timerisset(next)) {
         next = do_alarm_run(&next_alarm);
     } else {
         next = get_next_alarm_run(&next_alarm);
     }
 
-    if(next != NULL) {
+    if (next != NULL) {
         printf("next alarm times out in %ld s\t%ld us\n", next->tv_sec, next->tv_usec);
     }
 }
@@ -86,8 +85,7 @@ int main(int argc, char **argv)
     // Here we create a new item with data = 2 and which will timeout = 10 seconds
     item_t_add(2, 10, 0);
 
-    while(1)
-    {
+    while (1) {
         process_my_alarms();
 
         /* This a simple example, but in reality we will use select with a timeout
@@ -95,5 +93,6 @@ int main(int argc, char **argv)
          */
         sleep(1);
     }
+
     return 0;
 }

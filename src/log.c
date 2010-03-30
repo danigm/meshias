@@ -3,5 +3,5 @@
 
 void debug_real(int x, char* str)
 {
-    printf("[%d] %s\n",x,str);
+    printf("[%d] %s\n", x, str);
 }

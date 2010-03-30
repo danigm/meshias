@@ -7,15 +7,13 @@
 
 #define MAX_MSG_LENGTH 1024
 
-struct local_conf
-{
+struct local_conf {
     int backlog;
     int reuseaddr;
     char path[UNIX_PATH_MAX];
 };
 
-struct local_server
-{
+struct local_server {
     int fd;
     char path[UNIX_PATH_MAX];
 };
@@ -28,7 +26,7 @@ int local_server_create(struct local_server *server, struct local_conf *conf);
 void local_server_destroy(struct local_server *server);
 
 /** To create a answer to the request */
-int local_server_do_step(struct local_server *server,void (*process)(int fd,void *data));
+int local_server_do_step(struct local_server *server, void (*process)(int fd, void *data));
 
 /* local client */
 /** Create a client socket, this function mustn't be used directly.  */
@@ -48,7 +46,7 @@ static int local_client_do_step(int fd, void (*process)(void *buf));
   * the socket is destroyed automatically. @param request we want to send.
   */
 int local_do_request(char* request, struct local_conf *,
-        void (*step)(void *buf));
+                     void (*step)(void *buf));
 
 /** Auxiliar function to be used @see local_do_request. It only prints
   * the argument buf;

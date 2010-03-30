@@ -64,24 +64,24 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet);
  * AODV incoming traffic (UDP port 654).
  */
 static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
-        struct nfq_data *nfa, void *data);
+                         struct nfq_data *nfa, void *data);
 
 /**
  * Called by @see manage_packet() when the packet comes from OUPUT table
  */
-static int manage_output_packet(struct nfq_q_handle *qh,struct nfgenmsg
-        *nfmsg, struct nfq_data *nfa);
+static int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
+                                *nfmsg, struct nfq_data *nfa);
 
 /**
  * Called by @see manage_packet() when the packet comes from INPUT table
  */
-static int manage_input_packet(struct nfq_q_handle *qh,struct nfgenmsg
-        *nfmsg, struct nfq_data *nfa);
+static int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
+                               *nfmsg, struct nfq_data *nfa);
 
 /**
  * Called by @see manage_packet() when the packet comes from FORWARD table
  */
-static int manage_forward_packet(struct nfq_q_handle *qh,struct nfgenmsg
-        *nfmsg, struct nfq_data *nfa);
+static int manage_forward_packet(struct nfq_q_handle *qh, struct nfgenmsg
+                                 *nfmsg, struct nfq_data *nfa);
 
 #endif

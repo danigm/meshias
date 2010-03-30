@@ -7,15 +7,15 @@
 #define SIZE 512
 #define AODV_UDP_PORT 1654
 
-int main(int argc,char *argv[])
+int main(int argc, char *argv[])
 {
-    int fd=0;
-    int fd2=0;
+    int fd = 0;
+    int fd2 = 0;
     char conbuffer[SIZE];
-    char iobuffer[SIZE]="WASAAAAAAAA";
+    char iobuffer[SIZE] = "WASAAAAAAAA";
     struct iovec io;
     struct cmsghdr *c;
-    int ttl=8;
+    int ttl = 8;
 
     struct sockaddr_in address;
     int broadcast = 1;
@@ -23,8 +23,7 @@ int main(int argc,char *argv[])
     struct msghdr msgh;
 
     //if( (fd = socket(AF_INET,SOCK_STREAM,0)) == -1 )
-    if( (fd = socket(AF_INET,SOCK_DGRAM,0)) == -1 )
-    {
+    if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
         perror("error socket");
         return -1;
     }
@@ -36,9 +35,8 @@ int main(int argc,char *argv[])
     // Listen from any ip
     address.sin_addr.s_addr = INADDR_ANY;
 
-    if( bind(fd, (struct sockaddr *)&address,
-        sizeof(address)) == -1 )
-    {
+    if (bind(fd, (struct sockaddr *)&address,
+             sizeof(address)) == -1) {
         perror("error bind");
         close(fd);
         return -1;
@@ -55,41 +53,40 @@ int main(int argc,char *argv[])
     */
 
     address.sin_addr.s_addr = inet_addr("127.0.0.1");
-    printf("%s\n",inet_ntoa(address.sin_addr.s_addr));
+    printf("%s\n", inet_ntoa(address.sin_addr.s_addr));
     address.sin_port = htons(AODV_UDP_PORT);
 
-    memset(&msgh,0,sizeof(msgh));
-    memset(&conbuffer,0,SIZE);
+    memset(&msgh, 0, sizeof(msgh));
+    memset(&conbuffer, 0, SIZE);
 
-    msgh.msg_name=&address;
-    msgh.msg_namelen=sizeof(address);
+    msgh.msg_name = &address;
+    msgh.msg_namelen = sizeof(address);
 
-    io.iov_base=iobuffer;
-    io.iov_len=SIZE;
-    msgh.msg_iovlen=1;
-    msgh.msg_iov=&io;
+    io.iov_base = iobuffer;
+    io.iov_len = SIZE;
+    msgh.msg_iovlen = 1;
+    msgh.msg_iov = &io;
 
-    msgh.msg_control=conbuffer;
-    msgh.msg_controllen=sizeof(conbuffer);
+    msgh.msg_control = conbuffer;
+    msgh.msg_controllen = sizeof(conbuffer);
 
-    c=CMSG_FIRSTHDR(&msgh);
+    c = CMSG_FIRSTHDR(&msgh);
     assert(c);
     /*
     c->cmsg_level=SOL_SOCKET;
     c->cmsg_type=SCM_RIGHTS;
     */
-    c->cmsg_level=IPPROTO_IP;
-    c->cmsg_type=IP_TTL;
+    c->cmsg_level = IPPROTO_IP;
+    c->cmsg_type = IP_TTL;
 
 
-    c->cmsg_len=CMSG_LEN(sizeof(int));
-    *(int*)CMSG_DATA(c)=ttl;
+    c->cmsg_len = CMSG_LEN(sizeof(int));
+    *(int*)CMSG_DATA(c) = ttl;
 
-    msgh.msg_controllen=c->cmsg_len;
+    msgh.msg_controllen = c->cmsg_len;
 
     //if((numbytes = recvmsg(fd,&msgh,0)) == -1)
-    if((numbytes = sendmsg(fd,&msgh,0)) == -1)
-    {
+    if ((numbytes = sendmsg(fd, &msgh, 0)) == -1) {
         perror("FATAL ERROR: sendmsg");
         return (-1);
     }
@@ -105,13 +102,14 @@ int aodv_get_ttl(struct msghdr* msgh)
 
     /* Recibir los datos auxiliares en msgh */
     for (cmsg = CMSG_FIRSTHDR(msgh); cmsg != NULL;
-            cmsg = CMSG_NXTHDR(msgh,cmsg))
-    {
+            cmsg = CMSG_NXTHDR(msgh, cmsg)) {
         puts("megabucl3");
+
         if (cmsg->cmsg_level == SOL_IP
                 && cmsg->cmsg_type == IP_TTL)
             return (int)CMSG_DATA(cmsg);
     }
+
     /*
      * FIXME TTL no encontrado
      */

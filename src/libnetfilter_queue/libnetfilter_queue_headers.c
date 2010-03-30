@@ -2,19 +2,18 @@
 #include "libnetfilter_queue.h"
 #include <arpa/inet.h>
 
-struct nfq_iphdr
-{
+struct nfq_iphdr {
     /*
-#if defined(__LITTLE_ENDIAN_BITFIELD)
-uint8_t  ihl:4,
-version:4;
-#elif defined (__BIG_ENDIAN_BITFIELD)
-*/
-    uint8_t   version:4,
-              ihl:4;
+    #if defined(__LITTLE_ENDIAN_BITFIELD)
+    uint8_t  ihl:4,
+    version:4;
+    #elif defined (__BIG_ENDIAN_BITFIELD)
+    */
+    uint8_t   version: 4,
+          ihl: 4;
     /*
-#endif
-*/
+    #endif
+    */
     uint8_t  tos;
     uint16_t  tot_len;
     uint16_t  id;
@@ -26,58 +25,56 @@ version:4;
     uint32_t  daddr;
 };
 
-struct nfq_tcphdr
-{
+struct nfq_tcphdr {
     uint16_t  source;
     uint16_t  dest;
     uint32_t  seq;
     uint32_t  ack_seq;
     /*
-#if defined(__LITTLE_ENDIAN_BITFIELD)
-uint16_t res1:4,
-doff:4,
-fin:1,
-syn:1,
-rst:1,
-psh:1,
-ack:1,
-urg:1,
-ece:1,
-cwr:1;
-#elif defined(__BIG_ENDIAN_BITFIELD)
-*/
-    uint16_t doff:4,
-              res1:4,
-              cwr:1,
-              ece:1,
-              urg:1,
-              ack:1,
-              psh:1,
-              rst:1,
-              syn:1,
-              fin:1;
+    #if defined(__LITTLE_ENDIAN_BITFIELD)
+    uint16_t res1:4,
+    doff:4,
+    fin:1,
+    syn:1,
+    rst:1,
+    psh:1,
+    ack:1,
+    urg:1,
+    ece:1,
+    cwr:1;
+    #elif defined(__BIG_ENDIAN_BITFIELD)
+    */
+    uint16_t doff: 4,
+             res1: 4,
+             cwr: 1,
+             ece: 1,
+             urg: 1,
+             ack: 1,
+             psh: 1,
+             rst: 1,
+             syn: 1,
+             fin: 1;
     /*
-#endif
-*/
+    #endif
+    */
     uint16_t  window;
     uint16_t check;
     uint16_t  urg_ptr;
 };
 
-struct nfq_udphdr
-{
+struct nfq_udphdr {
     uint16_t source;
     uint16_t dest;
     uint16_t len;
     uint16_t check;
 };
 
-extern struct nfq_iphdr* nfq_get_iphdr(struct nfq_data *nfad)
-{
+extern struct nfq_iphdr* nfq_get_iphdr(struct nfq_data *nfad) {
     char *data;
 
-    if(nfq_get_payload(nfad,&data)==-1)
+    if (nfq_get_payload(nfad, &data) == -1)
         return NULL;
+
     return (struct nfq_iphdr*) data;
 }
 
@@ -136,13 +133,13 @@ extern uint32_t nfq_get_ip_daddr(struct nfq_iphdr *hdr)
     return ntohl(hdr->daddr);
 }
 
-extern struct nfq_tcphdr* nfq_get_tcphdr(struct nfq_data *nfad)
-{
+extern struct nfq_tcphdr* nfq_get_tcphdr(struct nfq_data *nfad) {
     char *data;
 
-    if(nfq_get_payload(nfad,&data)==-1)
+    if (nfq_get_payload(nfad, &data) == -1)
         return NULL;
-    data=data+sizeof(struct nfq_iphdr);
+
+    data = data + sizeof(struct nfq_iphdr);
     return (struct nfq_tcphdr*) data;
 }
 
@@ -243,14 +240,13 @@ extern uint16_t nfq_get_tcp_urg_ptr(struct nfq_tcphdr *hdr)
     return ntohs(hdr->urg_ptr);
 }
 
-extern struct nfq_udphdr* nfq_get_udphdr(struct nfq_data *nfad)
-{
+extern struct nfq_udphdr* nfq_get_udphdr(struct nfq_data *nfad) {
     char *data;
 
-    if(nfq_get_payload(nfad,&data)==-1)
+    if (nfq_get_payload(nfad, &data) == -1)
         return NULL;
 
-    data=data+sizeof(struct nfq_iphdr);
+    data = data + sizeof(struct nfq_iphdr);
     return (struct nfq_udphdr*) data;
 }
 

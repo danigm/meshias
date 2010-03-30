@@ -6,16 +6,16 @@
 #include "linux_list.h"
 
 struct alarm_block {
-	struct rb_node		node;
-	struct list_head	list;
-	struct timeval		tv;
-	void			*data;
-	void			(*function)(struct alarm_block *a, void *data);
+    struct rb_node      node;
+    struct list_head    list;
+    struct timeval      tv;
+    void            *data;
+    void (*function)(struct alarm_block *a, void *data);
 };
 
 void init_alarm(struct alarm_block *t,
-		void *data,
-		void (*fcn)(struct alarm_block *a, void *data));
+                void *data,
+                void (*fcn)(struct alarm_block *a, void *data));
 
 void add_alarm(struct alarm_block *alarm, unsigned long sc, unsigned long usc);
 

@@ -12,8 +12,7 @@
 #include "utils.h"
 #include "statistics.h"
 
-struct routing_table
-{
+struct routing_table {
     struct msh_route route_list;
 
     //Used for searching internally
@@ -21,40 +20,39 @@ struct routing_table
 };
 
 void __routing_table_route_updated_cb(struct msh_route* route, uint32_t change_flag,
-    void *qdata)
+                                      void *qdata)
 {
-    if(change_flag & RTACTION_DESTROY)
-    {
+    if (change_flag & RTACTION_DESTROY) {
         printf("routing_table_destroyed %p\n", route);
         list_del(&route->list);
 
         struct rtnl_route *nlroute = msh_route_get_rtnl_route(route);
         msh_route_set_rtnl_route(route, 0);
 
-        if(!nlroute)
+        if (!nlroute)
             return;
 
-        if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0)
-        {
+        if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0) {
             fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
         }
+
         rtnl_route_put(nlroute);
-    }
-    else if(change_flag & RTACTION_CHANGE_NEXTHOP_IP)
-    {
+    } else if (change_flag & RTACTION_CHANGE_NEXTHOP_IP) {
         struct rtnl_route *nlroute = msh_route_get_rtnl_route(route);
-        if(!nlroute)
+
+        if (!nlroute)
             return;
+
         uint8_t dst_len = msh_route_get_prefix_sz(route);
         struct in_addr next_hop_addr = msh_route_get_next_hop(route);
         struct nl_addr *nexthop = in_addr2nl_addr(next_hop_addr, dst_len);
-        if(route->flags & RTFLAG_HAS_NEXTHOP)
+
+        if (route->flags & RTFLAG_HAS_NEXTHOP)
             rtnl_route_set_gateway(nlroute, nexthop);
     }
 }
 
-struct routing_table *routing_table_alloc()
-{
+struct routing_table *routing_table_alloc() {
     struct routing_table *table =
         (struct routing_table *)calloc(1, sizeof(struct routing_table));
     INIT_LIST_HEAD(&(table->route_list.list));
@@ -67,8 +65,7 @@ void routing_table_delete(struct routing_table *table)
 {
     struct msh_route *entry, *tmp;
 
-    list_for_each_entry_safe(entry, tmp, &table->route_list.list, list)
-    {
+    list_for_each_entry_safe(entry, tmp, &table->route_list.list, list) {
         routing_table_del(table, entry);
         free(entry);
     }
@@ -81,8 +78,8 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
 
     // If route exists then we have nothing to do here: this function only
     // adds new routes, it doesn't update existing entries.
-    if((found = routing_table_find(table, route,
-        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)) != 0)
+    if ((found = routing_table_find(table, route,
+                                    RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING)) != 0)
         return 1;
 
     struct rtnl_route *nlroute = rtnl_route_alloc();
@@ -95,7 +92,7 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     rtnl_route_set_dst(nlroute, dst);
     rtnl_route_set_scope(nlroute, RT_SCOPE_UNIVERSE);
 
-    if(route->flags & RTFLAG_HAS_NEXTHOP) {
+    if (route->flags & RTFLAG_HAS_NEXTHOP) {
         struct in_addr next_hop_addr = msh_route_get_next_hop(route);
         struct nl_addr *nexthop = in_addr2nl_addr(next_hop_addr, 0);
 
@@ -104,6 +101,7 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
         char buf2[200];
         printf("nexthop %s\n", nl_addr2str(nexthop, buf2, 200));
         printf("dest %s\n", nl_addr2str(dst, buf2, 200));
+
         // If the next hop is the destination, there's no need to set the gateway
         if (route->dst_ip.s_addr != next_hop_addr.s_addr) {
             rtnl_route_set_gateway(nlroute, nexthop);
@@ -111,10 +109,10 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     }
 
     int errno = 0;
+
     // Errno = 17 means that route already exists so it's not problematic and
     // we can ignore it
-    if ((errno=rtnl_route_add(data.nl_handle, nlroute, 0)) < 0 && errno != -17)
-    {
+    if ((errno = rtnl_route_add(data.nl_handle, nlroute, 0)) < 0 && errno != -17) {
         fprintf(stderr, "rtnl_route_add failed: errno=%d %s\n", errno, nl_geterror());
         return -1;
     }
@@ -144,21 +142,22 @@ int routing_table_del(struct routing_table *table, struct msh_route *route)
     struct rtnl_route *nlroute;
 
     // If route is not in our list we have nothing to do here
-    if((found = routing_table_find(table, route, 0)) != 0)
+    if ((found = routing_table_find(table, route, 0)) != 0)
         return 1;
 
     // If flag RTFLAG_UNMANAGED is set it means this is an route not managed
     // by ourselves and thus external and readonly.
-    if(!(found->flags & RTFLAG_UNMANAGED))
-    {
+    if (!(found->flags & RTFLAG_UNMANAGED)) {
         nlroute = msh_route_get_rtnl_route(route);
-        if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0)
-        {
+
+        if (rtnl_route_del(data.nl_handle, nlroute, 0) < 0) {
             fprintf(stderr, "rtnl_route_del failed: %s\n", nl_geterror());
             return -1;
         }
+
         msh_route_set_rtnl_route(route, 0);
     }
+
     rtnl_route_put(nlroute);
     list_del(&route->list);
     msh_route_destroy(route);
@@ -167,13 +166,11 @@ int routing_table_del(struct routing_table *table, struct msh_route *route)
 }
 
 struct msh_route *routing_table_find(struct routing_table *table,
-    struct msh_route *route, int attr_flags)
-{
+                                     struct msh_route *route, int attr_flags) {
     struct msh_route *entry;
 
-    list_for_each_entry(entry, &table->route_list.list, list)
-    {
-        if(msh_route_compare(route, entry, attr_flags) == 0)
+    list_for_each_entry(entry, &table->route_list.list, list) {
+        if (msh_route_compare(route, entry, attr_flags) == 0)
             return entry;
     }
 
@@ -181,36 +178,33 @@ struct msh_route *routing_table_find(struct routing_table *table,
 }
 
 struct msh_route *routing_table_find_by_ip(struct routing_table *table,
-    struct in_addr addr)
-{
+        struct in_addr addr) {
     struct msh_route *route;
 
     msh_route_set_dst_ip(table->find_route, addr);
     route = routing_table_find(table, table->find_route,
-        RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
+                               RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING);
 
     return route;
 
 }
 
 uint8_t routing_table_use_route(struct routing_table *table,
-    struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip)
+                                struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip)
 {
     struct msh_route *dst_route, *next_hop_route, *orig_route, *prev_hop_route;
 
     //if it's a packet directed to us, there's  no need to find a route to us
-    if(dst_ip.s_addr != data.ip_addr.s_addr)
-    {
+    if (dst_ip.s_addr != data.ip_addr.s_addr) {
         dst_route = routing_table_find_by_ip(table, dst_ip);
 
         // If route not found or not active/invalid, return 0
-        if(!dst_route)
-        {
+        if (!dst_route) {
             stats.route_not_found++;
             return 0;
         }
-        if(!(msh_route_get_flags(dst_route) & RTFLAG_VALID_ENTRY))
-        {
+
+        if (!(msh_route_get_flags(dst_route) & RTFLAG_VALID_ENTRY)) {
             stats.invalid_route++;
             invalid_route = &dst_route;
             return 0;
@@ -232,13 +226,10 @@ uint8_t routing_table_use_route(struct routing_table *table,
         // Update also the lifetime of the next_hop
         struct in_addr next_hop =  msh_route_get_next_hop(dst_route);
 
-        if(next_hop.s_addr != dst_ip.s_addr)
-        {
-            if((next_hop_route = routing_table_find_by_ip(table, next_hop)) != 0)
-            {
+        if (next_hop.s_addr != dst_ip.s_addr) {
+            if ((next_hop_route = routing_table_find_by_ip(table, next_hop)) != 0) {
                 msh_route_set_lifetime(next_hop_route, ACTIVE_ROUTE_TIMEOUT());
-            }
-            else
+            } else
                 // not finding a route to the next_hop is a bug because if we have a
                 // route to the destination, we should have already found a route to
                 // the next_hop too.
@@ -247,40 +238,35 @@ uint8_t routing_table_use_route(struct routing_table *table,
     }
 
     // orig_ip is set to zero means we don't want to update that part of the route
-    if(orig_ip.s_addr == 0)
+    if (orig_ip.s_addr == 0)
         return 1;
 
     // If found a route for the orig ip, update it
-    if((orig_route = routing_table_find_by_ip(data.routing_table,
-        orig_ip)) != 0)
-    {
+    if ((orig_route = routing_table_find_by_ip(data.routing_table,
+                      orig_ip)) != 0) {
         // reset the lifetime and mark as valid
         msh_route_set_lifetime(orig_route, ACTIVE_ROUTE_TIMEOUT());
         // Update also the lifetime of the next_hop
         struct in_addr prev_hop =  msh_route_get_next_hop(orig_route);
-        if(prev_hop.s_addr != orig_ip.s_addr)
-        {
-            if((prev_hop_route = routing_table_find_by_ip(table, prev_hop)) != 0)
-            {
+
+        if (prev_hop.s_addr != orig_ip.s_addr) {
+            if ((prev_hop_route = routing_table_find_by_ip(table, prev_hop)) != 0) {
                 msh_route_set_lifetime(prev_hop_route, ACTIVE_ROUTE_TIMEOUT());
-            }
-            else
+            } else
                 puts("BUG: no route to prev_hop found!");
         }
-    }
-    else
+    } else
         puts("BUG: no route to orig found!");
 
     return 1;
 }
 
 void routing_table_foreach(struct routing_table *table,
-    int (*callback_func)(struct msh_route *, void *), void *data)
+                           int (*callback_func)(struct msh_route *, void *), void *data)
 {
     struct msh_route *entry;
 
-    list_for_each_entry(entry, &table->route_list.list, list)
-    {
-        callback_func(entry,data);
+    list_for_each_entry(entry, &table->route_list.list, list) {
+        callback_func(entry, data);
     }
 }

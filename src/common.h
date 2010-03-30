@@ -87,36 +87,35 @@ uint32_t minimal_lifetime(uint8_t hop_count);
  * Route request message (RREQ)
  * @ingroup msg
  */
-struct aodv_rreq
-{
+struct aodv_rreq {
 #if defined(__BIG_ENDIAN_BITFIELD)
     /**
      * Type will always be 1 in a RREQ
      */
-    uint32_t type:8,
+    uint32_t type: 8,
 
-    /**
-     * Flags have the format J R G D U. See above the possible flags
-     */
-    flags:5,
+             /**
+              * Flags have the format J R G D U. See above the possible flags
+              */
+             flags: 5,
 
-    /**
-     * Is always zero and ignored
-     */
-    reserved:11,
+             /**
+              * Is always zero and ignored
+              */
+             reserved: 11,
 
-    /**
-     * Hop Count.
-     * Number of hops from the originator ip Address to the node
-     * handling the request.
-     */
-    hop_count:8;
+             /**
+              * Hop Count.
+              * Number of hops from the originator ip Address to the node
+              * handling the request.
+              */
+             hop_count: 8;
 #elif defined(__LITTLE_ENDIAN_BITFIELD)
-    uint32_t type:8,
-        reserved2:3,
-        flags:5,
-        reserved:8,
-        hop_count:8;
+    uint32_t type: 8,
+             reserved2: 3,
+             flags: 5,
+             reserved: 8,
+             hop_count: 8;
 #else
 #error  "Adjust your <asm/byteorder.h> defines"
 #endif
@@ -196,45 +195,44 @@ struct aodv_rreq
  * Route response message (RREP)
  * @ingroup msg
  */
-struct aodv_rrep
-{
+struct aodv_rrep {
 #if defined(__BIG_ENDIAN_BITFIELD)
     /**
      * Type will always be 2 in a RREP
      */
-    uint32_t type:8,
+    uint32_t type: 8,
 
-    /**
-     * Flags have the format is R A. See above the possible flags
-     */
-    flags:2,
+             /**
+              * Flags have the format is R A. See above the possible flags
+              */
+             flags: 2,
 
-    /**
-     * Is always zero and ignored
-     */
-    reserved:9,
+             /**
+              * Is always zero and ignored
+              */
+             reserved: 9,
 
-    /**
-     * Prefix size.
-     * If nonzero, the 5-bit Prefix Size specifies that the indicated next hop
-     * may be used for any nodes with the same routing prefix (as defined by
-     * the Prefix Size) as the requested destination.
-     */
-    prefix_sz:5,
+             /**
+              * Prefix size.
+              * If nonzero, the 5-bit Prefix Size specifies that the indicated next hop
+              * may be used for any nodes with the same routing prefix (as defined by
+              * the Prefix Size) as the requested destination.
+              */
+             prefix_sz: 5,
 
-    /**
-     * Hop Count.
-     * Number of hops from the originator ip Address to the node
-     * handling the request.
-     */
-    hop_count:8;
+             /**
+              * Hop Count.
+              * Number of hops from the originator ip Address to the node
+              * handling the request.
+              */
+             hop_count: 8;
 #elif defined(__LITTLE_ENDIAN_BITFIELD)
-    uint32_t type:8,
-        reserved2:6,
-        flags:2,
-        prefix_sz:5,
-        reserved:3,
-        hop_count:8;
+    uint32_t type: 8,
+             reserved2: 6,
+             flags: 2,
+             prefix_sz: 5,
+             reserved: 3,
+             hop_count: 8;
 #else
 #error  "Adjust your <asm/byteorder.h> defines"
 #endif
@@ -288,35 +286,34 @@ struct aodv_rrep
  * Route Error (RERR)
  * @ingroup msg
  */
-struct aodv_rerr
-{
+struct aodv_rerr {
 #if defined(__BIG_ENDIAN_BITFIELD)
     /**
      * Type will always be 3 in a RERR
      */
-    uint32_t type:8,
+    uint32_t type: 8,
 
-    /**
-     * The only flag is N. See above
-     */
-    flag:1,
+             /**
+              * The only flag is N. See above
+              */
+             flag: 1,
 
-    /**
-     * Is always zero and ignored
-     */
-    reserved:15,
+             /**
+              * Is always zero and ignored
+              */
+             reserved: 15,
 
-    /**
-     * The number of unrecheable destinations included in the message; MUST at
-     * least be 1.
-     */
-    dest_count:8;
+             /**
+              * The number of unrecheable destinations included in the message; MUST at
+              * least be 1.
+              */
+             dest_count: 8;
 #elif defined(__LITTLE_ENDIAN_BITFIELD)
-    uint32_t type:8,
-    reserved2:7,
-    flag:1,
-    reserved:8,
-    dest_count:8;
+    uint32_t type: 8,
+             reserved2: 7,
+             flag: 1,
+             reserved: 8,
+             dest_count: 8;
 
 #else
 #error  "Adjust your <asm/byteorder.h> defines"
@@ -341,8 +338,7 @@ struct aodv_rerr
  * This structure is used with aodv_rerr to send a complete error
  * message
  */
-struct unrecheable_dest
-{
+struct unrecheable_dest {
     /**
     * Destination IP Address.
     * The IP address of the destination for which a route is supplied.
@@ -360,8 +356,7 @@ struct unrecheable_dest
  * Route Reply Acknowledgment (RREP-ACK)
  * @ingroup msg
  */
-struct aodv_rrep_ack
-{
+struct aodv_rrep_ack {
     /**
      * Type will always be 4 in a RREP-ACK
      */
