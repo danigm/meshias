@@ -86,7 +86,7 @@ int msh_data_init(int argc, char **argv)
     {
         return ERR_INIT;
     }
-    else if(unix_interface_init())
+    else if(comm_interface_init())
     {
         return ERR_INIT;
     }
@@ -143,6 +143,6 @@ void msh_data_shutdown()
     destroy_fds(data.fds);
     nfqueue_shutdown();
     daemon_shutdown();
-    unix_interface_shutdown();
+    comm_interface_shutdown();
     debug(1,"Freed all memory");
 }
