@@ -1,6 +1,7 @@
 #include "communication_interface.h"
 #include "msh_data.h"
 #include "statistics.h"
+#include "routing_table.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -11,6 +12,7 @@
 #define stats_size 5000
 
 void get_statistics(char *buf, int bufsize);
+void get_routes(char *buf, int bufsize);
 
 int comm_interface_init()
 {
@@ -75,6 +77,10 @@ void comm_interface_process_command(int fd, char* v_command)
     else if(strncmp(command, MSG_SHOW_ROUTES,
                 strlen(MSG_SHOW_ROUTES))==0)
     {
+        get_routes (stats_buf, stats_size);
+        tosend=stats_buf;
+        printf ("%d\n", strlen(stats_buf));
+        size=strlen(stats_buf);
     }
     else if(strncmp(command, MSG_SHOW_STATISTICS,
                 strlen(MSG_SHOW_STATISTICS))==0)
@@ -153,4 +159,44 @@ void get_statistics(char *buf, int bufsize)
             stats.error_unix_recv,
             stats.route_not_found,
             stats.invalid_route);
+}
+
+
+void add_route(struct msh_route *route, char *buf, int bufsize)
+{
+    puts("asdfas");
+    snprintf (buf, bufsize, "dst_ip: %s\n"
+                            "prefix_sz: %d\n"
+                            "dest_seq_num: %d\n"
+                            "flags: %d\n"
+                            "hop_count: %d\n"
+                            "next_hop: %s\n"
+                            "net_iface: %d\n",
+                inet_htoa(route->dst_ip),
+                route->prefix_sz,
+                route->dest_seq_num,
+                route->flags,
+                route->hop_count,
+                inet_htoa(route->next_hop),
+                route->net_iface);
+}
+
+struct route_data {
+    int number;
+    int size;
+    char *buf;
+};
+
+int add_route_cb(struct msh_route *msh_r, void *data)
+{
+    struct route_data *rd = (struct route_data *)data;
+    add_route(msh_r, rd->buf+rd->number, rd->size);
+    rd->number++;
+}
+
+void get_routes(char *buf, int bufsize)
+{
+    struct route_data rd = {0, bufsize, buf};
+
+    routing_table_foreach(data.routing_table, add_route_cb, &rd);
 }
