@@ -27,23 +27,27 @@ static u_int32_t print_pkt(struct nfq_data *tb)
 
     mark = nfq_get_nfmark(tb);
 
-    if (mark)
+    if (mark) {
         printf("mark=%u ", mark);
+    }
 
     ifi = nfq_get_indev(tb);
 
-    if (ifi)
+    if (ifi) {
         printf("indev=%u ", ifi);
+    }
 
     ifi = nfq_get_outdev(tb);
 
-    if (ifi)
+    if (ifi) {
         printf("outdev=%u ", ifi);
+    }
 
     ret = nfq_get_payload(tb, &data);
 
-    if (ret >= 0)
+    if (ret >= 0) {
         printf("payload_len=%d ", ret);
+    }
 
     fputc('\n', stdout);
 

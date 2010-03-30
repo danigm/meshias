@@ -16,8 +16,9 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     int id = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
 
-    if ((packetHeader = nfq_get_msg_packet_hdr(nfa)) != NULL)
+    if ((packetHeader = nfq_get_msg_packet_hdr(nfa)) != NULL) {
         id = ntohl(packetHeader->packet_id);
+    }
 
     nfq_get_payload(nfa, &payload);
 

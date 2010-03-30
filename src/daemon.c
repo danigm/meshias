@@ -102,12 +102,14 @@ void daemon_receive_packets()
 
     pkt = aodv_pkt_get(&msg, numbytes);
 
-    if (aodv_pkt_check(pkt) == 0)
+    if (aodv_pkt_check(pkt) == 0) {
         return;
+    }
 
     // Filter if we are the senders
-    if (aodv_pkt_get_address(pkt) == data.ip_addr.s_addr)
+    if (aodv_pkt_get_address(pkt) == data.ip_addr.s_addr) {
         return;
+    }
 
     //HERE STARTS THE AODV LOGIC
     switch (aodv_pkt_get_type(pkt)) {

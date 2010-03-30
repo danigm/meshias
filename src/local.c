@@ -32,8 +32,9 @@ int local_server_create(struct local_server *server, struct local_conf *conf)
     socklen_t len;
     struct sockaddr_un local;
 
-    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
+    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
         return -1;
+    }
 
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &conf->reuseaddr,
                    sizeof(conf->reuseaddr)) == -1) {
@@ -81,14 +82,16 @@ int local_server_do_step(struct local_server *server, void (*process)(int fd, vo
 
     rfd = accept(server->fd, (struct sockaddr *) &local, &sin_size);
 
-    if (rfd == -1)
+    if (rfd == -1) {
         return -1;
+    }
 
     if ((numbytes = recv(rfd, buf, sizeof(buf) - 1, 0)) > 0) {
         buf[sizeof(buf)-1] = '\0';
 
-        if (process)
+        if (process) {
             process(rfd, buf);
+        }
     }
 
     close(rfd);
@@ -102,8 +105,9 @@ int local_client_create(struct local_conf *conf)
     struct sockaddr_un local;
     int fd;
 
-    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
+    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
         return -1;
+    }
 
     local.sun_family = AF_UNIX;
     strcpy(local.sun_path, conf->path);
@@ -133,8 +137,9 @@ int local_client_do_step(int fd, void (*process)(void *buf))
     while ((numbytes = recv(fd, buf, sizeof(buf) - 1, 0)) > 0) {
         buf[sizeof(buf)-1] = '\0';
 
-        if (process)
+        if (process) {
             process(buf);
+        }
 
         memset(buf, 0, sizeof(buf));
     }
@@ -154,13 +159,15 @@ int local_do_request(char* request, struct local_conf *conf,
 
     fd = local_client_create(conf);
 
-    if (fd == -1)
+    if (fd == -1) {
         return -1;
+    }
 
     ret = send(fd, request, strlen(request), 0);
 
-    if (ret == -1)
+    if (ret == -1) {
         return -1;
+    }
 
     local_client_do_step(fd, step);
 

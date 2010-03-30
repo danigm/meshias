@@ -84,8 +84,9 @@ static int ipq_errno = IPQ_ERR_NONE;
 
 static char *ipq_strerror(int errcode)
 {
-    if (errcode < 0 || errcode > IPQ_MAXERR)
+    if (errcode < 0 || errcode > IPQ_MAXERR) {
         errcode = IPQ_ERR_IMPL;
+    }
 
     return ipq_errmap[errcode].message;
 }
@@ -119,11 +120,11 @@ struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol) {
         goto err_free;
     }
 
-    if (protocol == PF_INET)
+    if (protocol == PF_INET) {
         status = nfq_bind_pf(h->nfqnlh, PF_INET);
-    else if (protocol == PF_INET6)
+    } else if (protocol == PF_INET6) {
         status = nfq_bind_pf(h->nfqnlh, PF_INET6);
-    else {
+    } else {
         ipq_errno = IPQ_ERR_PROTOCOL;
         goto err_close;
     }
@@ -191,11 +192,13 @@ ssize_t ipq_read(const struct ipq_handle *h,
 
     nfa = nfnl_parse_hdr(nfq_nfnlh(h->nfqnlh), nlh, &msg);
 
-    if (!msg || !nfa)
+    if (!msg || !nfa) {
         return 0;
+    }
 
-    if (msg->nfgen_family != h->family)
+    if (msg->nfgen_family != h->family) {
         return 0;
+    }
 
     nfnl_parse_attr(tb, NFQA_MAX, nfa, 0xffff);
 
@@ -242,16 +245,19 @@ char *ipq_errstr(void)
 
 void ipq_perror(const char *s)
 {
-    if (s)
+    if (s) {
         fputs(s, stderr);
-    else
+    } else {
         fputs("ERROR", stderr);
+    }
 
-    if (ipq_errno)
+    if (ipq_errno) {
         fprintf(stderr, ": %s", ipq_errstr());
+    }
 
-    if (errno)
+    if (errno) {
         fprintf(stderr, ": %s", strerror(errno));
+    }
 
     fputc('\n', stderr);
 }

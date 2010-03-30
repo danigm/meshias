@@ -72,8 +72,9 @@ struct nfq_udphdr {
 extern struct nfq_iphdr* nfq_get_iphdr(struct nfq_data *nfad) {
     char *data;
 
-    if (nfq_get_payload(nfad, &data) == -1)
+    if (nfq_get_payload(nfad, &data) == -1) {
         return NULL;
+    }
 
     return (struct nfq_iphdr*) data;
 }
@@ -136,8 +137,9 @@ extern uint32_t nfq_get_ip_daddr(struct nfq_iphdr *hdr)
 extern struct nfq_tcphdr* nfq_get_tcphdr(struct nfq_data *nfad) {
     char *data;
 
-    if (nfq_get_payload(nfad, &data) == -1)
+    if (nfq_get_payload(nfad, &data) == -1) {
         return NULL;
+    }
 
     data = data + sizeof(struct nfq_iphdr);
     return (struct nfq_tcphdr*) data;
@@ -243,8 +245,9 @@ extern uint16_t nfq_get_tcp_urg_ptr(struct nfq_tcphdr *hdr)
 extern struct nfq_udphdr* nfq_get_udphdr(struct nfq_data *nfad) {
     char *data;
 
-    if (nfq_get_payload(nfad, &data) == -1)
+    if (nfq_get_payload(nfad, &data) == -1) {
         return NULL;
+    }
 
     data = data + sizeof(struct nfq_iphdr);
     return (struct nfq_udphdr*) data;

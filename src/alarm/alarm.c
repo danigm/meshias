@@ -45,10 +45,11 @@ static void __add_alarm(struct alarm_block *alarm)
 
         parent = *new;
 
-        if (timercmp(&alarm->tv, &this->tv, < ))
+        if (timercmp(&alarm->tv, &this->tv, < )) {
             new = &((*new)->rb_left);
-        else
+        } else {
             new = &((*new)->rb_right);
+        }
     }
 
     rb_link_node(&alarm->node, parent, new);
@@ -78,8 +79,9 @@ void del_alarm(struct alarm_block *alarm)
 
 int alarm_pending(struct alarm_block *alarm)
 {
-    if (RB_EMPTY_NODE(&alarm->node))
+    if (RB_EMPTY_NODE(&alarm->node)) {
         return 0;
+    }
 
     return 1;
 }
@@ -89,9 +91,9 @@ calculate_next_run(struct timeval *cand,
                    struct timeval *tv,
                    struct timeval *next_run) {
     if (cand->tv_sec != LONG_MAX) {
-        if (timercmp(cand, tv, > ))
+        if (timercmp(cand, tv, > )) {
             timersub(cand, tv, next_run);
-        else {
+        } else {
             /* loop again inmediately */
             next_run->tv_sec = 0;
             next_run->tv_usec = 0;
@@ -135,8 +137,9 @@ do_alarm_run(struct timeval *next_run) {
     for (node = rb_first(&alarm_root); node; node = rb_next(node)) {
         this = container_of(node, struct alarm_block, node);
 
-        if (timercmp(&this->tv, &tv, > ))
+        if (timercmp(&this->tv, &tv, > )) {
             break;
+        }
 
         list_add(&this->list, &alarm_run_queue);
     }
@@ -153,6 +156,7 @@ do_alarm_run(struct timeval *next_run) {
 
 struct timeval*
 process_alarms(struct timeval *next) {
-    if (next != NULL && !timerisset(next))
+    if (next != NULL && !timerisset(next)) {
         return do_alarm_run(next);
+    }
 }

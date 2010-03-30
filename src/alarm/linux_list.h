@@ -305,8 +305,9 @@ static inline void __list_splice(struct list_head *list,
  */
 static inline void list_splice(struct list_head *list, struct list_head *head)
 {
-    if (!list_empty(list))
+    if (!list_empty(list)) {
         __list_splice(list, head);
+    }
 }
 
 /**
@@ -539,8 +540,9 @@ static inline void __hlist_del(struct hlist_node *n)
     struct hlist_node **pprev = n->pprev;
     *pprev = next;
 
-    if (next)
+    if (next) {
         next->pprev = pprev;
+    }
 }
 
 static inline void hlist_del(struct hlist_node *n)
@@ -590,8 +592,9 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
     struct hlist_node *first = h->first;
     n->next = first;
 
-    if (first)
+    if (first) {
         first->pprev = &n->next;
+    }
 
     h->first = n;
     n->pprev = &h->first;
@@ -625,8 +628,9 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
     n->pprev = &h->first;
     smp_wmb();
 
-    if (first)
+    if (first) {
         first->pprev = &n->next;
+    }
 
     h->first = n;
 }
@@ -648,8 +652,9 @@ static inline void hlist_add_after(struct hlist_node *n,
     n->next = next;
     next->pprev = &n->next;
 
-    if (next->next)
+    if (next->next) {
         next->next->pprev  = &next->next;
+    }
 }
 
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)

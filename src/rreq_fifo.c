@@ -51,8 +51,9 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
         // An optional parameter set to zero
         struct in_addr orig = { 0 };
 
-        if (routing_table_use_route(data.routing_table, dst, &expired_route, orig))
+        if (routing_table_use_route(data.routing_table, dst, &expired_route, orig)) {
             fprintf(stderr, "Error: Found an unexpected route when a waiting RREQ expired\n");
+        }
 
         set_alarm_time(binary_exponential_backoff_time(entry->prev_tries), &sc, &usc);
         add_alarm(&entry->alarm, sc, usc);
@@ -129,8 +130,9 @@ uint8_t rreq_fifo_contains(struct rreq_fifo* queue, uint32_t rreq_id,
     struct rreq_fifo *entry;
 
     list_for_each_entry(entry, &queue->list, list) {
-        if (entry->rreq_id == rreq_id && entry->dst.s_addr == dst.s_addr)
+        if (entry->rreq_id == rreq_id && entry->dst.s_addr == dst.s_addr) {
             return 1;
+        }
     }
     return 0;
 }
@@ -143,8 +145,9 @@ uint8_t rreq_fifo_waiting_response_for(struct rreq_fifo* queue,
     list_for_each_entry(entry, &queue->list, list) {
         // We check that prev_tries non-zero because the packed must be owned"
         // i.e. must have been sent by us
-        if (entry->prev_tries >= 0 && entry->dst.s_addr == dst.s_addr)
+        if (entry->prev_tries >= 0 && entry->dst.s_addr == dst.s_addr) {
             return 1;
+        }
     }
     return 0;
 }

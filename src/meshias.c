@@ -39,10 +39,11 @@ int main(int argc, char **argv)
     // TODO: Here we should capture signals sent to the app
 
     while (!data.end) {
-        if (next_run)
+        if (next_run) {
             printf("wile(1) next_run %d %d\n", next_run->tv_sec, next_run->tv_usec);
-        else
+        } else {
             puts("while1 NULL");
+        }
 
         //This is needed because of yes
         FD_SET(data.nfqueue_fd, &data.fds->readfds);
