@@ -53,14 +53,24 @@ int main(int argc, char **argv)
     struct nl_addr *gateway = nl_addr_parse(argv[3], AF_INET);
     char buf[200];
     printf("addr: %s\n", nl_addr2str(gateway, buf, sizeof(buf)));
-    rtnl_route_set_family(nlroute, AF_INET);
-    rtnl_route_set_table (nlroute, RT_TABLE_MAIN);
-    rtnl_route_set_gateway(nlroute, dst);
-    nl_addr_put(gateway);
+//     rtnl_route_set_family(nlroute, AF_INET);
+//     rtnl_route_set_table (nlroute, RT_TABLE_MAIN);
+    rtnl_route_set_gateway(nlroute, gateway);
+    rtnl_route_set_scope(nlroute, RT_SCOPE_UNIVERSE);
+//     nl_addr_put(gateway);
+
+//     struct rtnl_route *nlroute2 = rtnl_route_alloc();
+//     rtnl_route_set_oif(nlroute2, ifindex);
+//     rtnl_route_set_dst(nlroute2, gateway);
+//     if (rtnl_route_add(sock, nlroute2, 0) < 0)
+//     {
+//         fprintf(stderr, "rtnl_route_add (for gateway) failed: %s\n", nl_geterror());
+//     }
+
 //     struct rtnl_nexthop * route_nexthop = rtnl_route_nh_alloc();
 //     rtnl_route_nh_set_gateway(route_nexthop, dst);
 //     rtnl_route_add_nexthop(nlroute, route_nexthop);
-    if (rtnl_route_add(sock, nlroute, NLM_F_CREATE) < 0)
+    if (rtnl_route_add(sock, nlroute, 0) < 0)
     {
         fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
     }
