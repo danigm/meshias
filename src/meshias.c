@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
     while (!data.end) {
         if (next_run)
-            printf("wile(1) next_run %d %d\n", next_run->tv_sec, next_run->tv_usec);
+            printf("while(1) next_run %d %d\n", next_run->tv_sec, next_run->tv_usec);
         else
             puts("while1 NULL");
 
@@ -58,17 +58,17 @@ int main(int argc, char **argv)
             /* Check for new packets */
             if (FD_ISSET(data.nfqueue_fd, &data.fds->readfds)) {
                 printf("A packet was captured by the nfqueue");
-                nfqueue_receive_packets();
+                nfqueue_receive_packet();
             }
 
             if (FD_ISSET(data.daemon_fd, &data.fds->readfds)) {
                 debug(1, "An AODV packet was received by the daemon.");
-                daemon_receive_packets();
+                daemon_socket_receive_packet();
             }
 
             if (FD_ISSET(data.local_server.fd, &data.fds->readfds)) {
                 debug(1, "A command was received by the unix socket.");
-                unix_interface_receive_packets();
+                unix_interface_receive_packet();
             }
 
             /*

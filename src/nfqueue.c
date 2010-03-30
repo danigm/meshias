@@ -75,7 +75,7 @@ void nfqueue_shutdown()
     }
 }
 
-void nfqueue_receive_packets()
+void nfqueue_receive_packet()
 {
     // Receive the data from the fd
     char buf[4096] __attribute__((aligned));

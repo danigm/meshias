@@ -10,7 +10,7 @@
 #include "msh_data.h"
 #include "nfqueue.h"
 
-void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
+static void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
 {
     puts("__msh_data_process_wait_queue_cb called");
     // Reset the number of rreq sent to zero
@@ -31,7 +31,7 @@ void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
     // aodv_find_route(dest, last_kown_dest_seq_num);
 }
 
-void __init_addr(struct nl_object* obj, void *arg)
+static void __init_addr(struct nl_object* obj, void *arg)
 {
     struct rtnl_addr* addr = (struct rtnl_addr*)obj;
 
@@ -75,11 +75,17 @@ int msh_data_init(int argc, char **argv)
     if ((data.fds = create_fds()) == NULL) {
         perror("Error: fds");
         return ERR_INIT;
-    } else if (nfqueue_init()) {
+    }
+
+    if (nfqueue_init()) {
         return ERR_INIT;
-    } else if (daemon_init()) {
+    }
+    
+    if (daemon_socket_init()) {
         return ERR_INIT;
-    } else if (unix_interface_init()) {
+    }
+    
+    if (unix_interface_init()) {
         return ERR_INIT;
     }
 
@@ -133,7 +139,7 @@ void msh_data_shutdown()
 
     destroy_fds(data.fds);
     nfqueue_shutdown();
-    daemon_shutdown();
+    daemon_socket_shutdown();
     unix_interface_shutdown();
     debug(1, "Freed all memory");
 }

@@ -1,5 +1,5 @@
-#ifndef AODV_PACKET_H__
-#define AODV_PACKET_H__
+#ifndef AODV_PACKET_H
+#define AODV_PACKET_H
 
 #include <sys/socket.h>
 #include "common.h"

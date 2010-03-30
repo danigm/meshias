@@ -61,7 +61,7 @@ void unix_interface_process_command(int fd, void* v_command)
     send(fd, tosend, size, 0);
 }
 
-void unix_interface_receive_packets()
+void unix_interface_receive_packet()
 {
     local_server_do_step(&data.local_server,
                          &unix_interface_process_command);

@@ -5,7 +5,6 @@
 #include "rreq_fifo.h"
 #include "packets_fifo.h"
 #include "aodv_logic.h"
-#include "daemon.h"
 #include "route_obj.h"
 #include "aodv_packet.h"
 #include "statistics.h"
@@ -61,6 +60,43 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
 
     aodv_pkt_send(pkt);
 
+    aodv_pkt_destroy(pkt);
+}
+
+void aodv_process_packet(struct msghdr* msg, int numbytes)
+{
+    struct aodv_pkt* pkt = aodv_pkt_get(msg, numbytes);
+
+    if (aodv_pkt_check(pkt) == 0)
+        return;
+
+    // Filter if we are the senders
+    if (aodv_pkt_get_address(pkt) == data.ip_addr.s_addr)
+        return;
+
+    //HERE STARTS THE AODV LOGIC
+    switch (aodv_pkt_get_type(pkt)) {
+    case AODV_RREQ:
+        aodv_process_rreq(pkt);
+        break;
+
+    case AODV_RREP:
+        aodv_process_rrep(pkt);
+        break;
+
+    case AODV_RERR:
+        aodv_process_rerr(pkt);
+        break;
+
+    case AODV_RREP_ACK:
+        aodv_process_rrep_ack(pkt);
+        break;
+        // Impossible, pkt is checked before
+    default:
+        break;
+    }
+
+    // We're done with this packet: now free the mallocs!
     aodv_pkt_destroy(pkt);
 }
 

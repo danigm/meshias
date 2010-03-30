@@ -1,7 +1,7 @@
 #include <string.h>
 #include <netinet/in.h>
 
-#include "daemon.h"
+#include "daemon_socket.h"
 #include "route_obj.h"
 #include "aodv_packet.h"
 #include "aodv_logic.h"
@@ -9,7 +9,7 @@
 
 #define BUF_SIZE 1024
 
-int daemon_init()
+int daemon_socket_init()
 {
     int option = 1;
     struct sockaddr_in address;
@@ -57,12 +57,12 @@ int daemon_init()
     return 0;
 }
 
-void daemon_shutdown()
+void daemon_socket_shutdown()
 {
     close(data.daemon_fd);
 }
 
-void daemon_receive_packets()
+void daemon_socket_receive_packet()
 {
     int numbytes;
     char name_buf[BUF_SIZE];
@@ -70,7 +70,6 @@ void daemon_receive_packets()
     char control_buf[BUF_SIZE];
     struct msghdr msg;
     struct iovec io;
-    struct aodv_pkt* pkt;
 
     // Set all memory to 0
     memset(&msg, 0, sizeof(msg));
@@ -98,39 +97,7 @@ void daemon_receive_packets()
     if (numbytes == -1) {
         stats.error_aodv_recv++;
         return;
+    } else {
+        aodv_process_packet(&msg, numbytes);
     }
-
-    pkt = aodv_pkt_get(&msg, numbytes);
-
-    if (aodv_pkt_check(pkt) == 0)
-        return;
-
-    // Filter if we are the senders
-    if (aodv_pkt_get_address(pkt) == data.ip_addr.s_addr)
-        return;
-
-    //HERE STARTS THE AODV LOGIC
-    switch (aodv_pkt_get_type(pkt)) {
-    case AODV_RREQ:
-        aodv_process_rreq(pkt);
-        break;
-
-    case AODV_RREP:
-        aodv_process_rrep(pkt);
-        break;
-
-    case AODV_RERR:
-        aodv_process_rerr(pkt);
-        break;
-
-    case AODV_RREP_ACK:
-        aodv_process_rrep_ack(pkt);
-        break;
-        // Impossible, pkt is checked before
-    default:
-        break;
-    }
-
-    // We're done with this packet: now free the mallocs!
-    aodv_pkt_destroy(pkt);
 }

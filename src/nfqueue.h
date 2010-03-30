@@ -22,7 +22,7 @@ int nfqueue_init();
  * main loop. The packets will be handled to nfq_handle_packet() which in
  * turn will call to @see manage_packet().
  */
-void nfqueue_receive_packets();
+void nfqueue_receive_packet();
 
 /**
  * Prints all kind of information attached to a packet: mark,  timestamp,

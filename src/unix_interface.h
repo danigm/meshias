@@ -27,7 +27,7 @@ int unix_interface_init();
 /** Destroy the unix socket */
 void unix_interface_shutdown();
 /** When it receives a command call @see unix_interface_run_command */
-void unix_interface_receive_packets();
+void unix_interface_receive_packet();
 /** Process a command and create a response */
 void unix_process_command(int fd, void* command);
 
