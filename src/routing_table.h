@@ -66,7 +66,7 @@ struct msh_route *routing_table_find_by_ip(struct routing_table *table,
  * updating the route (see code for details).
  * If orig_ip.s_addr = 0 then we won't update the route back to orig ip.
  */
-uint8_t routing_table_use_route(struct routing_table *table,
+uint8_t  routing_table_update_route(struct routing_table *table,
                                 struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip);
 
 void routing_table_foreach(struct routing_table *table,

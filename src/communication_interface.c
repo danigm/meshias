@@ -29,8 +29,8 @@ void send_msg(int sock, char *buf, int size)
 int comm_interface_init()
 {
     int fd;
-    socklen_t len;
     struct sockaddr_in local;
+    socklen_t length = sizeof(local);
     int option = 1;
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -47,7 +47,7 @@ int comm_interface_init()
     local.sin_port = htons(MESH_PORT);
     local.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(fd, (struct sockaddr *) &local, sizeof(local)) == -1) {
+    if (bind(fd, (struct sockaddr *) &local, length) == -1) {
         return -1;
     }
 
@@ -112,7 +112,7 @@ void comm_interface_receive_packets()
     int ret;
     int newsock;
     struct sockaddr_in addr;
-    int length = sizeof(addr);
+    socklen_t length = sizeof(addr);
 
     newsock = accept(data.comm_fd, (struct sockaddr *)&addr, &length);
     ret = recv(newsock, buffer, 128, 0);
@@ -126,7 +126,7 @@ void get_statistics(char *buf, int bufsize)
     snprintf (buf, bufsize, "packets_dropped: %d\n"
               "no_address_received: %d\n"
               "no_payload_received: %d\n"
-              "no_control_received: %d\n"
+              // "no_control_received: %d\n"
               "send_aodv_errors: %d\n"
               "send_aodv_incomplete: %d\n"
               "rreq_incorrect_size: %d\n"
@@ -135,16 +135,15 @@ void get_statistics(char *buf, int bufsize)
               "rerr_dest_cont_zero: %d\n"
               "rrep_ack_incorrect_size: %d\n"
               "aodv_incorrect_type: %d\n"
-              "ttl_not_found: %d\n"
+              "no_ttl_received: %d\n"
               "error_aodv_recv: %d\n"
-              "error_nf_recv: %d\n"
+              "error_nfq_recv: %d\n"
               "error_unix_recv: %d\n"
-              "route_not_found: %d\n"
               "invalid_route: %d\n",
               stats.packets_dropped,
               stats.no_address_received,
               stats.no_payload_received,
-              stats.no_control_received,
+              // stats.no_control_received,
               stats.send_aodv_errors,
               stats.send_aodv_incomplete,
               stats.rreq_incorrect_size,
@@ -153,11 +152,10 @@ void get_statistics(char *buf, int bufsize)
               stats.rerr_dest_cont_zero,
               stats.rrep_ack_incorrect_size,
               stats.aodv_incorrect_type,
-              stats.ttl_not_found,
+              stats.no_ttl_received,
               stats.error_aodv_recv,
-              stats.error_nf_recv,
+              stats.error_nfq_recv,
               stats.error_unix_recv,
-              stats.route_not_found,
               stats.invalid_route);
 }
 

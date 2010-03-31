@@ -3,10 +3,12 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <stdlib.h>
+
 #include "alarm/linux_list.h"
 #include "route_obj.h"
-#include "common.h"
-
+#include "log.h"
+#include "utils.h"
+#include "aodv/configuration_parameters.h"
 
 void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
 {
@@ -46,7 +48,7 @@ void msh_route_destroy(struct msh_route* route)
 {
     struct precursor_t  *entry, *tmp;
 
-    printf("msh_route_destroy %p\n", route);
+    debug(1, "msh_route_destroy %p dest %s\n", route, inet_htoa(route->dst_ip));
     __msh_route_updated(route, RTACTION_DESTROY);
     del_alarm(&route->alarm);
 

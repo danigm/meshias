@@ -56,7 +56,7 @@ void packets_fifo_drop_packets(struct packets_fifo* queue, struct in_addr dest);
  * For all the packets whose dest. ip matches, the packet is released.
  * Called when a new route is added to accept all the packets related to it.
  */
-uint32_t packets_fifo_process_route(struct packets_fifo* queue,
+void packets_fifo_process_route(struct packets_fifo* queue,
                                     struct msh_route* route);
 
 /**

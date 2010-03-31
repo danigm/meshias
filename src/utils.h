@@ -1,9 +1,8 @@
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <netinet/in.h>
 #include <netlink/addr.h>
-#include "common.h"
 
 /**
  * Given an amount of time in miliseconds, it sets the equivalent time in

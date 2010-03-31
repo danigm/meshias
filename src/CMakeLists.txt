@@ -4,14 +4,15 @@
 cmake_minimum_required (VERSION 2.6)
 project (MESHIAS)
 
+set (CMAKE_C_FLAGS "-g -Wall")
 set (MESHIAS_SRCS meshias.c msh_data.c
-    nfqueue.c daemon.c log.c routing_table.c rreq_fifo.c
-    packets_fifo.c aodv_packet.c aodv_logic.c fds.c statistics.c
-    communication_interface.c)
+    nfqueue.c daemon_socket.c log.c routing_table.c rreq_fifo.c
+    packets_fifo.c fds.c statistics.c
+    communication_interface.c aodv/packet.c aodv/logic.c)
 
-set  (MESHIAS_TOOLS_SRCS meshias-tools.c utils.c )
+# set  (MESHIAS_TOOLS_SRCS meshias-tools.c local.c utils.c)
 set (LIBMESH libmeshias.c route_obj.c alarm/alarm.c alarm/rbtree.c
-    utils.c common.c )
+    utils.c aodv/configuration_parameters.c)
 set (LMESHTEST lmeshtest.c)
 
 # Recurse into the "libnetfilter_queue" subdirectory. This does not actually 
@@ -22,13 +23,13 @@ add_subdirectory (libnetfilter_queue)
 # Add executable called "meshias". The extensions are automatically found
 add_library (libmeshias ${LIBMESH})
 add_executable (meshias ${MESHIAS_SRCS})
-add_executable (meshias-tools ${MESHIAS_TOOLS_SRCS})
+#add_executable (meshias-tools ${MESHIAS_TOOLS_SRCS})
 add_executable (lmeshtest ${LMESHTEST} ${LIBMESH})
 
 # Link the executable to the needed library. 
 target_link_libraries (meshias netfilter_queue nfnetlink nl libmeshias)
-target_link_libraries (meshias-tools nl)
+#target_link_libraries (meshias-tools nl)
 target_link_libraries (lmeshtest netfilter_queue nfnetlink nl libmeshias)
 
 install(TARGETS meshias RUNTIME DESTINATION bin)
-install(TARGETS meshias-tools RUNTIME DESTINATION bin)
+#install(TARGETS meshias-tools RUNTIME DESTINATION bin)

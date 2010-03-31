@@ -57,7 +57,7 @@ uint8_t rreq_fifo_waiting_response_for(struct rreq_fifo* queue,
                                        struct in_addr dst);
 
 /**
- * Locates the rreq_fifo entry with the given rreq_id and dst if found in the buffer,
+ * Locates the rreq_fifo entry with the given rreq_id and dst in the buffer,
  * removing the entry from the buffer if found.
  */
 void rreq_fifo_del(struct rreq_fifo* queue, uint32_t rreq_id,

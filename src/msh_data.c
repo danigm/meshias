@@ -8,11 +8,15 @@
 #include <sys/types.h>
 
 #include "msh_data.h"
+#include "statistics.h"
+#include "daemon_socket.h"
+#include "communication_interface.h"
 #include "nfqueue.h"
+#include "log.h"
 
-void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
+static void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
 {
-    puts("__msh_data_process_wait_queue_cb called");
+    debug(1, "");
     // Reset the number of rreq sent to zero
     data.num_rreq_sent = 0;
 
@@ -31,15 +35,16 @@ void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
     // aodv_find_route(dest, last_kown_dest_seq_num);
 }
 
-void __init_addr(struct nl_object* obj, void *arg)
+static void __init_addr(struct nl_object* obj, void *arg)
 {
     struct rtnl_addr* addr = (struct rtnl_addr*)obj;
 
-    struct nl_dump_params dp = {
-        .dp_type = NL_DUMP_FULL,
-        .dp_fd = stdout,
-        .dp_dump_msgtype = 1,
-    };
+    // unused.. ?
+//     struct nl_dump_params dp = {
+//         .dp_type = NL_DUMP_FULL,
+//         .dp_fd = stdout,
+//         .dp_dump_msgtype = 1,
+//     };
 
     struct nl_addr *local = rtnl_addr_get_local(addr);
     memcpy(&data.ip_addr, nl_addr_get_binary_addr(local), sizeof(uint32_t));
@@ -49,8 +54,8 @@ void __init_addr(struct nl_object* obj, void *arg)
     memcpy(&data.broadcast_addr, nl_addr_get_binary_addr(broadcast), sizeof(uint32_t));
     data.broadcast_addr.s_addr = ntohl(data.broadcast_addr.s_addr);
 
-    printf("local %s\n", inet_htoa(data.ip_addr));
-    printf("broadcast %s\n", inet_htoa(data.broadcast_addr));
+    debug(1, "local %s\n", inet_htoa(data.ip_addr));
+    debug(1, "broadcast %s\n", inet_htoa(data.broadcast_addr));
 }
 
 int msh_data_init(int argc, char **argv)
@@ -75,11 +80,17 @@ int msh_data_init(int argc, char **argv)
     if ((data.fds = create_fds()) == NULL) {
         perror("Error: fds");
         return ERR_INIT;
-    } else if (nfqueue_init()) {
+    }
+
+    if (nfqueue_init()) {
         return ERR_INIT;
-    } else if (daemon_init()) {
+    }
+
+    if (daemon_socket_init()) {
         return ERR_INIT;
-    } else if (comm_interface_init()) {
+    }
+
+    if (comm_interface_init()) {
         return ERR_INIT;
     }
 
@@ -133,7 +144,7 @@ void msh_data_shutdown()
 
     destroy_fds(data.fds);
     nfqueue_shutdown();
-    daemon_shutdown();
+    daemon_socket_shutdown();
     comm_interface_shutdown();
     debug(1, "Freed all memory");
 }

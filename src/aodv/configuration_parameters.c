@@ -1,6 +1,7 @@
 #include <sys/time.h>
 #include <time.h>
-#include "common.h"
+#include "configuration_parameters.h"
+#include "../utils.h"
 
 uint32_t ACTIVE_ROUTE_TIMEOUT()
 {
@@ -19,7 +20,6 @@ uint32_t RREQ_RETRIES()
 
 uint32_t HELLO_INTERVAL()
 {
-    uint32_t mark;
     return 1000;
 }
 

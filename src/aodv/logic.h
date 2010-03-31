@@ -1,5 +1,5 @@
-#ifndef _AODV_LOGIC_H_
-#define _AODV_LOGIC_H_
+#ifndef LOGIC_H
+#define LOGIC_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,10 +7,11 @@
 #include <netinet/in.h>
 #include <linux/types.h>
 
-#include "msh_data.h"
-#include "route_obj.h"
-#include "aodv_packet.h"
-#include "common.h"
+
+#include "../route_obj.h"
+#include "../msh_data.h"
+
+#include "packet.h"
 
 /**
  * Sends a Route Request AODV message.
@@ -19,9 +20,10 @@ void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
                      uint8_t prev_tries);
 
 /* Funtions to process incoming packets */
-void aodv_process_rreq(struct aodv_pkt* pkt);
-void aodv_process_rrep(struct aodv_pkt* pkt);
-void aodv_process_rerr(struct aodv_pkt* pkt);
+void aodv_process_packet(struct msghdr *msg, int);
+void aodv_process_rreq(struct aodv_pkt *pkt);
+void aodv_process_rrep(struct aodv_pkt *pkt);
+void aodv_process_rerr(struct aodv_pkt *pkt);
 void aodv_process_rrep_ack(struct aodv_pkt* pkt);
 
 /**
@@ -34,4 +36,3 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* pkt_rreq, struct in_addr prev_hop,
 
 
 #endif
-

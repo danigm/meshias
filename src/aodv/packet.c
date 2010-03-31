@@ -7,9 +7,11 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
-#include "aodv_packet.h"
-#include "msh_data.h"
-#include "statistics.h"
+#include "../msh_data.h"
+#include "../statistics.h"
+
+#include "packet.h"
+#include "configuration_parameters.h"
 
 #define DEFAULT_TTL 64
 
@@ -33,7 +35,8 @@ struct aodv_pkt *aodv_pkt_alloc() {
     return pkt;
 }
 
-struct aodv_pkt *aodv_pkt_get(struct msghdr* msg, int received) {
+struct aodv_pkt *aodv_pkt_get(struct msghdr* msg, int received)
+{
     struct aodv_pkt* pkt = (struct aodv_pkt*)calloc(1, sizeof(struct aodv_pkt));
 
     // If address has been received
@@ -56,7 +59,7 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msg, int received) {
     if (msg->msg_controllen > 0) {
         pkt->ttl = aodv_pkt_receive_ttl(msg);
     } else {
-        stats.no_control_received++;
+        stats.no_ttl_received++;
     }
 
     //FIXME dont check errors
@@ -150,7 +153,6 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             rreq->dest_seq_num = ntohl(rreq->dest_seq_num);
             rreq->orig_ip_addr = ntohl(rreq->orig_ip_addr);
             rreq->orig_seq_num = ntohl(rreq->orig_seq_num);
-            struct in_addr addr = { rreq->dest_ip_addr };
         } else {
             stats.rreq_incorrect_size++;
             return 0;
@@ -185,7 +187,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             rerr = (struct aodv_rerr*)aodv_pkt_get_payload(pkt);
 
             if (rerr->dest_count == 0) {
-                stats.rerr_dest_cont_zero;
+                stats.rerr_dest_cont_zero++;
                 return 0;
             } else {
                 // Buffer size = header size + number of desticount * desticount_size
@@ -216,7 +218,6 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
         break;
 
     default:
-        puts("error: unkown type of AODV packet found");
         return 0;
         break;
     }
@@ -229,8 +230,19 @@ size_t aodv_pkt_get_size(struct aodv_pkt* pkt)
     return pkt->payload_len;
 }
 
-int aodv_pkt_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
+uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
 {
+    struct cmsghdr *cmsg;
+
+    for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL;
+            cmsg = CMSG_NXTHDR(msg, cmsg)) {
+        if (cmsg->cmsg_level == SOL_IP
+                && cmsg->cmsg_type == IP_TTL) {
+            return *(uint8_t*)CMSG_DATA(cmsg);
+        }
+    }
+
+    return -1;
 }
 
 void aodv_pkt_build_rrep(struct aodv_pkt* pkt, uint8_t flags,
@@ -261,6 +273,27 @@ void aodv_pkt_prepare_rrep(struct aodv_rrep* rrep)
     rrep->dest_seq_num = htonl(rrep->dest_seq_num);
     rrep->orig_ip_addr = htonl(rrep->orig_ip_addr);
     rrep->lifetime = htonl(rrep->lifetime);
+}
+
+int aodv_pkt_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
+{
+    // TODO
+    return 0;
+}
+
+void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)
+{
+    //TODO: do the htonl/htons things
+    struct aodv_rrep_ack* rrep_ack;
+
+    pkt->payload_len = sizeof(struct aodv_rrep_ack);
+
+    /* Reserve memory for the structure */
+    rrep_ack = (struct aodv_rrep_ack*)calloc(1, sizeof(struct aodv_rrep_ack));
+
+    rrep_ack->type = AODV_RREP_ACK;
+
+    pkt->payload = (char*)rrep_ack;
 }
 
 void aodv_pkt_build_rreq(struct aodv_pkt* pkt, uint8_t flags,
@@ -320,36 +353,4 @@ void aodv_pkt_build_rerr(struct aodv_pkt* pkt, uint8_t flag,
     }
 
     pkt->payload = (char*)rerr;
-}
-
-void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)
-{
-    //TODO: do the htonl/htons things
-    struct aodv_rrep_ack* rrep_ack;
-
-    pkt->payload_len = sizeof(struct aodv_rrep_ack);
-
-    /* Reserve memory for the structure */
-    rrep_ack = (struct aodv_rrep_ack*)calloc(1, sizeof(struct aodv_rrep_ack));
-
-    rrep_ack->type = AODV_RREP_ACK;
-
-    pkt->payload = (char*)rrep_ack;
-}
-
-static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
-{
-    struct cmsghdr *cmsg;
-
-    for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL;
-            cmsg = CMSG_NXTHDR(msg, cmsg)) {
-        if (cmsg->cmsg_level == SOL_IP
-                && cmsg->cmsg_type == IP_TTL) {
-            return *(uint8_t*)CMSG_DATA(cmsg);
-        }
-    }
-
-    stats.ttl_not_found++;
-    // FIXME TTL no encontrado
-    return -1;
 }
