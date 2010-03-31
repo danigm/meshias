@@ -9,6 +9,7 @@
 
 #include "msh_data.h"
 #include "nfqueue.h"
+#include "log.h"
 
 static void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
 {

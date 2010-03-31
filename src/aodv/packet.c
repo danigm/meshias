@@ -7,9 +7,11 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
-#include "aodv_packet.h"
-#include "msh_data.h"
-#include "statistics.h"
+#include "../msh_data.h"
+#include "../statistics.h"
+
+#include "packet.h"
+#include "configuration_parameters.h"
 
 #define DEFAULT_TTL 64
 
@@ -229,8 +231,21 @@ size_t aodv_pkt_get_size(struct aodv_pkt* pkt)
     return pkt->payload_len;
 }
 
-int aodv_pkt_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
+static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
 {
+    struct cmsghdr *cmsg;
+
+    for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL;
+            cmsg = CMSG_NXTHDR(msg, cmsg)) {
+        if (cmsg->cmsg_level == SOL_IP
+                && cmsg->cmsg_type == IP_TTL) {
+            return *(uint8_t*)CMSG_DATA(cmsg);
+        }
+    }
+
+    stats.ttl_not_found++;
+    // FIXME TTL no encontrado
+    return -1;
 }
 
 void aodv_pkt_build_rrep(struct aodv_pkt* pkt, uint8_t flags,
@@ -261,6 +276,25 @@ void aodv_pkt_prepare_rrep(struct aodv_rrep* rrep)
     rrep->dest_seq_num = htonl(rrep->dest_seq_num);
     rrep->orig_ip_addr = htonl(rrep->orig_ip_addr);
     rrep->lifetime = htonl(rrep->lifetime);
+}
+
+int aodv_pkt_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
+{
+}
+
+void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)
+{
+    //TODO: do the htonl/htons things
+    struct aodv_rrep_ack* rrep_ack;
+
+    pkt->payload_len = sizeof(struct aodv_rrep_ack);
+
+    /* Reserve memory for the structure */
+    rrep_ack = (struct aodv_rrep_ack*)calloc(1, sizeof(struct aodv_rrep_ack));
+
+    rrep_ack->type = AODV_RREP_ACK;
+
+    pkt->payload = (char*)rrep_ack;
 }
 
 void aodv_pkt_build_rreq(struct aodv_pkt* pkt, uint8_t flags,
@@ -322,34 +356,3 @@ void aodv_pkt_build_rerr(struct aodv_pkt* pkt, uint8_t flag,
     pkt->payload = (char*)rerr;
 }
 
-void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)
-{
-    //TODO: do the htonl/htons things
-    struct aodv_rrep_ack* rrep_ack;
-
-    pkt->payload_len = sizeof(struct aodv_rrep_ack);
-
-    /* Reserve memory for the structure */
-    rrep_ack = (struct aodv_rrep_ack*)calloc(1, sizeof(struct aodv_rrep_ack));
-
-    rrep_ack->type = AODV_RREP_ACK;
-
-    pkt->payload = (char*)rrep_ack;
-}
-
-static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
-{
-    struct cmsghdr *cmsg;
-
-    for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL;
-            cmsg = CMSG_NXTHDR(msg, cmsg)) {
-        if (cmsg->cmsg_level == SOL_IP
-                && cmsg->cmsg_type == IP_TTL) {
-            return *(uint8_t*)CMSG_DATA(cmsg);
-        }
-    }
-
-    stats.ttl_not_found++;
-    // FIXME TTL no encontrado
-    return -1;
-}

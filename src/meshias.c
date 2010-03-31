@@ -12,6 +12,7 @@
 
 #include "msh_data.h"
 #include "statistics.h"
+#include "log.h"
 
 struct msh_data_t data;
 struct statistics_t stats;

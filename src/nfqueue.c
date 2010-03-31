@@ -1,5 +1,6 @@
 #include "msh_data.h"
-#include "aodv_logic.h"
+#include "aodv/logic.h"
+#include "aodv/configuration_parameters.h"
 #include "nfqueue.h"
 #include "statistics.h"
 #include <sys/socket.h>
