@@ -4,6 +4,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include "utils.h"
+
 void set_alarm_time(uint32_t miliseconds, unsigned long* sc, unsigned long* usc)
 {
     *sc = (unsigned long)(miliseconds / 1000);
