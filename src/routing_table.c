@@ -10,6 +10,7 @@
 #include "routing_table.h"
 #include "msh_data.h"
 #include "utils.h"
+#include "log.h"
 #include "statistics.h"
 
 struct routing_table {

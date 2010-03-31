@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "statistics.h"
 #include "msh_data.h"
+#include "log.h"
 #include "packets_fifo.h"
 #include <stdlib.h>
 

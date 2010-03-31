@@ -7,6 +7,7 @@
 #include "packets_fifo.h"
 #include "route_obj.h"
 #include "msh_data.h"
+#include "log.h"
 
 struct packets_fifo* packets_fifo_alloc() {
     struct packets_fifo* queue = (struct packets_fifo*)
