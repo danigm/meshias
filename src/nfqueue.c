@@ -3,6 +3,7 @@
 #include "aodv/configuration_parameters.h"
 #include "nfqueue.h"
 #include "statistics.h"
+#include <ctype.h> // for isprint()
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -92,7 +93,7 @@ void nfqueue_receive_packet()
     nfq_handle_packet(data.handle, buf, received);
 }
 
-static uint32_t nfqueue_packet_print(struct nfq_data *packet)
+uint32_t nfqueue_packet_print(struct nfq_data *packet)
 {
     int id = 0;
     int i;
@@ -186,7 +187,7 @@ static uint32_t nfqueue_packet_print(struct nfq_data *packet)
     return id;
 }
 
-static uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
+uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
 {
     uint32_t id = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
@@ -198,7 +199,7 @@ static uint32_t nfqueue_packet_get_id(struct nfq_data *packet)
     return id;
 }
 
-static uint32_t nfqueue_packet_get_hook(struct nfq_data *packet)
+uint32_t nfqueue_packet_get_hook(struct nfq_data *packet)
 {
     uint32_t hook = -1;
     struct nfqnl_msg_packet_hdr *packetHeader;
@@ -210,7 +211,7 @@ static uint32_t nfqueue_packet_get_hook(struct nfq_data *packet)
     return hook;
 }
 
-static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet) {
+struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet) {
     struct in_addr dest;
     struct nfq_iphdr* ip_header;
 
@@ -221,7 +222,7 @@ static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet) {
     return dest;
 }
 
-static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet) {
+struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet) {
     struct in_addr orig;
     struct nfq_iphdr* ip_header;
 
@@ -232,9 +233,8 @@ static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet) {
     return orig;
 }
 
-static int nfqueue_packet_is_aodv(struct nfq_data *packet)
+int nfqueue_packet_is_aodv(struct nfq_data *packet)
 {
-    struct in_addr dest;
     struct nfq_iphdr* ip_header;
     struct nfq_udphdr* udp_header;
 
@@ -254,7 +254,7 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet)
     return 0;
 }
 
-static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
+int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
                          struct nfq_data *nfa, void *data2)
 {
     uint32_t hook = nfqueue_packet_get_hook(nfa);
@@ -293,7 +293,7 @@ static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     }
 }
 
-static int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
+int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
                                 *nfmsg, struct nfq_data *nfa)
 {
     struct in_addr dest = { nfqueue_packet_get_dest(nfa).s_addr };
@@ -342,7 +342,7 @@ static int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
     }
 }
 
-static int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
+int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
                                *nfmsg, struct nfq_data *nfa)
 {
     struct in_addr dest = { nfqueue_packet_get_dest(nfa).s_addr };
@@ -371,10 +371,11 @@ static int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
         return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     } else {
         perror("BUG: we are receiving a packet directed to us, routing_table_update_route() should by definition work");
+        return 0;
     }
 }
 
-static int manage_forward_packet(struct nfq_q_handle *qh, struct nfgenmsg
+int manage_forward_packet(struct nfq_q_handle *qh, struct nfgenmsg
                                  *nfmsg, struct nfq_data *nfa)
 {
     struct in_addr dest = { nfqueue_packet_get_dest(nfa).s_addr };

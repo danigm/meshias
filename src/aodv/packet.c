@@ -153,7 +153,6 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             rreq->dest_seq_num = ntohl(rreq->dest_seq_num);
             rreq->orig_ip_addr = ntohl(rreq->orig_ip_addr);
             rreq->orig_seq_num = ntohl(rreq->orig_seq_num);
-            struct in_addr addr = { rreq->dest_ip_addr };
         } else {
             stats.rreq_incorrect_size++;
             return 0;
@@ -231,7 +230,7 @@ size_t aodv_pkt_get_size(struct aodv_pkt* pkt)
     return pkt->payload_len;
 }
 
-static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
+uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
 {
     struct cmsghdr *cmsg;
 
@@ -278,6 +277,8 @@ void aodv_pkt_prepare_rrep(struct aodv_rrep* rrep)
 
 int aodv_pkt_send_rrep_ack(struct aodv_rrep_ack* to_sent, int ttl)
 {
+    // TODO
+    return 0;
 }
 
 void aodv_pkt_build_rrep_ack(struct aodv_pkt* pkt)

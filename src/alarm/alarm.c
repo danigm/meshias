@@ -159,4 +159,6 @@ process_alarms(struct timeval *next) {
     if (next != NULL && !timerisset(next)) {
         return do_alarm_run(next);
     }
+
+    return NULL;
 }

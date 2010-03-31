@@ -53,7 +53,7 @@ void packets_fifo_push(struct packets_fifo* queue, uint32_t id,
 
     packet_obj->id = id;
     packet_obj->dest.s_addr = dest.s_addr;
-    debug(2, "adding packet with id %d and dest %s", id, dest);
+    debug(2, "adding packet with id %d and dest %s", id, inet_htoa(dest));
 
     list_add(&packet_obj->list, &queue->list);
 }
@@ -71,7 +71,7 @@ void packets_fifo_drop_packets(struct packets_fifo* queue, struct in_addr dest)
     }
 }
 
-uint32_t packets_fifo_process_route(struct packets_fifo* queue,
+void packets_fifo_process_route(struct packets_fifo* queue,
                                     struct msh_route* route)
 {
     debug(2, "dest %s", inet_htoa(route->dst_ip));

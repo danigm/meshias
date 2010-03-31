@@ -339,7 +339,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt);
 
 size_t aodv_pkt_get_size(struct aodv_pkt* pkt);
 
-static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg);
+uint8_t aodv_pkt_receive_ttl(struct msghdr* msg);
 
 void aodv_pkt_build_rrep(struct aodv_pkt* pkt, uint8_t flags, uint8_t prefix_sz,
                          uint8_t hop_count, uint32_t dest_ip_addr, uint32_t dest_seq_num,

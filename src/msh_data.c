@@ -8,6 +8,9 @@
 #include <sys/types.h>
 
 #include "msh_data.h"
+#include "statistics.h"
+#include "daemon_socket.h"
+#include "unix_interface.h"
 #include "nfqueue.h"
 #include "log.h"
 
@@ -36,11 +39,12 @@ static void __init_addr(struct nl_object* obj, void *arg)
 {
     struct rtnl_addr* addr = (struct rtnl_addr*)obj;
 
-    struct nl_dump_params dp = {
-        .dp_type = NL_DUMP_FULL,
-        .dp_fd = stdout,
-        .dp_dump_msgtype = 1,
-    };
+    // unused.. ?
+//     struct nl_dump_params dp = {
+//         .dp_type = NL_DUMP_FULL,
+//         .dp_fd = stdout,
+//         .dp_dump_msgtype = 1,
+//     };
 
     struct nl_addr *local = rtnl_addr_get_local(addr);
     memcpy(&data.ip_addr, nl_addr_get_binary_addr(local), sizeof(uint32_t));

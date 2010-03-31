@@ -16,6 +16,8 @@
  */
 int nfqueue_init();
 
+void nfqueue_shutdown();
+
 /**
  * Receive all the packets waiting in the NFQUEUE number 0. We use this
  * to effectively sniff trafic. This function should only be called in the
@@ -30,32 +32,32 @@ void nfqueue_receive_packet();
  *
  * @returns packet id
  */
-static uint32_t nfqueue_packet_print(struct nfq_data *packet);
+uint32_t nfqueue_packet_print(struct nfq_data *packet);
 
 /**
  * @returns the id of a packet.
  */
-static uint32_t nfqueue_packet_get_id(struct nfq_data *packet);
+uint32_t nfqueue_packet_get_id(struct nfq_data *packet);
 
 /**
  * @returns the hook of a packet.
  */
-static uint32_t nfqueue_packet_get_hook(struct nfq_data *packet);
+uint32_t nfqueue_packet_get_hook(struct nfq_data *packet);
 
 /**
  * @returns the dest ip of a packet.
  */
-static struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
+struct in_addr nfqueue_packet_get_dest(struct nfq_data *packet);
 
 /**
  * @returns the orig ip of a packet.
  */
-static struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet);
+struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet);
 
 /**
  * @returns whether a given IP packet is UDP and comes from AODV port.
  */
-static int nfqueue_packet_is_aodv(struct nfq_data *packet);
+int nfqueue_packet_is_aodv(struct nfq_data *packet);
 
 /**
  * Called by @see nfq_handle_packet() which in turns gets called by
@@ -63,25 +65,25 @@ static int nfqueue_packet_is_aodv(struct nfq_data *packet);
  * and checks if we have a route for the packet and also checks for
  * AODV incoming traffic (UDP port 654).
  */
-static int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
+int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
                          struct nfq_data *nfa, void *data);
 
 /**
  * Called by @see manage_packet() when the packet comes from OUPUT table
  */
-static int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
+int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
                                 *nfmsg, struct nfq_data *nfa);
 
 /**
  * Called by @see manage_packet() when the packet comes from INPUT table
  */
-static int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
+int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
                                *nfmsg, struct nfq_data *nfa);
 
 /**
  * Called by @see manage_packet() when the packet comes from FORWARD table
  */
-static int manage_forward_packet(struct nfq_q_handle *qh, struct nfgenmsg
+int manage_forward_packet(struct nfq_q_handle *qh, struct nfgenmsg
                                  *nfmsg, struct nfq_data *nfa);
 
 #endif

@@ -1,11 +1,14 @@
+#include <stdlib.h>
+
 #include "rreq_fifo.h"
 #include "route_obj.h"
+#include "aodv/logic.h"
 #include "utils.h"
 #include "statistics.h"
 #include "msh_data.h"
 #include "log.h"
 #include "packets_fifo.h"
-#include <stdlib.h>
+#include "aodv/configuration_parameters.h"
 
 void __rreq_fifo_entry_delete(struct rreq_fifo* entry)
 {
@@ -18,9 +21,7 @@ void __rreq_fifo_alarm_cb(struct alarm_block* alarm, void *qdata)
 {
     debug(1, "");
     struct rreq_fifo* entry = (struct rreq_fifo*)qdata;
-    uint32_t rreq_id = entry->rreq_id;
     struct in_addr dst = { entry->dst.s_addr };
-    int8_t prev_tries = entry->prev_tries;
 
     // If the RREQ was not send  by us (i.e. if prev_tries < 0), we just delete
     // the entry.

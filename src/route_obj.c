@@ -3,10 +3,12 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <stdlib.h>
+
 #include "alarm/linux_list.h"
 #include "route_obj.h"
 #include "log.h"
 #include "utils.h"
+#include "aodv/configuration_parameters.h"
 
 void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
 {

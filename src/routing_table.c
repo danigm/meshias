@@ -7,11 +7,13 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
 #include <netlink/route/nexthop.h>
+
 #include "routing_table.h"
 #include "msh_data.h"
 #include "utils.h"
 #include "log.h"
 #include "statistics.h"
+#include "aodv/configuration_parameters.h"
 
 struct routing_table {
     struct msh_route route_list;
@@ -91,7 +93,6 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     uint8_t dst_len = msh_route_get_prefix_sz(route);
     struct nl_addr *dst = in_addr2nl_addr(route->dst_ip, dst_len);
 
-    char buf[256];
     rtnl_route_set_oif(nlroute, data.net_iface);
     rtnl_route_set_dst(nlroute, dst);
     rtnl_route_set_scope(nlroute, RT_SCOPE_UNIVERSE);

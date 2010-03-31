@@ -30,16 +30,16 @@ int local_server_do_step(struct local_server *server, void (*process)(int fd, vo
 
 /* local client */
 /** Create a client socket, this function mustn't be used directly.  */
-static int local_client_create(struct local_conf *conf);
+int local_client_create(struct local_conf *conf);
 
 /** Destroy a client socket, this function mustn't be used directly.  */
-static void local_client_destroy(int fd);
+void local_client_destroy(int fd);
 
 /** This function receives the request from the socket and then calls
   * process function with the request. This function musn't be used
   * directly.
   */
-static int local_client_do_step(int fd, void (*process)(void *buf));
+int local_client_do_step(int fd, void (*process)(void *buf));
 
 /** Only this function must be used. It creates the socket, it sends the request
   * and it waits for the answer. The function step process the answer. Then

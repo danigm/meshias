@@ -1,6 +1,8 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+#define DEBUG 3
+
 #include <stdio.h>
 #include <string.h>
 

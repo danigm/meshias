@@ -1,6 +1,3 @@
-
-#define DEBUG 3
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>                  /* for isprint */
@@ -16,6 +13,9 @@
 #include "msh_data.h"
 #include "statistics.h"
 #include "log.h"
+#include "nfqueue.h"
+#include "daemon_socket.h"
+#include "unix_interface.h"
 
 struct msh_data_t data;
 struct statistics_t stats;
@@ -44,7 +44,8 @@ int main(int argc, char **argv)
     // TODO: Here we should capture signals sent to the app
     while (!data.end) {
         if (next_run) {
-            debug(1, "while(1) next_run %d %d\n", next_run->tv_sec, next_run->tv_usec);
+            debug(1, "while(1) next_run %lld %lld\n", (long long int)next_run->tv_sec,
+                  (long long int)next_run->tv_usec);
         } else {
             debug(1, "while1 NULL");
         }
