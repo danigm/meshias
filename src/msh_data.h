@@ -18,7 +18,13 @@
 #include "rreq_fifo.h"
 #include "packets_fifo.h"
 #include "fds.h"
-#include "local.h"
+
+/**
+ * Errors and their corresponding error numbers
+ * @ingroup Common
+ */
+#define ERR_INIT -1
+#define ERR_SEND -1
 
 /**
  * Errors and their corresponding error numbers
@@ -33,14 +39,13 @@
 struct msh_data_t {
     /** Bool to finish the program execution. */
     int end;
-    /** Unix socket to communicate the daemon with meshias-tools */
-    struct local_server local_server;
-
+    // comm socket
+    uint32_t comm_fd;
 
     /** Struct needed to handle nfq. */
     struct nfq_handle *handle;
     /** Struct needed to handle nfq.
-     * It represents the queue where we capture all the packets.  */ 
+     * It represents the queue where we capture all the packets.  */
     struct nfq_q_handle *queue;
     /** Struct needed to hanle nfq. */
     struct nfnl_handle *netlink_handle;

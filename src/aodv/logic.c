@@ -557,4 +557,3 @@ uint8_t aodv_answer_to_rreq(struct aodv_rreq* rreq, struct in_addr prev_hop,
 
     return 0;
 }
-

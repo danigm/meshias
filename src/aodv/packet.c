@@ -354,4 +354,3 @@ void aodv_pkt_build_rerr(struct aodv_pkt* pkt, uint8_t flag,
 
     pkt->payload = (char*)rerr;
 }
-

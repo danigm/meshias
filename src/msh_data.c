@@ -10,7 +10,7 @@
 #include "msh_data.h"
 #include "statistics.h"
 #include "daemon_socket.h"
-#include "unix_interface.h"
+#include "communication_interface.h"
 #include "nfqueue.h"
 #include "log.h"
 
@@ -90,7 +90,7 @@ int msh_data_init(int argc, char **argv)
         return ERR_INIT;
     }
 
-    if (unix_interface_init()) {
+    if (comm_interface_init()) {
         return ERR_INIT;
     }
 
@@ -145,6 +145,6 @@ void msh_data_shutdown()
     destroy_fds(data.fds);
     nfqueue_shutdown();
     daemon_socket_shutdown();
-    unix_interface_shutdown();
+    comm_interface_shutdown();
     debug(1, "Freed all memory");
 }

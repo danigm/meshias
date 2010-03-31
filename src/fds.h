@@ -30,6 +30,5 @@ void destroy_fds(struct fds *);
  * Add a socket to the set.
  */
 int register_fd(int fd, struct fds *fds);
-void unix_interface_receive_packets();
 
 #endif

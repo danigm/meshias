@@ -15,7 +15,7 @@
 #include "log.h"
 #include "nfqueue.h"
 #include "daemon_socket.h"
-#include "unix_interface.h"
+#include "communication_interface.h"
 
 struct msh_data_t data;
 struct statistics_t stats;
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
         // This is needed because of yes
         FD_SET(data.nfqueue_fd, &data.fds->readfds);
         FD_SET(data.daemon_fd, &data.fds->readfds);
-        FD_SET(data.local_server.fd, &data.fds->readfds);
+        FD_SET(data.comm_fd, &data.fds->readfds);
 
         // We'll wait for new data in our sockets until a new alarm times out
         while (!data.end && select(data.fds->maxfd + 1,
@@ -71,9 +71,9 @@ int main(int argc, char **argv)
                 daemon_socket_receive_packet();
             }
 
-            if (FD_ISSET(data.local_server.fd, &data.fds->readfds)) {
-                debug(1, "A command was received by the unix socket.");
-                unix_interface_receive_packet();
+            if ( FD_ISSET(data.comm_fd, &data.fds->readfds) ) {
+                debug(1, "A command was received by the comm socket.");
+                comm_interface_receive_packets();
             }
 
             /*
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
             //This is needed because of yes
             FD_SET(data.nfqueue_fd, &data.fds->readfds);
             FD_SET(data.daemon_fd, &data.fds->readfds);
-            FD_SET(data.local_server.fd, &data.fds->readfds);
+            FD_SET(data.comm_fd, &data.fds->readfds);
         }
 
         next_run = get_next_alarm_run(&next);

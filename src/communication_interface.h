@@ -1,5 +1,5 @@
-#ifndef UNIX_INTERFACE_H
-#define UNIX_INTERFACE_H
+#ifndef COMM_INTERFACE_H
+#define COMM_INTERFACE_H
 
 #include <netinet/in.h>
 #include <netlink/addr.h>
@@ -22,13 +22,9 @@ struct route {
     uint32_t net_iface;
 };
 
-/** Create the unix socket */
-int unix_interface_init();
-/** Destroy the unix socket */
-void unix_interface_shutdown();
-/** When it receives a command call @see unix_interface_run_command */
-void unix_interface_receive_packet();
-/** Process a command and create a response */
-void unix_process_command(int fd, void* command);
+int comm_interface_init();
+void comm_interface_shutdown();
+void comm_process_command(int fd, char* command);
+void comm_interface_receive_packets();
 
 #endif
