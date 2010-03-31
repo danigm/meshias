@@ -87,17 +87,12 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     }
 
     struct rtnl_route *nlroute = rtnl_route_alloc();
-
     uint8_t dst_len = msh_route_get_prefix_sz(route);
-
     struct nl_addr *dst = in_addr2nl_addr(route->dst_ip, dst_len);
 
     char buf[256];
-
     rtnl_route_set_oif(nlroute, data.net_iface);
-
     rtnl_route_set_dst(nlroute, dst);
-
     rtnl_route_set_scope(nlroute, RT_SCOPE_UNIVERSE);
 
     if (route->flags & RTFLAG_HAS_NEXTHOP) {
@@ -105,15 +100,16 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
         struct nl_addr *nexthop = in_addr2nl_addr(next_hop_addr, 0);
 
         // TODO: call to rtnl_route_set_ttl() ... or maybe not?
-
         char buf2[200];
-        printf("nexthop %s\n", nl_addr2str(nexthop, buf2, 200));
-        printf("dest %s\n", nl_addr2str(dst, buf2, 200));
+        debug(2, "nexthop %s\n", nl_addr2str(nexthop, buf2, 200));
+        debug(2, "dest %s\n", nl_addr2str(dst, buf2, 200));
 
         // If the next hop is the destination, there's no need to set the gateway
         if (route->dst_ip.s_addr != next_hop_addr.s_addr) {
             rtnl_route_set_gateway(nlroute, nexthop);
         }
+        // TODO: remove this in routing_table_del instead (because it's being used by route)
+        // nl_addr_destroy(nexthop);
     }
 
     int errno = 0;
@@ -121,7 +117,7 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
     // Errno = 17 means that route already exists so it's not problematic and
     // we can ignore it
     if ((errno = rtnl_route_add(data.nl_handle, nlroute, 0)) < 0 && errno != -17) {
-        fprintf(stderr, "rtnl_route_add failed: errno=%d %s\n", errno, nl_geterror());
+        debug(1, "rtnl_route_add failed: errno=%d %s\n", errno, nl_geterror());
         return -1;
     }
 
@@ -135,11 +131,7 @@ int routing_table_add(struct routing_table *table, struct msh_route *route)
 
     list_add(&route->list, &table->route_list.list);
 
-    // TODO: remove this in routing_table_del instead (because it's being used by route_nexthop)
-//     nl_addr_destroy(nexthop);
-
-    printf("routing_table_added %p\n", route);
-    printf("packets_fifo_process_route %s\n", inet_htoa(route->dst_ip));
+    debug(2, "routing_table_added %p\n", route);
     packets_fifo_process_route(data.packets_queue, route);
     return 0;
 }
@@ -199,7 +191,7 @@ struct msh_route *routing_table_find_by_ip(struct routing_table *table,
 
 }
 
-uint8_t routing_table_use_route(struct routing_table *table,
+uint8_t  routing_table_update_route(struct routing_table *table,
                                 struct in_addr dst_ip, struct msh_route **invalid_route, struct in_addr orig_ip)
 {
     struct msh_route *dst_route, *next_hop_route, *orig_route, *prev_hop_route;

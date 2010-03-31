@@ -1,3 +1,6 @@
+
+#define DEBUG 3
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>                  /* for isprint */
@@ -35,30 +38,29 @@ int main(int argc, char **argv)
     }
 
     debug(1, "Initilization done");
+
     // Main loop
     // TODO: Here we should capture signals sent to the app
-
     while (!data.end) {
         if (next_run) {
-            printf("while(1) next_run %d %d\n", next_run->tv_sec, next_run->tv_usec);
+            debug(1, "while(1) next_run %d %d\n", next_run->tv_sec, next_run->tv_usec);
         } else {
-            puts("while1 NULL");
+            debug(1, "while1 NULL");
         }
 
-        //This is needed because of yes
+        // This is needed because of yes
         FD_SET(data.nfqueue_fd, &data.fds->readfds);
         FD_SET(data.daemon_fd, &data.fds->readfds);
         FD_SET(data.local_server.fd, &data.fds->readfds);
 
-        //TODO: BUG, when no alarm is left, the select never ends!
         // We'll wait for new data in our sockets until a new alarm times out
         while (!data.end && select(data.fds->maxfd + 1,
-                                   &data.fds->readfds, NULL, NULL, next_run) > 0) {
-            puts("select");
+               &data.fds->readfds, NULL, NULL, next_run) > 0) {
+            debug(1, "select");
 
             /* Check for new packets */
             if (FD_ISSET(data.nfqueue_fd, &data.fds->readfds)) {
-                printf("A packet was captured by the nfqueue");
+                debug(1, "A packet was captured by the nfqueue");
                 nfqueue_receive_packet();
             }
 
@@ -78,9 +80,10 @@ int main(int argc, char **argv)
              */
             next_run = get_next_alarm_run(&next);
 
-            if (next_run)
-                printf("next_run: %d\n", get_alarm_time(next_run->tv_sec,
+            if (next_run) {
+                debug(1, "next_run: %d\n", get_alarm_time(next_run->tv_sec,
                                                         next_run->tv_usec));
+            }
 
             //This is needed because of yes
             FD_SET(data.nfqueue_fd, &data.fds->readfds);

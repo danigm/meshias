@@ -12,7 +12,7 @@
 
 static void __msh_data_process_wait_queue_cb(struct alarm_block* alarm, void *qdata)
 {
-    puts("__msh_data_process_wait_queue_cb called");
+    debug(1, "");
     // Reset the number of rreq sent to zero
     data.num_rreq_sent = 0;
 
@@ -49,8 +49,8 @@ static void __init_addr(struct nl_object* obj, void *arg)
     memcpy(&data.broadcast_addr, nl_addr_get_binary_addr(broadcast), sizeof(uint32_t));
     data.broadcast_addr.s_addr = ntohl(data.broadcast_addr.s_addr);
 
-    printf("local %s\n", inet_htoa(data.ip_addr));
-    printf("broadcast %s\n", inet_htoa(data.broadcast_addr));
+    debug(1, "local %s\n", inet_htoa(data.ip_addr));
+    debug(1, "broadcast %s\n", inet_htoa(data.broadcast_addr));
 }
 
 int msh_data_init(int argc, char **argv)
@@ -80,11 +80,11 @@ int msh_data_init(int argc, char **argv)
     if (nfqueue_init()) {
         return ERR_INIT;
     }
-    
+
     if (daemon_socket_init()) {
         return ERR_INIT;
     }
-    
+
     if (unix_interface_init()) {
         return ERR_INIT;
     }

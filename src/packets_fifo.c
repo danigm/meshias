@@ -49,6 +49,7 @@ void packets_fifo_push(struct packets_fifo* queue, uint32_t id,
 
     packet_obj->id = id;
     packet_obj->dest.s_addr = dest.s_addr;
+    debug(2, "adding packet with id %d and dest %s", id, dest);
 
     list_add(&packet_obj->list, &queue->list);
 }
@@ -57,10 +58,10 @@ void packets_fifo_drop_packets(struct packets_fifo* queue, struct in_addr dest)
 {
     struct packets_fifo *entry, *tmp;
 
-    puts("packets_fifo_drop_packets");
+    debug(2, "");
     list_for_each_entry_safe(entry, tmp, &queue->list, list) {
         if (entry->dest.s_addr == dest.s_addr) {
-            puts("packet DROP");
+            debug(1, "DROP packet for destination %s", inet_htoa(dest));
             packet_obj_drop(entry);
         }
     }
@@ -69,17 +70,18 @@ void packets_fifo_drop_packets(struct packets_fifo* queue, struct in_addr dest)
 uint32_t packets_fifo_process_route(struct packets_fifo* queue,
                                     struct msh_route* route)
 {
+    debug(2, "dest %s", inet_htoa(route->dst_ip));
     struct packets_fifo *entry, *tmp;
     struct msh_route *first = msh_route_alloc();
 
     list_for_each_entry_safe(entry, tmp, &queue->list, list) {
-        puts("packets_fifo_process_route: accept?");
+        debug(2, "packets_fifo_process_route: accept?");
         msh_route_set_dst_ip(first, entry->dest);
 
         // Free the packets matched by this new route
         if (msh_route_compare(first, route,
                               RTFIND_BY_DEST_LONGEST_PREFIX_MATCHING) == 0) {
-            puts("packets_fifo_process_route: ACCEPT!");
+            debug(1, "packets_fifo_process_route: ACCEPT!");
             packet_obj_accept(entry);
         }
     }

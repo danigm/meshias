@@ -7,13 +7,23 @@
 
 #include <sys/socket.h>
 
-/* Initialize the aodv's stuff like socket */
+/**
+ * Initialize the aodv socket, which receives the AODV protocol packets.
+ */
 int daemon_socket_init();
 
-/* Free reserved memory */
+/**
+ * Free reserved memory for the daemon socket.
+ */
 void daemon_socket_shutdown();
 
-/* Function to receive packet and make an answer */
+/**
+ * Receives an aodv packet and make an answer
+ *
+ * @note in order for this function to be non-blocking, this function should only be called when you
+ * are sure that there's a packet waiting. This function is only called by meshias.c main() when
+ * select() states that the daemon socket is not empty.
+ */
 void daemon_socket_receive_packet();
 
 #endif
