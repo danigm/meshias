@@ -203,7 +203,7 @@ uint8_t  routing_table_update_route(struct routing_table *table,
 
         // If route not found or not active/invalid, return 0
         if (!dst_route) {
-            stats.route_not_found++;
+            debug(1, "ERROR: Updating a route that doesn't exist.");
             return 0;
         }
 

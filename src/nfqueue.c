@@ -84,7 +84,7 @@ void nfqueue_receive_packet()
     received = recv(data.nfqueue_fd, buf, sizeof(buf), 0);
 
     if (received == -1) {
-        stats.error_nf_recv++;
+        stats.error_nfq_recv++;
         return;
     }
 

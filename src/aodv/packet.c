@@ -35,7 +35,8 @@ struct aodv_pkt *aodv_pkt_alloc() {
     return pkt;
 }
 
-struct aodv_pkt *aodv_pkt_get(struct msghdr* msg, int received) {
+struct aodv_pkt *aodv_pkt_get(struct msghdr* msg, int received)
+{
     struct aodv_pkt* pkt = (struct aodv_pkt*)calloc(1, sizeof(struct aodv_pkt));
 
     // If address has been received
@@ -58,7 +59,7 @@ struct aodv_pkt *aodv_pkt_get(struct msghdr* msg, int received) {
     if (msg->msg_controllen > 0) {
         pkt->ttl = aodv_pkt_receive_ttl(msg);
     } else {
-        stats.no_control_received++;
+        stats.no_ttl_received++;
     }
 
     //FIXME dont check errors
@@ -187,7 +188,7 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
             rerr = (struct aodv_rerr*)aodv_pkt_get_payload(pkt);
 
             if (rerr->dest_count == 0) {
-                stats.rerr_dest_cont_zero;
+                stats.rerr_dest_cont_zero++;
                 return 0;
             } else {
                 // Buffer size = header size + number of desticount * desticount_size
@@ -218,7 +219,6 @@ int aodv_pkt_check(struct aodv_pkt* pkt)
         break;
 
     default:
-        puts("error: unkown type of AODV packet found");
         return 0;
         break;
     }
@@ -243,8 +243,6 @@ static uint8_t aodv_pkt_receive_ttl(struct msghdr* msg)
         }
     }
 
-    stats.ttl_not_found++;
-    // FIXME TTL no encontrado
     return -1;
 }
 

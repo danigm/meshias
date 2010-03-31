@@ -8,6 +8,7 @@
 #include "route_obj.h"
 #include "msh_data.h"
 #include "log.h"
+#include "statistics.h"
 
 struct packets_fifo* packets_fifo_alloc() {
     struct packets_fifo* queue = (struct packets_fifo*)
@@ -40,6 +41,8 @@ void packet_obj_drop(struct packets_fifo* packet_obj)
     nfq_set_verdict(data.queue, packet_obj->id, NF_DROP, 0, NULL);
     list_del(&packet_obj->list);
     free(packet_obj);
+
+    stats.packets_dropped++;
 }
 
 void packets_fifo_push(struct packets_fifo* queue, uint32_t id,
