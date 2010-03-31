@@ -31,7 +31,7 @@ int comm_interface_init()
     int fd;
     socklen_t len;
     struct sockaddr_in local;
-    int option = 0;
+    int option = 1;
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         return -1;
@@ -162,22 +162,16 @@ void get_statistics(char *buf, int bufsize)
 }
 
 
-void add_route(struct msh_route *route, char *buf, int bufsize)
+int add_route(struct msh_route *route, char *buf, int bufsize)
 {
-    snprintf (buf, bufsize, "dst_ip: %s\n"
-              "prefix_sz: %d\n"
-              "dest_seq_num: %d\n"
-              "flags: %d\n"
-              "hop_count: %d\n"
-              "next_hop: %s\n"
-              "net_iface: %d\n",
-              inet_htoa(route->dst_ip),
-              route->prefix_sz,
-              route->dest_seq_num,
-              route->flags,
-              route->hop_count,
-              inet_htoa(route->next_hop),
-              route->net_iface);
+    return snprintf (buf, bufsize, "%d#%d#%d#%d#%d#%d#%d\n",
+                     route->dst_ip.s_addr,
+                     route->prefix_sz,
+                     route->dest_seq_num,
+                     route->flags,
+                     route->hop_count,
+                     route->next_hop.s_addr,
+                     route->net_iface);
 }
 
 struct route_data {
@@ -189,8 +183,8 @@ struct route_data {
 int add_route_cb(struct msh_route *msh_r, void *data)
 {
     struct route_data *rd = (struct route_data *)data;
-    add_route(msh_r, rd->buf + rd->number, rd->size);
-    rd->number++;
+    int ret = add_route(msh_r, rd->buf + rd->number, rd->size);
+    rd->number += ret;
 }
 
 void get_routes(char *buf, int bufsize)

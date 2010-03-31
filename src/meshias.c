@@ -34,6 +34,19 @@ int main(int argc, char **argv)
         return errno;
     }
 
+    struct in_addr addr1;
+    struct in_addr addr2;
+    inet_aton("192.168.0.1", &addr1);
+    inet_aton("192.168.0.2", &addr2);
+
+    struct msh_route *route1 = msh_route_alloc();
+    msh_route_set_dst_ip(route1, addr1);
+    struct msh_route *route2 = msh_route_alloc();
+    msh_route_set_dst_ip(route2, addr2);
+
+    routing_table_add(data.routing_table, route1);
+    routing_table_add(data.routing_table, route2);
+
     debug(1, "Initilization done");
     // Main loop
     // TODO: Here we should capture signals sent to the app
