@@ -2,8 +2,8 @@
 #define DAEMON_SOCKET_H
 
 #include "msh_data.h"
-#include "aodv_packet.h"
-#include "common.h"
+
+#include "aodv/packet.h"
 
 #include <sys/socket.h>
 

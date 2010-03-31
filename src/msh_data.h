@@ -13,13 +13,19 @@
 #include "libnetfilter_queue/libnetfilter_queue.h"
 #include "alarm/alarm.h"
 
-#include "common.h"
 #include "utils.h"
 #include "routing_table.h"
 #include "rreq_fifo.h"
 #include "packets_fifo.h"
 #include "fds.h"
 #include "local.h"
+
+/**
+ * Errors and their corresponding error numbers
+ * @ingroup Common
+ */
+#define ERR_INIT -1
+#define ERR_SEND -1
 
 /**
  * This struct contains all the global data necesary for program execution.

@@ -3,8 +3,8 @@
 
 #include "daemon_socket.h"
 #include "route_obj.h"
-#include "aodv_packet.h"
-#include "aodv_logic.h"
+#include "aodv/logic.h"
+#include "aodv/configuration_parameters.h"
 #include "statistics.h"
 
 #define BUF_SIZE 1024

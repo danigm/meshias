@@ -1,6 +1,6 @@
 #include <sys/time.h>
 #include <time.h>
-#include "common.h"
+#include "configuration_parameters.h"
 
 uint32_t ACTIVE_ROUTE_TIMEOUT()
 {

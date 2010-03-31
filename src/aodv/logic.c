@@ -2,12 +2,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "rreq_fifo.h"
-#include "packets_fifo.h"
-#include "aodv_logic.h"
-#include "route_obj.h"
-#include "aodv_packet.h"
-#include "statistics.h"
+#include "../rreq_fifo.h"
+#include "../packets_fifo.h"
+#include "../route_obj.h"
+#include "../statistics.h"
+
+#include "packet.h"
+#include "logic.h"
 
 void aodv_find_route(struct in_addr dest, struct msh_route *invalid_route,
                      uint8_t prev_tries)
