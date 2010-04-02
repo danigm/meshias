@@ -124,27 +124,10 @@ void comm_interface_receive_packets()
 
 void get_statistics(char *buf, int bufsize)
 {
-    snprintf (buf, bufsize, "packets_dropped: %d\n"
-              "no_address_received: %d\n"
-              "no_payload_received: %d\n"
-              // "no_control_received: %d\n"
-              "send_aodv_errors: %d\n"
-              "send_aodv_incomplete: %d\n"
-              "rreq_incorrect_size: %d\n"
-              "rrep_incorrect_size: %d\n"
-              "rerr_incorrect_size: %d\n"
-              "rerr_dest_cont_zero: %d\n"
-              "rrep_ack_incorrect_size: %d\n"
-              "aodv_incorrect_type: %d\n"
-              "no_ttl_received: %d\n"
-              "error_aodv_recv: %d\n"
-              "error_nfq_recv: %d\n"
-              "error_unix_recv: %d\n"
-              "invalid_route: %d\n",
+    snprintf (buf, bufsize, "%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d\n",
               stats.packets_dropped,
               stats.no_address_received,
               stats.no_payload_received,
-              // stats.no_control_received,
               stats.send_aodv_errors,
               stats.send_aodv_incomplete,
               stats.rreq_incorrect_size,

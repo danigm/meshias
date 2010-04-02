@@ -15,5 +15,6 @@
 int mesh_kill(char *host);
 int mesh_restart(char *host);
 void **mesh_get_routes(char *host);
+struct statistics_t *mesh_get_stats(char *host);
 
 #endif

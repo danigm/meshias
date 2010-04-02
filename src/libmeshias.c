@@ -152,3 +152,34 @@ void **mesh_get_routes(char *host)
     free(response);
     return routes;
 }
+
+struct statistics_t *mesh_get_stats(char *host)
+{
+    struct statistics_t *stats = malloc(sizeof(struct statistics_t));
+
+    char *response = send_meshias_command(MSG_SHOW_STATISTICS, host);
+    if (!response) {
+        return NULL;
+    }
+
+    sscanf(response, "%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d\n",
+             &(stats->packets_dropped),
+             &(stats->no_address_received),
+             &(stats->no_payload_received),
+             &(stats->send_aodv_errors),
+             &(stats->send_aodv_incomplete),
+             &(stats->rreq_incorrect_size),
+             &(stats->rrep_incorrect_size),
+             &(stats->rerr_incorrect_size),
+             &(stats->rerr_dest_cont_zero),
+             &(stats->rrep_ack_incorrect_size),
+             &(stats->aodv_incorrect_type),
+             &(stats->no_ttl_received),
+             &(stats->error_aodv_recv),
+             &(stats->error_nfq_recv),
+             &(stats->error_unix_recv),
+             &(stats->invalid_route));
+
+    free(response);
+    return stats;
+}
