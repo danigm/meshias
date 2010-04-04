@@ -59,31 +59,4 @@ struct in_addr nfqueue_packet_get_orig(struct nfq_data *packet);
  */
 int nfqueue_packet_is_aodv(struct nfq_data *packet);
 
-/**
- * Called by @see nfq_handle_packet() which in turns gets called by
- * @see nfqueue_receive_packets(). This function inspects each packet
- * and checks if we have a route for the packet and also checks for
- * AODV incoming traffic (UDP port 654).
- */
-int manage_packet(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
-                         struct nfq_data *nfa, void *data);
-
-/**
- * Called by @see manage_packet() when the packet comes from OUPUT table
- */
-int manage_output_packet(struct nfq_q_handle *qh, struct nfgenmsg
-                                *nfmsg, struct nfq_data *nfa);
-
-/**
- * Called by @see manage_packet() when the packet comes from INPUT table
- */
-int manage_input_packet(struct nfq_q_handle *qh, struct nfgenmsg
-                               *nfmsg, struct nfq_data *nfa);
-
-/**
- * Called by @see manage_packet() when the packet comes from FORWARD table
- */
-int manage_forward_packet(struct nfq_q_handle *qh, struct nfgenmsg
-                                 *nfmsg, struct nfq_data *nfa);
-
 #endif
