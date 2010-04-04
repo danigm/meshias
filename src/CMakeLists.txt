@@ -5,8 +5,11 @@ cmake_minimum_required (VERSION 2.6)
 project (MESHIAS)
 
 set (CMAKE_C_FLAGS "-g -Wall")
+
+include_directories (.)
+
 set (MESHIAS_SRCS meshias.c msh_data.c
-    nfqueue.c daemon_socket.c log.c routing_table.c rreq_fifo.c
+    nfqueue.c sockets/aodv_socket.c log.c routing_table.c rreq_fifo.c
     packets_fifo.c fds.c statistics.c
     communication_interface.c aodv/packet.c aodv/logic.c)
 

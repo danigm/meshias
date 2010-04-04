@@ -1,5 +1,5 @@
-#ifndef _ROUTE_OBJ_H_
-#define _ROUTE_OBJ_H_
+#ifndef ROUTE_OBJ_H
+#define ROUTE_OBJ_H
 
 #include <netinet/in.h>
 #include <netlink/addr.h>

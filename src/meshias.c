@@ -14,7 +14,7 @@
 #include "statistics.h"
 #include "log.h"
 #include "nfqueue.h"
-#include "daemon_socket.h"
+#include "sockets/aodv_socket.h"
 #include "communication_interface.h"
 
 struct msh_data_t data;
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 
             if (FD_ISSET(data.daemon_fd, &data.fds->readfds)) {
                 debug(1, "An AODV packet was received by the daemon.");
-                daemon_socket_receive_packet();
+                aodv_socket_receive_packet();
             }
 
             if ( FD_ISSET(data.comm_fd, &data.fds->readfds) ) {

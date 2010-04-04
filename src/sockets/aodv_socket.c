@@ -1,7 +1,7 @@
 #include <string.h>
 #include <netinet/in.h>
 
-#include "daemon_socket.h"
+#include "aodv_socket.h"
 #include "route_obj.h"
 #include "aodv/logic.h"
 #include "aodv/configuration_parameters.h"
@@ -9,7 +9,7 @@
 
 #define BUF_SIZE 1024
 
-int daemon_socket_init()
+int aodv_socket_init()
 {
     int option = 1;
     struct sockaddr_in address;
@@ -57,12 +57,12 @@ int daemon_socket_init()
     return 0;
 }
 
-void daemon_socket_shutdown()
+void aodv_socket_shutdown()
 {
     close(data.daemon_fd);
 }
 
-void daemon_socket_receive_packet()
+void aodv_socket_receive_packet()
 {
     int numbytes;
     char name_buf[BUF_SIZE];
