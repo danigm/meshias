@@ -2,7 +2,7 @@
 #include <netinet/in.h>
 
 #include "aodv_socket.h"
-#include "route_obj.h"
+#include "msh_route.h"
 #include "aodv/logic.h"
 #include "aodv/configuration_parameters.h"
 #include "statistics.h"

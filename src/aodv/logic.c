@@ -5,7 +5,7 @@
 #include "configuration_parameters.h"
 #include "../rreq_fifo.h"
 #include "../packets_fifo.h"
-#include "../route_obj.h"
+#include "../msh_route.h"
 #include "../statistics.h"
 
 #include "packet.h"

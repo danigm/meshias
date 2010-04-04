@@ -14,7 +14,7 @@ set (MESHIAS_SRCS meshias.c msh_data.c
     communication_interface.c aodv/packet.c aodv/logic.c)
 
 # set  (MESHIAS_TOOLS_SRCS meshias-tools.c local.c utils.c)
-set (LIBMESH libmeshias.c route_obj.c alarm/alarm.c alarm/rbtree.c
+set (LIBMESH libmeshias.c msh_route.c alarm/alarm.c alarm/rbtree.c
     utils.c aodv/configuration_parameters.c)
 set (LMESHTEST lmeshtest.c)
 

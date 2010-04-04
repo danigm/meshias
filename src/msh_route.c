@@ -5,36 +5,17 @@
 #include <stdlib.h>
 
 #include "alarm/linux_list.h"
-#include "route_obj.h"
+#include "msh_route.h"
 #include "log.h"
 #include "utils.h"
 #include "aodv/configuration_parameters.h"
 
-void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
+static void __msh_route_updated(struct msh_route* route, uint32_t change_flag);
+
+static void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata);
+
+struct msh_route* msh_route_alloc()
 {
-    if (route->updated_cb) {
-        (*route->updated_cb)(route, change_flag, route->cb_data);
-    }
-}
-
-void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
-{
-    struct msh_route* route = (struct msh_route*)qdata;
-    unsigned long sc, usc;
-
-    if (route->alarm_action == RTACTION_UNSET_VALID_ENTRY) {
-        msh_route_unset_flag(route, RTFLAG_VALID_ENTRY);
-        route->alarm_action = RTACTION_DESTROY;
-
-        set_alarm_time(DELETE_PERIOD(), &sc, &usc);
-        add_alarm(alarm, sc, usc);
-
-    } else if (route->alarm_action == RTACTION_DESTROY) {
-        msh_route_destroy(route);
-    }
-}
-
-struct msh_route* msh_route_alloc() {
     struct msh_route* route = (struct msh_route*)
                               calloc(1, sizeof(struct msh_route));
 
@@ -65,7 +46,8 @@ void msh_route_set_dst_ip(struct msh_route *route, struct in_addr dst_ip)
     route->dst_ip.s_addr = dst_ip.s_addr;
 }
 
-struct in_addr msh_route_get_dst_ip(struct msh_route *route) {
+struct in_addr msh_route_get_dst_ip(struct msh_route *route)
+{
     return route->dst_ip;
 }
 
@@ -131,7 +113,8 @@ void msh_route_set_next_hop(struct msh_route *route, struct in_addr next_hop)
     __msh_route_updated(route, RTACTION_CHANGE_NEXTHOP_IP);
 }
 
-struct in_addr msh_route_get_next_hop(struct msh_route *route) {
+struct in_addr msh_route_get_next_hop(struct msh_route *route)
+{
     if (!(route->flags & RTFLAG_HAS_NEXTHOP)) {
         puts("accessing to the next hop of a route without one set");
     }
@@ -325,5 +308,29 @@ int msh_route_compare(struct msh_route *first, struct msh_route *second,
 
     printf("diff: %d\n", diff);
     return diff;
+}
+
+static void __msh_route_updated(struct msh_route* route, uint32_t change_flag)
+{
+    if (route->updated_cb) {
+        (*route->updated_cb)(route, change_flag, route->cb_data);
+    }
+}
+
+static void __msh_route_alarm_cb(struct alarm_block* alarm, void *qdata)
+{
+    struct msh_route* route = (struct msh_route*)qdata;
+    unsigned long sc, usc;
+
+    if (route->alarm_action == RTACTION_UNSET_VALID_ENTRY) {
+        msh_route_unset_flag(route, RTFLAG_VALID_ENTRY);
+        route->alarm_action = RTACTION_DESTROY;
+
+        set_alarm_time(DELETE_PERIOD(), &sc, &usc);
+        add_alarm(alarm, sc, usc);
+
+    } else if (route->alarm_action == RTACTION_DESTROY) {
+        msh_route_destroy(route);
+    }
 }
 

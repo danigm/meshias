@@ -40,6 +40,7 @@
 #define RTACTION_DESTROY                        0x0010
 #define RTACTION_CHANGE_NEXTHOP_IP              0x0020
 
+//FIXME Make those structs hide to the user
 struct precursor_t {
     struct in_addr dst_ip;
     struct list_head list;
