@@ -133,7 +133,7 @@ void **mesh_get_routes(char *host)
         }
 
         route = msh_route_alloc();
-        sscanf(part, "%d#%d#%d#%d#%d#%d#%d",
+        sscanf(part, "%d#%hhu#%d#%hu#%hhu#%d#%d",
              &(dst_ip.s_addr),
              &(route->prefix_sz),
              &(route->dest_seq_num),
