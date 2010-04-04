@@ -1,5 +1,5 @@
 #include "communication_interface.h"
-#include "meshias-tools.h"
+// #include "meshias-tools.h"
 #include "statistics.h"
 #include "msh_route.h"
 
@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MESH_PORT 2654
 /*
 char *COMMANDS[] = {
     MSG_SHOW_ROUTES,

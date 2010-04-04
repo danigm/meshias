@@ -7,8 +7,8 @@
 #include <linux/netfilter.h>        /* for NF_ACCEPT */
 #include <sys/select.h>
 
-#include "libnetfilter_queue/libnetfilter_queue.h"
-#include "libnetfilter_queue/libnetfilter_queue_headers.h"
+#include "libnetfilter_queue.h"
+#include "libnetfilter_queue_headers.h"
 
 #include "msh_data.h"
 #include "statistics.h"

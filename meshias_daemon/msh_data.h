@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <linux/types.h>
 
-#include "libnetfilter_queue/libnetfilter_queue.h"
+#include "libnetfilter_queue.h"
 #include "alarm/alarm.h"
 
 #include "utils.h"

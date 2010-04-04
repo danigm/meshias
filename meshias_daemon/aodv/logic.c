@@ -2,11 +2,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "configuration_parameters.h"
-#include "../rreq_fifo.h"
-#include "../packets_fifo.h"
-#include "../msh_route.h"
-#include "../statistics.h"
+#include "aodv/configuration_parameters.h"
+#include "rreq_fifo.h"
+#include "packets_fifo.h"
+#include "msh_route.h"
+#include "statistics.h"
 
 #include "packet.h"
 #include "logic.h"

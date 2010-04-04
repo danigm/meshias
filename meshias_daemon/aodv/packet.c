@@ -11,7 +11,7 @@
 #include "statistics.h"
 
 #include "packet.h"
-#include "configuration_parameters.h"
+#include "aodv/configuration_parameters.h"
 
 #define DEFAULT_TTL 64
 
