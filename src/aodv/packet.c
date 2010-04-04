@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
-#include "../msh_data.h"
-#include "../statistics.h"
+#include "msh_data.h"
+#include "statistics.h"
 
 #include "packet.h"
 #include "configuration_parameters.h"

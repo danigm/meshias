@@ -3,8 +3,8 @@
 
 #include <asm/byteorder.h>
 
-#include "../log.h"
-#include "../utils.h"
+#include "log.h"
+#include "utils.h"
 
 /** Types of aodv packets */
 #define AODV_RREQ 1

@@ -8,8 +8,8 @@
 #include <linux/types.h>
 
 
-#include "../route_obj.h"
-#include "../msh_data.h"
+#include "route_obj.h"
+#include "msh_data.h"
 
 #include "packet.h"
 
