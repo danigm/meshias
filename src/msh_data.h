@@ -17,7 +17,7 @@
 #include "routing_table.h"
 #include "rreq_fifo.h"
 #include "packets_fifo.h"
-#include "fds.h"
+#include "sockets/fds.h"
 
 /**
  * Errors and their corresponding error numbers

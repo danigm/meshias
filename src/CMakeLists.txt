@@ -10,7 +10,7 @@ include_directories (.)
 
 set (MESHIAS_SRCS meshias.c msh_data.c
     nfqueue.c sockets/aodv_socket.c log.c routing_table.c rreq_fifo.c
-    packets_fifo.c fds.c statistics.c
+    packets_fifo.c sockets/fds.c statistics.c
     communication_interface.c aodv/packet.c aodv/logic.c)
 
 # set  (MESHIAS_TOOLS_SRCS meshias-tools.c local.c utils.c)
