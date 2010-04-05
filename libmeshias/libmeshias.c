@@ -1,186 +1,88 @@
-#include "communication_interface.h"
-// #include "meshias-tools.h"
-#include "statistics.h"
-#include "msh_route.h"
-
-#include <sys/types.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include "libmeshias.h"
 
-#define MESH_PORT 2654
-/*
-char *COMMANDS[] = {
-    MSG_SHOW_ROUTES,
-    MSG_SHOW_STATISTICS,
-    MSG_CLEAN_STATISTICS,
-};
-*/
+static meshias_connection_unix *meshias_connection_alloc_unix(char *path);
+static meshias_connection_tcp *meshias_connection_alloc_tcp(char *host, int port);
 
-/**
- * Sends a command to the meshias daemon using a tcp socket.
- * Returns a char* that you must free, if fails, returns NULL.
- */
-char *send_meshias_command(char* command, char *host)
-{
-    int numbytes;
-    int i;
-    int bufsize = 1024;
-    int received_size = 1024;
-    char *received;
-    char buf[bufsize];
+meshias_connection* meshias_connection_alloc(meshias_connection_t type, char* path) {
+    meshias_connection *conn = NULL;
+    int port;
+    char host[255];
+
+    switch (type) {
+        case UNIX_SOCKET:
+            conn = (meshias_connection *)meshias_connection_alloc_unix(path);
+            break;
+        case TCP_SOCKET:
+            if (sscanf(path, "%s:%d", host, &port) != 2) {
+                // TODO set error type
+                return NULL;
+            }
+            conn = (meshias_connection *)meshias_connection_alloc_tcp(host, port);
+            break;
+        default:
+            break;
+    }
+    return conn;
+}
+
+static meshias_connection_unix *meshias_connection_alloc_unix(char *path) {
+    meshias_connection_unix *conn = malloc(sizeof(meshias_connection_unix));
+
     int fd;
-    struct sockaddr_in addr;
+    socklen_t len;
+    struct sockaddr_un local;
+
+    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        return NULL;
+    }
+
+    local.sun_family = AF_UNIX;
+    strcpy(local.sun_path, path);
+    len = strlen(local.sun_path) + sizeof(local.sun_family);
+
+    if (connect(fd, (struct sockaddr *) &local, len) == -1) {
+        close(fd);
+        return NULL;
+    }
+
+    conn->type = UNIX_SOCKET;
+    conn->socket = fd;
+    conn->path = malloc(strlen(path)*sizeof(char));
+    memcpy(conn->path, path, strlen(path));
+
+    return conn;
+}
+
+static meshias_connection_tcp *meshias_connection_alloc_tcp(char *host, int port) {
+    meshias_connection_tcp *conn = malloc(sizeof(meshias_connection_tcp));
+
+    int fd;
+    struct sockaddr_in local;
+
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        return NULL;
+    }
 
     struct hostent *he;
     if ((he = gethostbyname(host)) == NULL) {
         return NULL;
     }
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(MESH_PORT);
-    addr.sin_addr = *((struct in_addr *)he->h_addr);
-    bzero(&(addr.sin_zero), 8);
+    local.sin_family = AF_UNIX;
+    local.sin_port = htons(port);
+    local.sin_addr = *((struct in_local *)he->h_local);
+    bzero(&(local.sin_zero), 8);
 
-    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    if (connect(fd, (struct sockaddr *) &local, sizeof(struct sockaddr)) == -1) {
+        close(fd);
         return NULL;
     }
 
-    if (connect(fd, (struct sockaddr *)&addr,
-                sizeof(struct sockaddr)) == -1) {
-        close (fd);
-        return NULL;
-    }
+    conn->type = TCP_SOCKET;
+    conn->socket = fd;
+    conn->port = port;
+    conn->ip = local.sin_addr.s_addr;
 
-    snprintf (buf, bufsize, command);
-
-    if (send(fd, buf, strlen(buf), 0) < 0) {
-        close (fd);
-        return NULL;
-    }
-
-    received = malloc(received_size*sizeof(char));
-    memset(received, 0, received_size);
-    i = 0;
-    while ((numbytes = recv(fd, buf, bufsize, 0)) > 0) {
-        if (i >= received_size) {
-            received_size *= 2;
-            received = realloc(received, received_size*sizeof(char));
-            memset(received + i, 0, received_size - i);
-        }
-        snprintf(received + i, received_size - i, buf);
-        i += numbytes;
-    }
-
-    close (fd);
-
-    return received;
-}
-
-int mesh_kill(char *host)
-{
-    char *response = send_meshias_command(MSG_KILL, host);
-    if (!response) {
-        return -1;
-    }
-
-    free(response);
-    return 0;
-}
-
-int mesh_restart(char *host)
-{
-    char *response = send_meshias_command(MSG_RESTART, host);
-    if (!response) {
-        return -1;
-    }
-
-    free(response);
-    return 0;
-}
-
-/**
- * The returned struct must be freed
- * It's a NULL terminated array
- */
-void **mesh_get_routes(char *host)
-{
-    int i, j;
-    int routes_size = 10;
-    void **routes = NULL;
-
-    char *response = send_meshias_command(MSG_SHOW_ROUTES, host);
-    if (!response) {
-        return NULL;
-    }
-
-    routes = malloc(routes_size*sizeof(struct msh_route*));
-    for (i=0; i<routes_size; i++) routes[i] = NULL;
-
-    struct msh_route *route;
-    struct in_addr dst_ip;
-    struct in_addr next_hop;
-    char *part;
-    j = 0;
-    part = strtok(response, "\n");
-    while (part) {
-        if (j >= routes_size - 1) {
-            routes_size *= 2;
-            routes = realloc(routes, routes_size);
-            for (i=j; i<routes_size; i++) routes[i] = NULL;
-        }
-
-        route = msh_route_alloc();
-        sscanf(part, "%d#%hhu#%d#%hu#%hhu#%d#%d",
-             &(dst_ip.s_addr),
-             &(route->prefix_sz),
-             &(route->dest_seq_num),
-             &(route->flags),
-             &(route->hop_count),
-             &(next_hop.s_addr),
-             &(route->net_iface));
-        msh_route_set_dst_ip(route, dst_ip);
-        msh_route_set_next_hop(route, next_hop);
-        routes[j] = route;
-
-        part = strtok(NULL, "\n");
-        j++;
-    }
-
-    free(response);
-    return routes;
-}
-
-struct statistics_t *mesh_get_stats(char *host)
-{
-    struct statistics_t *stats = malloc(sizeof(struct statistics_t));
-
-    char *response = send_meshias_command(MSG_SHOW_STATISTICS, host);
-    if (!response) {
-        return NULL;
-    }
-
-    sscanf(response, "%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d#%d\n",
-             &(stats->packets_dropped),
-             &(stats->no_address_received),
-             &(stats->no_payload_received),
-             &(stats->send_aodv_errors),
-             &(stats->send_aodv_incomplete),
-             &(stats->rreq_incorrect_size),
-             &(stats->rrep_incorrect_size),
-             &(stats->rerr_incorrect_size),
-             &(stats->rerr_dest_cont_zero),
-             &(stats->rrep_ack_incorrect_size),
-             &(stats->aodv_incorrect_type),
-             &(stats->no_ttl_received),
-             &(stats->error_aodv_recv),
-             &(stats->error_nfq_recv),
-             &(stats->error_unix_recv),
-             &(stats->invalid_route));
-
-    free(response);
-    return stats;
+    return conn;
 }
